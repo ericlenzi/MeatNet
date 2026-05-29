@@ -1,5 +1,4 @@
-﻿using Meat.Domain.Usuarios;
-using Meat.Queries.Dtos;
+using Meat.Domain.Usuarios;
 
 namespace Meat.Application.Usuarios.GetUsuarios
 {
@@ -7,9 +6,7 @@ namespace Meat.Application.Usuarios.GetUsuarios
     {
         public GetUsuariosMapperProfile()
         {
-            this.CreateMap<Usuario, GetUsuariosItem>()
-                .ForMember(d => d.UserName, c => c.MapFrom(s => s.UserName));
-            this.CreateMap<UsuarioDto, GetUsuariosItem>();
+            this.CreateMap<Usuario, GetUsuariosItem>();
         }
     }
 }

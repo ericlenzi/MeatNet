@@ -3,9 +3,6 @@ using Newtonsoft.Json;
 using Meat.Application.Shared;
 using Meat.Application.Shared.Settings;
 using Meat.Infrastructure;
-using Meat.Queries;
-using Meat.Queries.Articulos;
-using Meat.Queries.Informes;
 using Meat.Repositories;
 using Meat.Services;
 using System.Data;
@@ -49,9 +46,6 @@ if (!isApiLocal)
 else
     builder.Services.AddApplicationInsightsTelemetryProcessor<AppInsightsTelemetryProcessor>();
 
-builder.Services.AddScoped<IUsuariosQueries, UsuariosQueries>();
-builder.Services.AddScoped<IVentasEmpleadosQueries, VentasEmpleadosQueries>();
-builder.Services.AddScoped<IArticulosMarcasPorSucursalQueries, ArticulosMarcasPorSucursalQueries>();
 
 builder.Services.AddScoped<IDbConnection>(_ =>
 {
