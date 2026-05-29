@@ -18,7 +18,7 @@ namespace Meat.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetEstablecimientosAsync([FromQuery] GetEstablecimientosRequest request)
         {
             // request.NumeroSucursal = base.CurrentUser.NumeroSucursal;
@@ -26,7 +26,7 @@ namespace Meat.Controllers
         }
 
         //[HttpGet("{id}")]
-        //[Authorize(Roles = "Admin, Abastecimiento")]
+        //[Authorize(Roles = "ADMIN, Abastecimiento")]
         //public async Task<IActionResult> GetEstablecimientoAsync([FromRoute] Guid id) => await this.Handle(
         //    new GetEstablecimientoRequest
         //    {
@@ -35,7 +35,7 @@ namespace Meat.Controllers
         //);
 
         //[HttpGet("Codigo/{codigo}")]
-        //[Authorize(Roles = "Admin, Abastecimiento")]
+        //[Authorize(Roles = "ADMIN, Abastecimiento")]
         //public async Task<IActionResult> GetEstablecimientoByCodigoAsync([FromRoute] string codigo)
         //{
         //    return await this.Handle(

@@ -13,7 +13,7 @@ namespace Meat.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Admin, Abastecimiento")]
+    [Authorize(Roles = "ADMIN, ABAST")]
     public class ParametrosController : MeatBaseController
     {
         public ParametrosController(IMediator mediator)

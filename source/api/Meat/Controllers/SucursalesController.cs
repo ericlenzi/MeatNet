@@ -23,7 +23,7 @@ namespace Meat.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetSucursalesAsync([FromQuery] GetSucursalesRequest request)
         {
             // request.NumeroSucursal = base.CurrentUser.NumeroSucursal;
@@ -31,7 +31,7 @@ namespace Meat.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetSucursalAsync([FromRoute] Guid id) => await this.Handle(
             new GetSucursalRequest
             {
@@ -40,11 +40,11 @@ namespace Meat.Controllers
         );
 
         [HttpPost]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> CreateSucursalAsync([FromBody] CreateSucursalRequest request) => await Handle(request);
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> UpdatSucursalAsync([FromRoute] Guid id, [FromBody] UpdateSucursalRequestFromBody body) => await this.Handle(
             new UpdateSucursalRequest()
             {
@@ -56,7 +56,7 @@ namespace Meat.Controllers
         );
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> DeleteSucursalByIdAsync([FromRoute] Guid id) => await this.Handle(
             new DeleteSucursalRequest
             {
@@ -65,7 +65,7 @@ namespace Meat.Controllers
         );
 
         [HttpGet("Codigo/{codigo}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetSucursalByCodigoAsync([FromRoute] string codigo)
         {
             return await this.Handle(

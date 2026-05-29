@@ -21,14 +21,14 @@ namespace Meat.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Abastecimiento, Encargado, Cajero")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetPuestosAsync([FromQuery] GetPuestosRequest request)
         {
             return await this.Handle(request);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetPuestoByIdAsync([FromRoute] Guid id) => await this.Handle(
             new GetPuestoRequest
             {
@@ -37,11 +37,11 @@ namespace Meat.Controllers
         );
 
         [HttpPost]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> CreatePuestoAsync([FromBody] CreatePuestoRequest request) => await Handle(request);
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> UpdatPuestoAsync([FromRoute] Guid id, [FromBody] UpdatePuestoRequestFromBody body) => await this.Handle(
             new UpdatePuestoRequest()
             {
@@ -53,7 +53,7 @@ namespace Meat.Controllers
         );
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> DeletePuestoByIdAsync([FromRoute] Guid id) => await this.Handle(
             new DeletePuestoRequest
             {

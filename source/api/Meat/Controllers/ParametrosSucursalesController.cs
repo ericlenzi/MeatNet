@@ -21,14 +21,14 @@ namespace Meat.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetParametrosSucursalesAsync([FromQuery] GetParametrosSucursalesRequest request)
         {
             return await this.Handle(request);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetParametroSucursalByIdAsync([FromRoute] Guid id) => await this.Handle(
             new GetParametroSucursalRequest
             {
@@ -37,7 +37,7 @@ namespace Meat.Controllers
         );
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin, Abastecimiento")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> UpdateParametroSucursalAsync([FromRoute] Guid id, [FromBody] UpdateParametroSucursalRequestFromBody body) => await this.Handle(
             new UpdateParametroSucursalRequest()
             {
@@ -49,7 +49,7 @@ namespace Meat.Controllers
         );
 
         [HttpGet("ByCodigo/{codigo}")]
-        [Authorize(Roles = "Admin, Abastecimiento, Cajero, Encargado")]
+        [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetParametroSucursalByCodigoAsync([FromRoute] string codigo) => await Handle(
             new GetParametroSucursalByCodigoRequest
             {

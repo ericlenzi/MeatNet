@@ -22,14 +22,14 @@ namespace Meat.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetEmpresasAsync([FromQuery] GetEmpresasRequest request)
         {
             return await this.Handle(request);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetEmpresaAsync([FromRoute] Guid id) => await this.Handle(
             new GetEmpresaRequest
             {
@@ -38,11 +38,11 @@ namespace Meat.Controllers
         );
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateEmpresaAsync([FromBody] CreateEmpresaRequest request) => await Handle(request);
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateEmpresaAsync([FromRoute] Guid id, [FromBody] UpdateEmpresaRequestFromBody body) => await this.Handle(
             new UpdateEmpresaRequest()
             {
@@ -60,7 +60,7 @@ namespace Meat.Controllers
         );
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteEmpresaByIdAsync([FromRoute] Guid id) => await this.Handle(
             new DeleteEmpresaRequest
             {
