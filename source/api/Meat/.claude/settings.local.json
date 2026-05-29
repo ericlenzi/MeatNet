@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(dotnet tool install *)",
+      "PowerShell(dotnet tool *)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(Remove-Item *)",
+      "Bash(dotnet build *)",
+      "Bash(Remove-Item \"C:\\\\Eric\\\\App\\\\MeatCloud\\\\source\\\\meat-api\\\\Meat.Repositories\\\\Migrations\\\\20260518204045_InitialCreate.cs\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Eric\\\\App\\\\MeatCloud\\\\source\\\\meat-api\\\\Meat.Repositories\\\\Migrations\\\\20260518204045_InitialCreate.Designer.cs\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Eric\\\\App\\\\MeatCloud\\\\source\\\\meat-api\\\\Meat.Repositories\\\\Migrations\\\\MeatContextModelSnapshot.cs\" -Force)",
+      "Bash(Write-Host \"Archivos de migración eliminados\")",
+      "PowerShell(dotnet package search *)",
+      "PowerShell(Invoke-Sqlcmd *)",
+      "PowerShell(sqlcmd *)"
+    ]
+  }
+}
