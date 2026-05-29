@@ -1,4 +1,4 @@
-﻿ using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -12,8 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Meat.Domain.UsuariosSucursales;
-using System.Collections.Generic;
 
 namespace Meat.Application.Autenticacion
 {
@@ -33,22 +31,18 @@ namespace Meat.Application.Autenticacion
 
         public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken cancellationToken)
         {
-            string sucursalJwt = string.Empty;
-            string empresaJwt = string.Empty;
             string passwordHash;
 
             using (SHA1 sha1Hash = SHA1.Create())
             {
-                var newPassword = request.Contraseña;
-                byte[] sourceBytes = Encoding.UTF8.GetBytes(newPassword);
+                byte[] sourceBytes = Encoding.UTF8.GetBytes(request.Contraseña);
                 byte[] hashBytes = sha1Hash.ComputeHash(sourceBytes);
                 passwordHash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
             }
 
             var user = await this.context.Usuarios
                 .Include(x => x.Empresa)
-                .FirstOrDefaultAsync(p => p.UserName == request.Usuario && p.PasswordHash == passwordHash
-            );
+                .FirstOrDefaultAsync(p => p.UserName == request.Usuario && p.PasswordHash == passwordHash, cancellationToken);
 
             if (user == null)
                 throw new ArgumentException("Usuario o contraseña incorrecto");
@@ -56,15 +50,32 @@ namespace Meat.Application.Autenticacion
             if (!user.Activo)
                 throw new ArgumentException("Usuario inactivo.");
 
-            empresaJwt = user.Empresa.CodigoEmpresa ?? string.Empty;
-            sucursalJwt = this.getMainSucursalActiva(user.Id) ?? string.Empty;
+            var empresaJwt = user.Empresa?.CodigoEmpresa;
+            if (string.IsNullOrEmpty(empresaJwt))
+                throw new ArgumentException("El usuario no tiene una empresa asignada.");
 
-            if (string.IsNullOrEmpty(empresaJwt) || string.IsNullOrEmpty(sucursalJwt))
-                throw new ArgumentException("Usuario sin configuración empresa-sucursal");
+            var sucursalesUsuario = await this.context.UsuariosSucursales
+                .Where(x => x.UsuarioId == user.Id)
+                .ToListAsync(cancellationToken);
+
+            if (!sucursalesUsuario.Any())
+                throw new ArgumentException("El usuario no tiene sucursales asignadas. Debe tener al menos una sucursal para iniciar sesión.");
+
+            var mainSucursal = sucursalesUsuario.FirstOrDefault(x => x.esMain);
+            if (mainSucursal == null)
+                throw new ArgumentException("El usuario no tiene una sucursal principal asignada (esMain).");
+
+            var sucursal = await this.context.Sucursales
+                .FirstOrDefaultAsync(x => x.Id == mainSucursal.SucursalId, cancellationToken);
+
+            if (sucursal == null)
+                throw new ArgumentException("La sucursal principal asignada al usuario no existe.");
+
+            var sucursalJwt = sucursal.CodigoSucursal;
 
             return new LoginResponse()
             {
-                Token = !string.IsNullOrEmpty(empresaJwt) ? this.GenerateJwt(user, empresaJwt, sucursalJwt ) : string.Empty,
+                Token = this.GenerateJwt(user, empresaJwt, sucursalJwt),
                 CurrentUser = new CurrentUser
                 {
                     Id = user.Id,
@@ -96,21 +107,6 @@ namespace Meat.Application.Autenticacion
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
-
-        private string getMainSucursalActiva(Guid? userid)
-        {
-            string sucursal = string.Empty;
-            List<UsuarioSucursal> usersucs = this.context.UsuariosSucursales.Where(x => x.UsuarioId == userid).ToList();
-            foreach (UsuarioSucursal item in usersucs)
-            {
-                if (item.esMain)
-                {
-                    sucursal = this.context.Sucursales.FirstOrDefault(x => x.Id == item.SucursalId).CodigoSucursal;
-                }
-
-            }
-            return sucursal;
         }
     }
 }
