@@ -1,37 +1,55 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import type { Sucursal } from '@/types'
-import { getSucursales } from '@/services/sucursales.service'
+import { getUsuarioSucursales } from '@/services/usuarios.service'
+import type { UsuarioSucursalItem } from '@/services/usuarios.service'
 import { useAuth } from './AuthContext'
 
+interface SucursalOption {
+  id: string
+  sucursalId: string
+  codigoSucursal: string
+  nombre: string
+  color: string
+  esMain: boolean
+}
+
 interface AppContextType {
-  currentSucursal: Sucursal | null
-  sucursales: Sucursal[]
+  currentSucursal: SucursalOption | null
+  sucursales: SucursalOption[]
   isLoadingSucursales: boolean
-  selectSucursal: (sucursal: Sucursal) => void
+  selectSucursal: (sucursal: SucursalOption) => void
   loadSucursales: () => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
-  const [sucursales, setSucursales] = useState<Sucursal[]>([])
-  const [currentSucursal, setCurrentSucursal] = useState<Sucursal | null>(null)
+  const { isAuthenticated, user } = useAuth()
+  const [sucursales, setSucursales] = useState<SucursalOption[]>([])
+  const [currentSucursal, setCurrentSucursal] = useState<SucursalOption | null>(null)
   const [isLoadingSucursales, setIsLoadingSucursales] = useState(false)
 
   const loadSucursales = useCallback(async () => {
+    if (!user?.id) return
     setIsLoadingSucursales(true)
     try {
-      const response = await getSucursales()
-      const activeSucursales = (response.data || []).filter((s) => s.activo)
-      setSucursales(activeSucursales)
+      const items: UsuarioSucursalItem[] = await getUsuarioSucursales(user.id)
+      const options: SucursalOption[] = items.map((item) => ({
+        id: item.id,
+        sucursalId: item.sucursalId,
+        codigoSucursal: item.codigoSucursal,
+        nombre: item.nombre,
+        color: item.color || '#DAE4F0',
+        esMain: item.esMain,
+      }))
+      setSucursales(options)
 
+      // Try to restore from localStorage
       const storedSucursal = localStorage.getItem('currentSucursal')
       if (storedSucursal) {
         try {
-          const parsed = JSON.parse(storedSucursal) as Sucursal
-          const found = activeSucursales.find((s) => s.id === parsed.id)
+          const parsed = JSON.parse(storedSucursal) as SucursalOption
+          const found = options.find((s) => s.sucursalId === parsed.sucursalId)
           if (found) {
             setCurrentSucursal(found)
             return
@@ -41,42 +59,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      if (activeSucursales.length > 0) {
-        const user = localStorage.getItem('user')
-        if (user) {
-          try {
-            const parsed = JSON.parse(user) as { codigoSucursal: string }
-            const mainSucursal = activeSucursales.find(
-              (s) => s.codigoSucursal === parsed.codigoSucursal,
-            )
-            if (mainSucursal) {
-              setCurrentSucursal(mainSucursal)
-              localStorage.setItem('currentSucursal', JSON.stringify(mainSucursal))
-              return
-            }
-          } catch {
-            // ignore
-          }
-        }
-        setCurrentSucursal(activeSucursales[0]!)
+      // Default to main sucursal or first one
+      const mainSucursal = options.find((s) => s.esMain)
+      if (mainSucursal) {
+        setCurrentSucursal(mainSucursal)
+        localStorage.setItem('currentSucursal', JSON.stringify(mainSucursal))
+      } else if (options.length > 0) {
+        setCurrentSucursal(options[0]!)
+        localStorage.setItem('currentSucursal', JSON.stringify(options[0]))
       }
     } catch {
-      // silently fail — sucursales will be empty
+      // silently fail
     } finally {
       setIsLoadingSucursales(false)
     }
-  }, [])
+  }, [user?.id])
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user?.id) {
       void loadSucursales()
     } else {
       setSucursales([])
       setCurrentSucursal(null)
     }
-  }, [isAuthenticated, loadSucursales])
+  }, [isAuthenticated, user?.id, loadSucursales])
 
-  const selectSucursal = useCallback((sucursal: Sucursal) => {
+  const selectSucursal = useCallback((sucursal: SucursalOption) => {
     setCurrentSucursal(sucursal)
     localStorage.setItem('currentSucursal', JSON.stringify(sucursal))
   }, [])

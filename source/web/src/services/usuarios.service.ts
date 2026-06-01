@@ -43,3 +43,44 @@ export async function updateUsuario(
 export async function deleteUsuario(id: string): Promise<void> {
   await api.delete(`/Usuarios/${id}`)
 }
+
+export interface UsuarioSucursalItem {
+  id: string
+  sucursalId: string
+  codigoSucursal: string
+  nombre: string
+  color: string
+  esMain: boolean
+}
+
+interface UsuarioSucursalesResponse {
+  data: UsuarioSucursalItem[]
+}
+
+export async function getUsuarioSucursales(
+  usuarioId: string,
+): Promise<UsuarioSucursalItem[]> {
+  const response = await api.get<UsuarioSucursalesResponse>(
+    `/Usuarios/${usuarioId}/Sucursales`,
+  )
+  return response.data.data || []
+}
+
+export async function addUsuarioSucursal(
+  usuarioId: string,
+  sucursalId: string,
+  esMain: boolean,
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>(
+    `/Usuarios/${usuarioId}/Sucursales`,
+    { SucursalId: sucursalId, EsMain: esMain },
+  )
+  return response.data
+}
+
+export async function removeUsuarioSucursal(
+  usuarioId: string,
+  usuarioSucursalId: string,
+): Promise<void> {
+  await api.delete(`/Usuarios/${usuarioId}/Sucursales/${usuarioSucursalId}`)
+}

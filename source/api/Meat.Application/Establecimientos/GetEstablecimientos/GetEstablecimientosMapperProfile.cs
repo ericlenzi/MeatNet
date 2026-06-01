@@ -6,8 +6,9 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
     {
         public GetEstablecimientosMapperProfile()
         {
-            this.CreateMap<Establecimiento, GetEstablecimientosItem>();
-        //        .ForMember(d => d.DireccionCompleta, c => c.MapFrom(s => $"{s.Direccion.Calle} {s.Direccion.Numero}"));
+            this.CreateMap<Establecimiento, GetEstablecimientosItem>()
+                .ForMember(d => d.SucursalNombre, c => c.MapFrom(s => s.Sucursal != null ? s.Sucursal.Nombre : ""))
+                .ForMember(d => d.EspecieNombre, c => c.MapFrom(s => s.Especie != null ? s.Especie.Nombre : ""));
         }
     }
 }

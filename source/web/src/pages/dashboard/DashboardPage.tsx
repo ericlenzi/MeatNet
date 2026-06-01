@@ -28,7 +28,12 @@ export default function DashboardPage() {
 
       {/* Current sucursal card */}
       {currentSucursal && (
-        <div className="mb-8 rounded-xl border border-border bg-gradient-to-r from-primary-50 to-primary-100 p-6">
+        <div
+          className="mb-8 rounded-xl border border-border p-6"
+          style={{
+            background: `linear-gradient(135deg, ${currentSucursal.color || '#DAE4F0'}, ${currentSucursal.color || '#DAE4F0'}88, #ffffff)`,
+          }}
+        >
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-600 text-white">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

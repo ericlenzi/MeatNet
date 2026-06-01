@@ -360,6 +360,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("CodigoSucursal")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Direccion")
                         .HasColumnType("nvarchar(max)");
 

@@ -46,7 +46,7 @@ export default function LoginPage() {
             </div>
             <h1 className="text-2xl font-bold text-text">MeatNet</h1>
             <p className="mt-1 text-sm text-text-light">
-              Sistema de Gestion para Frigorificos
+              Sistema de Gestión para Frigoríficos
             </p>
           </div>
 
@@ -82,7 +82,7 @@ export default function LoginPage() {
               className="w-full"
               size="lg"
             >
-              Iniciar Sesion
+              Iniciar Sesión
             </Button>
           </form>
         </div>

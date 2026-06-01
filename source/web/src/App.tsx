@@ -12,6 +12,8 @@ import SucursalesListPage from '@/pages/sucursales/SucursalesListPage'
 import SucursalFormPage from '@/pages/sucursales/SucursalFormPage'
 import UsuariosListPage from '@/pages/usuarios/UsuariosListPage'
 import UsuarioFormPage from '@/pages/usuarios/UsuarioFormPage'
+import EstablecimientosListPage from '@/pages/establecimientos/EstablecimientosListPage'
+import EstablecimientoFormPage from '@/pages/establecimientos/EstablecimientoFormPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -42,7 +44,9 @@ function App() {
                   <Route path="usuarios" element={<UsuariosListPage />} />
                   <Route path="usuarios/create" element={<UsuarioFormPage />} />
                   <Route path="usuarios/:id/edit" element={<UsuarioFormPage />} />
-                  <Route path="establecimientos" element={<PlaceholderPage title="Establecimientos" />} />
+                  <Route path="establecimientos" element={<EstablecimientosListPage />} />
+                  <Route path="establecimientos/create" element={<EstablecimientoFormPage />} />
+                  <Route path="establecimientos/:id/edit" element={<EstablecimientoFormPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />

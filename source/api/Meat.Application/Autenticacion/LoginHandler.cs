@@ -83,6 +83,7 @@ namespace Meat.Application.Autenticacion
                     NombreCompleto = $"{user.Nombre} {user.Apellido}",
                     RolId = user.RolId,
                     CodigoEmpresa = empresaJwt,
+                    NombreEmpresa = user.Empresa?.Nombre ?? string.Empty,
                     CodigoSucursal = sucursalJwt
                 }
             };

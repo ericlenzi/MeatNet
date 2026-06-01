@@ -4,10 +4,12 @@ import { useParams, useNavigate } from 'react-router'
 import { getSucursal, createSucursal, updateSucursal } from '@/services/sucursales.service'
 import { getEmpresas } from '@/services/empresas.service'
 import { useToast } from '@/components/ui/Toast'
+import { useAuth } from '@/contexts/AuthContext'
 import type { Empresa } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
+import ColorPicker from '@/components/ui/ColorPicker'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
 
@@ -15,16 +17,24 @@ export default function SucursalFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
   const isEdit = !!id
 
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [form, setForm] = useState({
-    NumeroSucursal: '',
+    CodigoSucursal: '',
     Nombre: '',
-    Direccion: '',
     EmpresaId: '',
+    Direccion: '',
+    CodigoPostal: '',
+    Localidad: '',
+    Provincia: '',
+    Zona: '',
+    Pais: '',
+    Erp_Codigo: '',
+    Color: '#DAE4F0',
     Activa: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -33,15 +43,30 @@ export default function SucursalFormPage() {
     const loadData = async () => {
       try {
         const empResponse = await getEmpresas({ PageSize: 1000 })
-        setEmpresas(empResponse.data || [])
+        const empList = empResponse.data || []
+        setEmpresas(empList)
+
+        if (!isEdit && user?.codigoEmpresa) {
+          const empresaActiva = empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
+          if (empresaActiva) {
+            setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
+          }
+        }
 
         if (isEdit && id) {
           const sucursal = await getSucursal(id)
           setForm({
-            NumeroSucursal: sucursal.codigoSucursal || '',
+            CodigoSucursal: sucursal.codigoSucursal || '',
             Nombre: sucursal.nombre || '',
-            Direccion: sucursal.direccion || '',
             EmpresaId: sucursal.empresaId || '',
+            Direccion: sucursal.direccion || '',
+            CodigoPostal: sucursal.codigoPostal || '',
+            Localidad: sucursal.localidad || '',
+            Provincia: sucursal.provincia || '',
+            Zona: sucursal.zona || '',
+            Pais: sucursal.pais || '',
+            Erp_Codigo: sucursal.erp_Codigo || '',
+            Color: sucursal.color || '',
             Activa: sucursal.activo,
           })
         }
@@ -56,7 +81,7 @@ export default function SucursalFormPage() {
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
-    if (!isEdit && !form.NumeroSucursal.trim()) newErrors['NumeroSucursal'] = 'Requerido'
+    if (!form.CodigoSucursal.trim()) newErrors['CodigoSucursal'] = 'Requerido'
     if (!form.Nombre.trim()) newErrors['Nombre'] = 'Requerido'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -73,13 +98,29 @@ export default function SucursalFormPage() {
           Nombre: form.Nombre,
           EmpresaId: form.EmpresaId,
           Activa: form.Activa,
+          Direccion: form.Direccion,
+          CodigoPostal: form.CodigoPostal,
+          Localidad: form.Localidad,
+          Provincia: form.Provincia,
+          Zona: form.Zona,
+          Pais: form.Pais,
+          Erp_Codigo: form.Erp_Codigo,
+          Color: form.Color,
         })
         toast('success', 'Sucursal actualizada')
       } else {
         await createSucursal({
-          NumeroSucursal: form.NumeroSucursal,
+          NumeroSucursal: form.CodigoSucursal,
           Nombre: form.Nombre,
+          EmpresaId: form.EmpresaId,
           Direccion: form.Direccion,
+          CodigoPostal: form.CodigoPostal,
+          Localidad: form.Localidad,
+          Provincia: form.Provincia,
+          Zona: form.Zona,
+          Pais: form.Pais,
+          Erp_Codigo: form.Erp_Codigo,
+          Color: form.Color,
         })
         toast('success', 'Sucursal creada')
       }
@@ -113,9 +154,9 @@ export default function SucursalFormPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Codigo Sucursal"
-              value={form.NumeroSucursal}
-              onChange={(e) => updateField('NumeroSucursal', e.target.value)}
-              error={errors['NumeroSucursal']}
+              value={form.CodigoSucursal}
+              onChange={(e) => updateField('CodigoSucursal', e.target.value)}
+              error={errors['CodigoSucursal']}
               disabled={isEdit}
             />
             <Input
@@ -124,25 +165,56 @@ export default function SucursalFormPage() {
               onChange={(e) => updateField('Nombre', e.target.value)}
               error={errors['Nombre']}
             />
-            {!isEdit && (
-              <Input
-                label="Direccion"
-                value={form.Direccion}
-                onChange={(e) => updateField('Direccion', e.target.value)}
-              />
-            )}
-            {isEdit && (
-              <Select
-                label="Empresa"
-                value={form.EmpresaId}
-                onChange={(e) => updateField('EmpresaId', e.target.value)}
-                options={empresas.map((emp) => ({
-                  value: emp.id,
-                  label: `${emp.codigoEmpresa} - ${emp.nombre}`,
-                }))}
-                placeholder="Seleccionar..."
-              />
-            )}
+            <Select
+              label="Empresa"
+              value={form.EmpresaId}
+              onChange={(e) => updateField('EmpresaId', e.target.value)}
+              options={empresas.map((emp) => ({
+                value: emp.id,
+                label: `${emp.codigoEmpresa} - ${emp.nombre}`,
+              }))}
+              placeholder="Seleccionar..."
+            />
+            <Input
+              label="Codigo ERP"
+              value={form.Erp_Codigo}
+              onChange={(e) => updateField('Erp_Codigo', e.target.value)}
+            />
+            <Input
+              label="Direccion"
+              value={form.Direccion}
+              onChange={(e) => updateField('Direccion', e.target.value)}
+            />
+            <Input
+              label="Codigo Postal"
+              value={form.CodigoPostal}
+              onChange={(e) => updateField('CodigoPostal', e.target.value)}
+            />
+            <Input
+              label="Localidad"
+              value={form.Localidad}
+              onChange={(e) => updateField('Localidad', e.target.value)}
+            />
+            <Input
+              label="Provincia"
+              value={form.Provincia}
+              onChange={(e) => updateField('Provincia', e.target.value)}
+            />
+            <Input
+              label="Zona"
+              value={form.Zona}
+              onChange={(e) => updateField('Zona', e.target.value)}
+            />
+            <Input
+              label="Pais"
+              value={form.Pais}
+              onChange={(e) => updateField('Pais', e.target.value)}
+            />
+            <ColorPicker
+              label="Color"
+              value={form.Color}
+              onChange={(color) => updateField('Color', color)}
+            />
           </div>
 
           {isEdit && (

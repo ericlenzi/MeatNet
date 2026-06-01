@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, Link } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface SidebarProps {
@@ -59,12 +59,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const sidebarContent = (
     <div className="flex h-full flex-col bg-sidebar text-white">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+      <Link to="/" onClick={onClose} className="flex h-16 items-center gap-3 border-b border-white/10 px-5 hover:bg-sidebar-hover transition-colors">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 font-bold text-sm">
           MN
         </div>
         <span className="text-lg font-semibold tracking-tight">MeatNet</span>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">

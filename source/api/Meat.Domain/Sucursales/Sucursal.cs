@@ -26,6 +26,7 @@ namespace Meat.Domain.Sucursales
         public string Provincia { get; set; }
         public string Zona { get; set; }
         public string Pais { get; set; }
+        public string Color { get; set; }
         public virtual ICollection<Puesto> Puestos { get; set; }
         public virtual ICollection<ParametroSucursal> ParametrosSucursal { get; set; }
     }

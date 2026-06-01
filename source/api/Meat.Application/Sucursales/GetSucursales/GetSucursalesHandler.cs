@@ -21,8 +21,17 @@ namespace Meat.Application.Sucursales.GetSucursales
         public async Task<GetSucursalesResponse> Handle(GetSucursalesRequest request, CancellationToken cancellationToken)
         {
             IQueryable<Sucursal> queryable = this.context.Sucursales
-                .Where(x => x.Activo == true)
-                .OrderBy(x => x.CodigoSucursal).AsQueryable();
+                .Include(x => x.Empresa)
+                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+
+            if (!string.IsNullOrEmpty(request.Filter))
+                queryable = queryable.Where(x =>
+                    x.Nombre.Contains(request.Filter) ||
+                    x.CodigoSucursal.Contains(request.Filter) ||
+                    x.Localidad.Contains(request.Filter) ||
+                    x.Direccion.Contains(request.Filter));
+
+            queryable = queryable.OrderBy(x => x.CodigoSucursal);
 
             var totalRows = await queryable.CountAsync();
 

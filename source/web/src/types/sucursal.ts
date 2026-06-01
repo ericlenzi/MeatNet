@@ -11,16 +11,33 @@ export interface Sucursal {
   provincia: string
   zona: string
   pais: string
+  color: string
 }
 
 export interface CreateSucursalRequest {
   NumeroSucursal: string
   Nombre: string
+  EmpresaId: string
   Direccion?: string
+  CodigoPostal?: string
+  Localidad?: string
+  Provincia?: string
+  Zona?: string
+  Pais?: string
+  Erp_Codigo?: string
+  Color?: string
 }
 
 export interface UpdateSucursalRequest {
   Nombre: string
   EmpresaId: string
   Activa: boolean
+  Direccion?: string
+  CodigoPostal?: string
+  Localidad?: string
+  Provincia?: string
+  Zona?: string
+  Pais?: string
+  Erp_Codigo?: string
+  Color?: string
 }

@@ -27,8 +27,16 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
             IQueryable<Establecimiento> queryable;
 
             queryable = this.context.Establecimientos
-                .Where(x => x.Activo == true)
-                .OrderBy(x => x.CodigoEstablecimiento).AsQueryable();
+                .Include(x => x.Sucursal)
+                .Include(x => x.Especie);
+
+            if (!string.IsNullOrEmpty(request.Filter))
+                queryable = queryable.Where(x =>
+                    x.Nombre.Contains(request.Filter) ||
+                    x.CodigoEstablecimiento.Contains(request.Filter) ||
+                    x.NumeroSenasa.Contains(request.Filter));
+
+            queryable = queryable.OrderBy(x => x.CodigoEstablecimiento);
 
             var totalRows = await queryable.CountAsync();
 

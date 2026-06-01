@@ -26,7 +26,7 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetSucursalesAsync([FromQuery] GetSucursalesRequest request)
         {
-            // request.NumeroSucursal = base.CurrentUser.NumeroSucursal;
+            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
             return await this.Handle(request);
         }
 
@@ -51,7 +51,15 @@ namespace Meat.Controllers
                 Id = id,
                 Nombre = body.Nombre,
                 EmpresaId = body.EmpresaId,
-                Activa = body.Activa
+                Activa = body.Activa,
+                Direccion = body.Direccion,
+                CodigoPostal = body.CodigoPostal,
+                Localidad = body.Localidad,
+                Provincia = body.Provincia,
+                Zona = body.Zona,
+                Pais = body.Pais,
+                Erp_Codigo = body.Erp_Codigo,
+                Color = body.Color
             }
         );
 

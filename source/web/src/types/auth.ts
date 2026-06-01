@@ -9,6 +9,7 @@ export interface CurrentUser {
   nombreCompleto: string
   rolId: string
   codigoEmpresa: string
+  nombreEmpresa: string
   codigoSucursal: string
 }
 

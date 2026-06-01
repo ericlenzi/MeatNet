@@ -15,6 +15,7 @@ namespace Meat.Application.Autenticacion
         public string NombreCompleto { get; set; }
         public string RolId { get; set; }
         public string CodigoEmpresa { get; set; }
+        public string NombreEmpresa { get; set; }
         public string CodigoSucursal { get; set; }
     }
 }

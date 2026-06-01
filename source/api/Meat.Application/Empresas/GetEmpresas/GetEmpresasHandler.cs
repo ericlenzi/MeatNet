@@ -20,11 +20,18 @@ namespace Meat.Application.Empresas.GetEmpresas
 
         public async Task<GetEmpresasResponse> Handle(GetEmpresasRequest request, CancellationToken cancellationToken)
         {
-            IQueryable<Empresa> queryable = this.context.Empresas
-                .OrderBy(x => x.CodigoEmpresa).AsQueryable();
+            IQueryable<Empresa> queryable = this.context.Empresas.AsQueryable();
+
+            if (!string.IsNullOrEmpty(request.Filter))
+                queryable = queryable.Where(x =>
+                    x.Nombre.Contains(request.Filter) ||
+                    x.CodigoEmpresa.Contains(request.Filter) ||
+                    x.NumeroCuit.Contains(request.Filter));
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);
+
+            queryable = queryable.OrderBy(x => x.CodigoEmpresa);
 
             var totalRows = await queryable.CountAsync(cancellationToken);
 
