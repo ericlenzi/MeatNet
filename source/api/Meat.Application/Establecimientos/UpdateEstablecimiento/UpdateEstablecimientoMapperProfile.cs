@@ -7,7 +7,9 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
     {
         public UpdateEstablecimientoMapperProfile()
         {
-            this.CreateMap<UpdateEstablecimientoRequest, Establecimiento>();
+            this.CreateMap<UpdateEstablecimientoRequest, Establecimiento>()
+                .ForMember(dest => dest.EmpresaId, opt => opt.Ignore())
+                .ForMember(dest => dest.Empresa, opt => opt.Ignore());
         }
     }
 }

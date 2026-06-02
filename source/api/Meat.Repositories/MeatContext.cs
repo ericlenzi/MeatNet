@@ -11,16 +11,18 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Empresas.Empresa> Empresas { get; set; }
         public virtual DbSet<Domain.Sucursales.Sucursal> Sucursales { get; set; }
         public virtual DbSet<Domain.Parametros.Parametro> Parametros { get; set; }
-        public virtual DbSet<Domain.Puestos.Puesto> Puestos { get; set; }
+        public virtual DbSet<Domain.Clientes.Cliente> Clientes { get; set; }
         public virtual DbSet<Domain.Establecimientos.Establecimiento> Establecimientos { get; set; }
         public virtual DbSet<Domain.Roles.Rol> Roles { get; set; }
         public virtual DbSet<Domain.Usuarios.Usuario> Usuarios { get; set; }
         public virtual DbSet<Domain.UsuariosSucursales.UsuarioSucursal> UsuariosSucursales { get; set; }
         public virtual DbSet<Domain.Provincias.Provincia> Provincias { get; set; }
+        public virtual DbSet<Domain.Puestos.Puesto> Puestos { get; set; }
         public virtual DbSet<Domain.Almacenes.Almacen> Almacenes { get; set; }
         public virtual DbSet<Domain.Materiales.Material> Materiales { get; set; }
         public virtual DbSet<Domain.Especies.Especie> Especies { get; set; }
         public virtual DbSet<Domain.TiposEmpresas.TipoEmpresa> TiposEmpresas { get; set; }
+        public virtual DbSet<Domain.TiposClientes.TipoCliente> TiposClientes { get; set; }
         public virtual DbSet<Domain.TiposAlmacenes.TipoAlmacen> TiposAlmacenes { get; set; }
         public virtual DbSet<Domain.TiposSexos.TipoSexo> TiposSexos { get; set; }
         public virtual DbSet<Domain.TiposEspecies.TipoEspecie> TiposEspecies { get; set; }

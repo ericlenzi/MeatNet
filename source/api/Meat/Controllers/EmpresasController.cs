@@ -25,25 +25,19 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetEmpresasAsync([FromQuery] GetEmpresasRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
             return await this.Handle(request);
         }
 
         [HttpGet("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetEmpresaAsync([FromRoute] Guid id) => await this.Handle(
-            new GetEmpresaRequest
-            {
-                Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
-            }
+            new GetEmpresaRequest { Id = id }
         );
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateEmpresaAsync([FromBody] CreateEmpresaRequest request)
         {
-            request.CodigoEmpresaActiva = base.CurrentUser.CodigoEmpresa;
             return await Handle(request);
         }
 
@@ -61,19 +55,14 @@ namespace Meat.Controllers
                 NumeroInscripcionRuca = body.NumeroInscripcionRuca,
                 CodigoActividad = body.CodigoActividad,
                 ERP_Codigo = body.ERP_Codigo,
-                Activo = body.Activo,
-                CodigoEmpresaActiva = base.CurrentUser.CodigoEmpresa
+                Activo = body.Activo
             }
         );
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteEmpresaByIdAsync([FromRoute] Guid id) => await this.Handle(
-            new DeleteEmpresaRequest
-            {
-                Id = id,
-                CodigoEmpresaActiva = base.CurrentUser.CodigoEmpresa
-            }
+            new DeleteEmpresaRequest { Id = id }
         );
     }
 }

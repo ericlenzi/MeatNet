@@ -5,3 +5,5 @@ export type { Sucursal, CreateSucursalRequest, UpdateSucursalRequest } from './s
 export type { Usuario, CreateUsuarioRequest, UpdateUsuarioRequest, Rol, CreateRolRequest, UpdateRolRequest } from './usuario'
 export type { Establecimiento, CreateEstablecimientoRequest, UpdateEstablecimientoRequest } from './establecimiento'
 export type { Parametro, CreateParametroRequest, UpdateParametroRequest } from './parametro'
+export type { Especie, CreateEspecieRequest, UpdateEspecieRequest } from './especie'
+export type { Cliente, CreateClienteRequest, UpdateClienteRequest, TipoCliente } from './cliente'

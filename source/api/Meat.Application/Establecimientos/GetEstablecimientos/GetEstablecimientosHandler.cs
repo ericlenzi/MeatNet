@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -24,13 +24,14 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
 
         public async Task<GetEstablecimientosResponse> Handle(GetEstablecimientosRequest request, CancellationToken cancellationToken)
         {
-            IQueryable<Establecimiento> queryable;
-
-            queryable = this.context.Establecimientos
+            IQueryable<Establecimiento> queryable = this.context.Establecimientos
+                .Include(x => x.Empresa)
                 .Include(x => x.Sucursal)
-                    .ThenInclude(s => s.Empresa)
                 .Include(x => x.Especie)
-                .Where(x => x.Sucursal.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+
+            if (request.SucursalId.HasValue)
+                queryable = queryable.Where(x => x.SucursalId == request.SucursalId.Value);
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);

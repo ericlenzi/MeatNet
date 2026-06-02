@@ -19,8 +19,6 @@ namespace Meat.Application.Roles.GetRoles
         public async Task<GetRolesResponse> Handle(GetRolesRequest request, CancellationToken cancellationToken)
         {
             var roles = await this.context.Roles
-                .Include(r => r.Empresa)
-                .Where(r => r.Empresa.CodigoEmpresa == request.CodigoEmpresa)
                 .OrderBy(r => r.Nombre)
                 .ToListAsync(cancellationToken);
 

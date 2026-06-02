@@ -1,6 +1,7 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Meat.Application.Shared;
 using Meat.Repositories;
 using System;
 using System.Threading;
@@ -21,16 +22,17 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
 
         public async Task<CreateEstablecimientoResponse> Handle(CreateEstablecimientoRequest request, CancellationToken cancellationToken)
         {
-            var sucursal = await this.context.Sucursales.Include(s => s.Empresa)
-                .FirstOrDefaultAsync(s => s.Id == request.SucursalId && s.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
-            if (sucursal == null)
-                throw new Shared.ValidationException("La sucursal no pertenece a la empresa activa.");
+            var empresa = await this.context.Empresas
+                .FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+            if (empresa == null)
+                throw new ValidationException("La empresa activa no es valida.");
 
             var entity = new Domain.Establecimientos.Establecimiento
             {
                 Id = Guid.NewGuid(),
                 Activo = true,
-                FechaActualizacion = DateTime.Now
+                FechaActualizacion = DateTime.Now,
+                EmpresaId = empresa.Id
             };
             this.mapper.Map(request, entity);
 

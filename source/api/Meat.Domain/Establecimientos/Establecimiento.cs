@@ -24,5 +24,7 @@ namespace Meat.Domain.Establecimientos
         public string NumeroOncca { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
+        public Guid EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

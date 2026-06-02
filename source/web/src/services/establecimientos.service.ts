@@ -9,6 +9,7 @@ import type {
 
 interface GetEstablecimientosParams extends PaginatedRequest {
   Estado?: boolean
+  SucursalId?: string
 }
 
 export async function getEstablecimientos(

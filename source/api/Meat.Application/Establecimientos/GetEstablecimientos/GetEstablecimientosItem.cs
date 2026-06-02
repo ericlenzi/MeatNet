@@ -13,6 +13,8 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
         public string EspecieNombre { get; set; }
         public string NumeroSenasa { get; set; }
         public string NumeroOncca { get; set; }
+        public Guid EmpresaId { get; set; }
+        public string EmpresaNombre { get; set; }
         public bool Activo { get; set; }
     }
 }

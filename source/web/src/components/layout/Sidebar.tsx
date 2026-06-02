@@ -135,6 +135,8 @@ const navGroups: NavGroup[] = [
           { label: 'Empresas', path: '/empresas', icon: icons.officeBuilding },
           { label: 'Sucursales', path: '/sucursales', icon: icons.locationMarker },
           { label: 'Establecimientos', path: '/establecimientos', icon: icons.library },
+          { label: 'Especies', path: '/especies', icon: icons.tag },
+          { label: 'Clientes', path: '/clientes', icon: icons.users },
         ],
       },
       {

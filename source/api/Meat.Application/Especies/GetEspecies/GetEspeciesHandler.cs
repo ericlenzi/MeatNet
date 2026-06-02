@@ -1,5 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Meat.Application.Shared;
+using Meat.Domain.Especies;
 using Meat.Repositories;
 using System.Linq;
 using System.Threading;
@@ -18,12 +20,31 @@ namespace Meat.Application.Especies.GetEspecies
 
         public async Task<GetEspeciesResponse> Handle(GetEspeciesRequest request, CancellationToken cancellationToken)
         {
-            var data = await this.context.Especies
-                .Where(x => x.Activo)
-                .OrderBy(x => x.Nombre)
-                .ToListAsync(cancellationToken);
+            IQueryable<Especie> queryable = this.context.Especies
+                .OrderBy(x => x.Codigo)
+                .AsQueryable();
 
-            return new GetEspeciesResponse { Data = data };
+            if (!string.IsNullOrEmpty(request.Filter))
+            {
+                queryable = queryable.Where(x =>
+                    x.Codigo.Contains(request.Filter) ||
+                    x.Nombre.Contains(request.Filter));
+            }
+
+            if (request.Estado.HasValue)
+            {
+                queryable = queryable.Where(x => x.Activo == request.Estado.Value);
+            }
+
+            var totalRows = await queryable.CountAsync();
+
+            var data = await queryable.Page(request.PageSize, request.PageIndex).ToListAsync();
+
+            return new GetEspeciesResponse()
+            {
+                Data = data,
+                TotalRows = totalRows
+            };
         }
     }
 }

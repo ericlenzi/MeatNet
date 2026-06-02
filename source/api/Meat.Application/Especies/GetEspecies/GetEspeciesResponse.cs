@@ -1,10 +1,9 @@
+using Meat.Application.Shared;
 using System.Collections.Generic;
-using Meat.Domain.Especies;
 
 namespace Meat.Application.Especies.GetEspecies
 {
-    public class GetEspeciesResponse
+    public class GetEspeciesResponse : ResponseListBase<IEnumerable<Domain.Especies.Especie>>
     {
-        public IEnumerable<Especie> Data { get; set; }
     }
 }

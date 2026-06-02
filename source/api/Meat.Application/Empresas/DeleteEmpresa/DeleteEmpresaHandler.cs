@@ -25,9 +25,6 @@ namespace Meat.Application.Empresas.DeleteEmpresa
             if (empresa == null)
                 throw new ValidationException("La empresa no existe");
 
-            if (empresa.CodigoEmpresa == request.CodigoEmpresaActiva)
-                throw new ValidationException("No se puede eliminar la empresa activa.");
-
             this.context.Empresas.Remove(empresa);
             await this.context.SaveChangesAsync(cancellationToken);
 

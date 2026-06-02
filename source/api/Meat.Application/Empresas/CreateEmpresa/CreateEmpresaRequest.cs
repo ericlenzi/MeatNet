@@ -1,6 +1,5 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Empresas.CreateEmpresa
 {
@@ -20,7 +19,5 @@ namespace Meat.Application.Empresas.CreateEmpresa
         public string NumeroInscripcionRuca { get; set; }
         public string CodigoActividad { get; set; }
         public string ERP_Codigo { get; set; }
-        [JsonIgnore]
-        public string CodigoEmpresaActiva { get; set; }
     }
 }

@@ -18,6 +18,10 @@ import ParametrosListPage from '@/pages/parametros/ParametrosListPage'
 import ParametroFormPage from '@/pages/parametros/ParametroFormPage'
 import RolesListPage from '@/pages/roles/RolesListPage'
 import RolFormPage from '@/pages/roles/RolFormPage'
+import EspeciesListPage from '@/pages/especies/EspeciesListPage'
+import EspecieFormPage from '@/pages/especies/EspecieFormPage'
+import ClientesListPage from '@/pages/clientes/ClientesListPage'
+import ClienteFormPage from '@/pages/clientes/ClienteFormPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -57,6 +61,12 @@ function App() {
                   <Route path="roles" element={<RolesListPage />} />
                   <Route path="roles/create" element={<RolFormPage />} />
                   <Route path="roles/:codigo/edit" element={<RolFormPage />} />
+                  <Route path="especies" element={<EspeciesListPage />} />
+                  <Route path="especies/create" element={<EspecieFormPage />} />
+                  <Route path="especies/:codigo/edit" element={<EspecieFormPage />} />
+                  <Route path="clientes" element={<ClientesListPage />} />
+                  <Route path="clientes/create" element={<ClienteFormPage />} />
+                  <Route path="clientes/:id/edit" element={<ClienteFormPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />

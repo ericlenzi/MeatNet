@@ -6,6 +6,8 @@ export interface Establecimiento {
   sucursalNombre: string
   especieId: string
   especieNombre: string
+  empresaId: string
+  empresaNombre: string
   numeroSenasa: string
   numeroOncca: string
   activo: boolean

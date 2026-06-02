@@ -20,8 +20,7 @@ namespace Meat.Application.Empresas.GetEmpresas
 
         public async Task<GetEmpresasResponse> Handle(GetEmpresasRequest request, CancellationToken cancellationToken)
         {
-            IQueryable<Empresa> queryable = this.context.Empresas
-                .Where(x => x.EmpresaPadre.CodigoEmpresa == request.CodigoEmpresa || x.CodigoEmpresa == request.CodigoEmpresa);
+            IQueryable<Empresa> queryable = this.context.Empresas.AsQueryable();
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>

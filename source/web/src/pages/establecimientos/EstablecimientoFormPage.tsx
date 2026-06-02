@@ -4,9 +4,10 @@ import { useParams, useNavigate } from 'react-router'
 import { getEstablecimiento, createEstablecimiento, updateEstablecimiento } from '@/services/establecimientos.service'
 import { getSucursales } from '@/services/sucursales.service'
 import { getEspecies } from '@/services/especies.service'
-import type { Especie } from '@/services/especies.service'
+import { getEmpresas } from '@/services/empresas.service'
 import { useToast } from '@/components/ui/Toast'
-import type { Sucursal } from '@/types'
+import { useAuth } from '@/contexts/AuthContext'
+import type { Sucursal, Especie, Empresa } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
@@ -17,15 +18,18 @@ export default function EstablecimientoFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
   const isEdit = !!id
 
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [sucursales, setSucursales] = useState<Sucursal[]>([])
   const [especies, setEspecies] = useState<Especie[]>([])
+  const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [form, setForm] = useState({
     CodigoEstablecimiento: '',
     Nombre: '',
+    EmpresaId: '',
     SucursalId: '',
     EspecieId: '',
     NumeroSenasa: '',
@@ -37,18 +41,30 @@ export default function EstablecimientoFormPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [sucRes, espRes] = await Promise.all([
+        const [sucRes, espRes, empRes] = await Promise.all([
           getSucursales({ PageSize: 1000 }),
-          getEspecies(),
+          getEspecies({ PageSize: 1000, Estado: true }),
+          getEmpresas({ PageSize: 1000 }),
         ])
         setSucursales((sucRes.data || []).filter((s) => s.activo))
-        setEspecies(espRes)
+        setEspecies(espRes.data || [])
+        const empList = empRes.data || []
+        setEmpresas(empList)
+
+        const empresaActiva = user?.codigoEmpresa
+          ? empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
+          : undefined
+
+        if (empresaActiva) {
+          setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
+        }
 
         if (isEdit && id) {
           const entity = await getEstablecimiento(id)
           setForm({
             CodigoEstablecimiento: entity.codigoEstablecimiento || '',
             Nombre: entity.nombre || '',
+            EmpresaId: empresaActiva?.id || '',
             SucursalId: entity.sucursalId || '',
             EspecieId: entity.especieId || '',
             NumeroSenasa: entity.numeroSenasa || '',
@@ -141,6 +157,17 @@ export default function EstablecimientoFormPage() {
               value={form.Nombre}
               onChange={(e) => updateField('Nombre', e.target.value)}
               error={errors['Nombre']}
+            />
+            <Select
+              label="Empresa"
+              value={form.EmpresaId}
+              onChange={(e) => updateField('EmpresaId', e.target.value)}
+              options={empresas.map((emp) => ({
+                value: emp.id,
+                label: `${emp.codigoEmpresa} - ${emp.nombre}`,
+              }))}
+              placeholder="Seleccionar..."
+              disabled
             />
             <Select
               label="Sucursal"

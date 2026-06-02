@@ -21,9 +21,7 @@ namespace Meat.Application.Empresas.GetEmpresa
         public async Task<GetEmpresaResponse> Handle(GetEmpresaRequest request, CancellationToken cancellationToken)
         {
             var empresa = await this.context.Empresas
-                .FirstOrDefaultAsync(p => p.Id == request.Id
-                    && (p.CodigoEmpresa == request.CodigoEmpresa || (p.EmpresaPadre != null && p.EmpresaPadre.CodigoEmpresa == request.CodigoEmpresa)),
-                    cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
             return this.mapper.Map<GetEmpresaResponse>(empresa);
         }

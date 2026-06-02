@@ -21,8 +21,10 @@ namespace Meat.Application.Establecimientos.GetEstablecimiento
         public async Task<GetEstablecimientoResponse> Handle(GetEstablecimientoRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Establecimientos
-                .Include(x => x.Sucursal).ThenInclude(s => s.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Sucursal.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .Include(x => x.Empresa)
+                .Include(x => x.Sucursal)
+                .Include(x => x.Especie)
+                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
 
             return this.mapper.Map<GetEstablecimientoResponse>(entity);
         }

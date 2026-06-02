@@ -7,9 +7,7 @@ namespace Meat.Application.Empresas.CreateEmpresa
     {
         public CreateEmpresaMapperProfile()
         {
-            this.CreateMap<CreateEmpresaRequest, Empresa>()
-                .ForMember(dest => dest.EmpresaId, opt => opt.Ignore())
-                .ForMember(dest => dest.EmpresaPadre, opt => opt.Ignore());
+            this.CreateMap<CreateEmpresaRequest, Empresa>();
         }
     }
 }

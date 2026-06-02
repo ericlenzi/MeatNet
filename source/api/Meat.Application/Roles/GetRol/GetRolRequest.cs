@@ -7,7 +7,5 @@ namespace Meat.Application.Roles.GetRol
     {
         [Required]
         public string Codigo { get; set; }
-        [System.Text.Json.Serialization.JsonIgnore]
-        public string CodigoEmpresa { get; set; }
     }
 }

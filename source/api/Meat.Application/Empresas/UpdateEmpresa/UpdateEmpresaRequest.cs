@@ -1,6 +1,5 @@
 using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Empresas.UpdateEmpresa
 {
@@ -16,7 +15,5 @@ namespace Meat.Application.Empresas.UpdateEmpresa
         public string CodigoActividad { get; set; }
         public string ERP_Codigo { get; set; }
         public bool Activo { get; set; }
-        [JsonIgnore]
-        public string CodigoEmpresaActiva { get; set; }
     }
 }

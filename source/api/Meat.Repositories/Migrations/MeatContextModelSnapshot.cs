@@ -84,6 +84,56 @@ namespace Meat.Repositories.Migrations
                     b.ToTable("AlmacenesMateriales");
                 });
 
+            modelBuilder.Entity("Meat.Domain.Clientes.Cliente", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CodigoActividad")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CodigoCliente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ERP_Codigo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroCuit")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroIngresosBrutos")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroInscripcionRuca")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TipoClienteId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.HasIndex("TipoClienteId");
+
+                    b.ToTable("Clientes");
+                });
+
             modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
                 {
                     b.Property<Guid>("Id")
@@ -100,9 +150,6 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("EmpresaId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
@@ -126,8 +173,6 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("TipoEmpresaId");
 
@@ -164,6 +209,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("CodigoEstablecimiento")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
 
@@ -186,6 +234,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EspecieId");
 
@@ -316,9 +366,6 @@ namespace Meat.Repositories.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("EmpresaId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
@@ -326,8 +373,6 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Codigo");
-
-                    b.HasIndex("EmpresaId");
 
                     b.ToTable("Roles");
                 });
@@ -405,6 +450,25 @@ namespace Meat.Repositories.Migrations
                     b.HasKey("Codigo");
 
                     b.ToTable("TiposAlmacenes");
+                });
+
+            modelBuilder.Entity("Meat.Domain.TiposClientes.TipoCliente", b =>
+                {
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Codigo");
+
+                    b.ToTable("TiposClientes");
                 });
 
             modelBuilder.Entity("Meat.Domain.TiposEmpresas.TipoEmpresa", b =>
@@ -585,23 +649,40 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("Material");
                 });
 
-            modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
+            modelBuilder.Entity("Meat.Domain.Clientes.Cliente", b =>
                 {
                     b.HasOne("Meat.Domain.Empresas.Empresa", "EmpresaPadre")
                         .WithMany()
-                        .HasForeignKey("EmpresaId");
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
+                    b.HasOne("Meat.Domain.TiposClientes.TipoCliente", "TipoCliente")
+                        .WithMany()
+                        .HasForeignKey("TipoClienteId");
+
+                    b.Navigation("EmpresaPadre");
+
+                    b.Navigation("TipoCliente");
+                });
+
+            modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
+                {
                     b.HasOne("Meat.Domain.TiposEmpresas.TipoEmpresa", "TipoEmpresa")
                         .WithMany()
                         .HasForeignKey("TipoEmpresaId");
-
-                    b.Navigation("EmpresaPadre");
 
                     b.Navigation("TipoEmpresa");
                 });
 
             modelBuilder.Entity("Meat.Domain.Establecimientos.Establecimiento", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieId");
@@ -611,6 +692,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("SucursalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Especie");
 
@@ -648,17 +731,6 @@ namespace Meat.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("Sucursal");
-                });
-
-            modelBuilder.Entity("Meat.Domain.Roles.Rol", b =>
-                {
-                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
-                        .WithMany()
-                        .HasForeignKey("EmpresaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("Meat.Domain.Sucursales.Sucursal", b =>

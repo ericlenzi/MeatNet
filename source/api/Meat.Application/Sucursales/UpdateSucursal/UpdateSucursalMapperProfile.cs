@@ -8,7 +8,8 @@ namespace Meat.Application.Sucursales.UpdateSucursal
     {
         public UpdateSucursalMapperProfile()
         {
-            this.CreateMap<UpdateSucursalRequest, Sucursal>();
+            this.CreateMap<UpdateSucursalRequest, Sucursal>()
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => src.Activa));
         }
     }
 }

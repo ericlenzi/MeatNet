@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useApp } from '@/contexts/AppContext'
 import SucursalSelector from './SucursalSelector'
+import EstablecimientoSelector from './EstablecimientoSelector'
 import CambiarContrasenaModal from './CambiarContrasenaModal'
 import DatosPersonalesModal from './DatosPersonalesModal'
 
@@ -10,6 +12,8 @@ interface HeaderProps {
 
 export default function Header({ onMenuToggle }: HeaderProps) {
   const { user, logout } = useAuth()
+  const { establecimientos, isLoadingEstablecimientos } = useApp()
+  const showEstablecimiento = !isLoadingEstablecimientos && establecimientos.length > 0
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [cambiarContrasenaOpen, setCambiarContrasenaOpen] = useState(false)
   const [datosPersonalesOpen, setDatosPersonalesOpen] = useState(false)
@@ -46,6 +50,13 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         {' | '}
         <span className="hidden text-sm font-medium text-text sm:block">Sucursal:</span>
         <SucursalSelector />
+        {showEstablecimiento && (
+          <>
+            {' | '}
+            <span className="hidden text-sm font-medium text-text sm:block">Establecimiento:</span>
+            <EstablecimientoSelector />
+          </>
+        )}
       </div>
 
       {/* Right: user menu */}
