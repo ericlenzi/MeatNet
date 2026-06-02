@@ -21,7 +21,8 @@ namespace Meat.Application.Usuarios.GetUsuarioSucursales
             var usuarioSucursales = await this.context.UsuariosSucursales
                 .Where(us => us.UsuarioId == request.UsuarioId)
                 .Join(
-                    this.context.Sucursales,
+                    this.context.Sucursales
+                        .Where(s => s.Empresa.CodigoEmpresa == request.CodigoEmpresa),
                     us => us.SucursalId,
                     s => s.Id,
                     (us, s) => new UsuarioSucursalItem
