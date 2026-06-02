@@ -25,7 +25,6 @@ namespace Meat.Application.Sucursales.DeleteSucursal
 
             var sucursal = await this.context.Sucursales
                 .Include(x => x.Puestos)
-                .Include(x => x.ParametrosSucursal)
                 .FirstOrDefaultAsync(x => x.Id == request.Id);
 
             if (sucursal == null)

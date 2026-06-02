@@ -11,7 +11,6 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Empresas.Empresa> Empresas { get; set; }
         public virtual DbSet<Domain.Sucursales.Sucursal> Sucursales { get; set; }
         public virtual DbSet<Domain.Parametros.Parametro> Parametros { get; set; }
-        public virtual DbSet<Domain.ParametrosSucursales.ParametroSucursal> ParametrosSucursales { get; set; }
         public virtual DbSet<Domain.Puestos.Puesto> Puestos { get; set; }
         public virtual DbSet<Domain.Establecimientos.Establecimiento> Establecimientos { get; set; }
         public virtual DbSet<Domain.Roles.Rol> Roles { get; set; }
