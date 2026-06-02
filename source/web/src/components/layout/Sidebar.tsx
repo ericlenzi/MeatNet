@@ -124,9 +124,9 @@ const navGroups: NavGroup[] = [
     items: [],
   },
   {
-    title: 'Configuración',
+    title: 'Administración',
     adminOnly: true,
-    icon: icons.cog,
+    icon: icons.chevronDoubleRight,
     children: [
       {
         title: 'Datos Maestros',
@@ -142,6 +142,12 @@ const navGroups: NavGroup[] = [
         icon: icons.adjustments,
         items: [
           { label: 'Usuarios', path: '/usuarios', icon: icons.users },
+        ],
+      },
+      {
+        title: 'Configuración',
+        icon: icons.cog,
+        items: [
           { label: 'Parámetros Generales', path: '/parametros', icon: icons.adjustments },
           { label: 'Parámetros por Sucursal', path: '/parametros-sucursales', icon: icons.tag },
         ],
@@ -228,7 +234,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Operaciones Ciclo I': false,
     'Operaciones Ciclo II': false,
-    'Configuración': false,
+    'Administración': false,
     'Datos Maestros': false,
     'Seguridad': false,
   })

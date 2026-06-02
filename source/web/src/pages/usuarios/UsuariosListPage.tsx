@@ -6,8 +6,9 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import type { Usuario } from '@/types'
 import DataTable from '@/components/ui/DataTable'
-import type { Column } from '@/components/ui/DataTable'
+import type { Column, SortState } from '@/components/ui/DataTable'
 import SearchInput from '@/components/ui/SearchInput'
+import StatusFilter from '@/components/ui/StatusFilter'
 import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
@@ -18,8 +19,10 @@ export default function UsuariosListPage() {
   const { toast } = useToast()
   const pagination = usePagination()
   const debouncedFilter = useDebounce(pagination.filter)
+  const [statusFilter, setStatusFilter] = useState('active')
   const [data, setData] = useState<Usuario[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sort, setSort] = useState<SortState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Usuario | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -28,6 +31,7 @@ export default function UsuariosListPage() {
     try {
       const response = await getUsuarios({
         Filter: debouncedFilter || undefined,
+        Estado: statusFilter === 'active' ? 1 : statusFilter === 'inactive' ? 0 : undefined,
         PageIndex: pagination.pageIndex,
         PageSize: pagination.pageSize,
       })
@@ -38,11 +42,16 @@ export default function UsuariosListPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [debouncedFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedFilter, statusFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void fetchData()
   }, [fetchData])
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value)
+    pagination.setPage(0)
+  }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -60,15 +69,16 @@ export default function UsuariosListPage() {
   }
 
   const columns: Column<Usuario>[] = [
-    { key: 'userName', header: 'Usuario', width: '130px' },
-    { key: 'nombre', header: 'Nombre' },
-    { key: 'apellido', header: 'Apellido' },
-    { key: 'email', header: 'Email' },
-    { key: 'rolId', header: 'Rol', width: '120px' },
+    { key: 'userName', header: 'Usuario', width: '130px', sortable: true },
+    { key: 'nombre', header: 'Nombre', sortable: true },
+    { key: 'apellido', header: 'Apellido', sortable: true },
+    { key: 'email', header: 'Email', sortable: true },
+    { key: 'rolId', header: 'Rol', width: '120px', sortable: true },
     {
       key: 'activo',
       header: 'Estado',
       width: '100px',
+      sortable: true,
       render: (value) => (
         <Badge variant={value ? 'success' : 'danger'}>
           {value ? 'Activo' : 'Inactivo'}
@@ -110,12 +120,13 @@ export default function UsuariosListPage() {
         <Button onClick={() => navigate('/usuarios/create')}>Nuevo Usuario</Button>
       </PageHeader>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
           value={pagination.filter}
           onChange={pagination.setFilter}
           placeholder="Buscar por nombre, usuario, email..."
         />
+        <StatusFilter value={statusFilter} onChange={handleStatusChange} />
       </div>
 
       <DataTable
@@ -127,6 +138,8 @@ export default function UsuariosListPage() {
         onPageChange={pagination.setPage}
         onPageSizeChange={pagination.setPageSize}
         isLoading={isLoading}
+        sort={sort}
+        onSortChange={setSort}
       />
 
       <ConfirmDialog

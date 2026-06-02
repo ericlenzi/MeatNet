@@ -6,7 +6,6 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
 
     public class GetEstablecimientosRequest : RequestListBase, IRequest<GetEstablecimientosResponse>
     {
-        //public int? TipoCliente { get; set; }
-        //public int? Estado { get; set; }
+        public bool? Estado { get; set; }
     }
 }

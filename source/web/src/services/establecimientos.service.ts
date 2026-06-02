@@ -7,8 +7,12 @@ import type {
   UpdateEstablecimientoRequest,
 } from '@/types'
 
+interface GetEstablecimientosParams extends PaginatedRequest {
+  Estado?: boolean
+}
+
 export async function getEstablecimientos(
-  params?: PaginatedRequest,
+  params?: GetEstablecimientosParams,
 ): Promise<PaginatedResponse<Establecimiento>> {
   const response = await api.get<PaginatedResponse<Establecimiento>>('/Establecimientos', { params })
   return response.data

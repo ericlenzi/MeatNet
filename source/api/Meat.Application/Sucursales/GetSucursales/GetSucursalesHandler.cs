@@ -24,6 +24,9 @@ namespace Meat.Application.Sucursales.GetSucursales
                 .Include(x => x.Empresa)
                 .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
 
+            if (request.Estado.HasValue)
+                queryable = queryable.Where(x => x.Activo == request.Estado.Value);
+
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
                     x.Nombre.Contains(request.Filter) ||

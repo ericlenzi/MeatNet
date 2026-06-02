@@ -30,6 +30,9 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
                 .Include(x => x.Sucursal)
                 .Include(x => x.Especie);
 
+            if (request.Estado.HasValue)
+                queryable = queryable.Where(x => x.Activo == request.Estado.Value);
+
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
                     x.Nombre.Contains(request.Filter) ||

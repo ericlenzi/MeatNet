@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import Spinner from './Spinner'
 
@@ -6,6 +7,14 @@ export interface Column<T> {
   header: string
   render?: (value: unknown, row: T) => ReactNode
   width?: string
+  sortable?: boolean
+}
+
+export type SortDirection = 'asc' | 'desc'
+
+export interface SortState {
+  key: string
+  direction: SortDirection
 }
 
 interface DataTableProps<T> {
@@ -18,6 +27,27 @@ interface DataTableProps<T> {
   onPageSizeChange: (size: number) => void
   isLoading: boolean
   onRowClick?: (row: T) => void
+  sort?: SortState | null
+  onSortChange?: (sort: SortState) => void
+}
+
+function SortIcon({ direction, active }: { direction?: SortDirection; active: boolean }) {
+  if (!active) {
+    return (
+      <svg className="h-3.5 w-3.5 text-text-light/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+      </svg>
+    )
+  }
+  return direction === 'asc' ? (
+    <svg className="h-3.5 w-3.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+    </svg>
+  ) : (
+    <svg className="h-3.5 w-3.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,10 +61,45 @@ export default function DataTable<T extends Record<string, any>>({
   onPageSizeChange,
   isLoading,
   onRowClick,
+  sort,
+  onSortChange,
 }: DataTableProps<T>) {
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
+
+  const sortedData = useMemo(() => {
+    if (!sort || !onSortChange) return data
+    const { key, direction } = sort
+    return [...data].sort((a, b) => {
+      const aVal = a[key]
+      const bVal = b[key]
+      if (aVal == null && bVal == null) return 0
+      if (aVal == null) return 1
+      if (bVal == null) return -1
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return direction === 'asc'
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal)
+      }
+      if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
+        return direction === 'asc'
+          ? (aVal === bVal ? 0 : aVal ? -1 : 1)
+          : (aVal === bVal ? 0 : aVal ? 1 : -1)
+      }
+      const diff = aVal > bVal ? 1 : aVal < bVal ? -1 : 0
+      return direction === 'asc' ? diff : -diff
+    })
+  }, [data, sort, onSortChange])
+
+  const handleHeaderClick = (col: Column<T>) => {
+    if (!col.sortable || !onSortChange) return
+    if (sort?.key === col.key) {
+      onSortChange({ key: col.key, direction: sort.direction === 'asc' ? 'desc' : 'asc' })
+    } else {
+      onSortChange({ key: col.key, direction: 'asc' })
+    }
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
@@ -46,10 +111,21 @@ export default function DataTable<T extends Record<string, any>>({
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-light"
+                  className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-light ${
+                    col.sortable && onSortChange ? 'cursor-pointer select-none hover:text-text transition-colors' : ''
+                  }`}
                   style={col.width ? { width: col.width } : undefined}
+                  onClick={() => handleHeaderClick(col)}
                 >
-                  {col.header}
+                  <span className="flex items-center gap-1.5">
+                    {col.header}
+                    {col.sortable && onSortChange && (
+                      <SortIcon
+                        direction={sort?.key === col.key ? sort.direction : undefined}
+                        active={sort?.key === col.key}
+                      />
+                    )}
+                  </span>
                 </th>
               ))}
             </tr>
@@ -64,14 +140,14 @@ export default function DataTable<T extends Record<string, any>>({
                   </div>
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : sortedData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center text-text-light">
                   No se encontraron registros
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIndex) => (
+              sortedData.map((row, rowIndex) => (
                 <tr
                   key={(row['id'] as string) || rowIndex}
                   onClick={() => onRowClick?.(row)}

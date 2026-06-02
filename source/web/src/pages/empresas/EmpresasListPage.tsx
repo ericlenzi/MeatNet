@@ -6,8 +6,9 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import type { Empresa } from '@/types'
 import DataTable from '@/components/ui/DataTable'
-import type { Column } from '@/components/ui/DataTable'
+import type { Column, SortState } from '@/components/ui/DataTable'
 import SearchInput from '@/components/ui/SearchInput'
+import StatusFilter from '@/components/ui/StatusFilter'
 import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
@@ -18,8 +19,10 @@ export default function EmpresasListPage() {
   const { toast } = useToast()
   const pagination = usePagination()
   const debouncedFilter = useDebounce(pagination.filter)
+  const [statusFilter, setStatusFilter] = useState('active')
   const [data, setData] = useState<Empresa[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sort, setSort] = useState<SortState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Empresa | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -28,6 +31,7 @@ export default function EmpresasListPage() {
     try {
       const response = await getEmpresas({
         Filter: debouncedFilter || undefined,
+        Estado: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
         PageIndex: pagination.pageIndex,
         PageSize: pagination.pageSize,
       })
@@ -38,11 +42,16 @@ export default function EmpresasListPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [debouncedFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedFilter, statusFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void fetchData()
   }, [fetchData])
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value)
+    pagination.setPage(0)
+  }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -60,14 +69,15 @@ export default function EmpresasListPage() {
   }
 
   const columns: Column<Empresa>[] = [
-    { key: 'codigoEmpresa', header: 'Codigo', width: '120px' },
-    { key: 'nombre', header: 'Nombre' },
-    { key: 'tipoEmpresaId', header: 'Tipo', width: '100px' },
-    { key: 'numeroCuit', header: 'CUIT', width: '150px' },
+    { key: 'codigoEmpresa', header: 'Codigo', width: '120px', sortable: true },
+    { key: 'nombre', header: 'Nombre', sortable: true },
+    { key: 'tipoEmpresaId', header: 'Tipo', width: '100px', sortable: true },
+    { key: 'numeroCuit', header: 'CUIT', width: '150px', sortable: true },
     {
       key: 'activo',
       header: 'Estado',
       width: '100px',
+      sortable: true,
       render: (value) => (
         <Badge variant={value ? 'success' : 'danger'}>
           {value ? 'Activo' : 'Inactivo'}
@@ -109,12 +119,13 @@ export default function EmpresasListPage() {
         <Button onClick={() => navigate('/empresas/create')}>Nueva Empresa</Button>
       </PageHeader>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
           value={pagination.filter}
           onChange={pagination.setFilter}
           placeholder="Buscar por nombre, codigo..."
         />
+        <StatusFilter value={statusFilter} onChange={handleStatusChange} />
       </div>
 
       <DataTable
@@ -126,6 +137,8 @@ export default function EmpresasListPage() {
         onPageChange={pagination.setPage}
         onPageSizeChange={pagination.setPageSize}
         isLoading={isLoading}
+        sort={sort}
+        onSortChange={setSort}
       />
 
       <ConfirmDialog

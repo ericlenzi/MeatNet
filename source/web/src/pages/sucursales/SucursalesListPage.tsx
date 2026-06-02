@@ -6,8 +6,9 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import type { Sucursal } from '@/types'
 import DataTable from '@/components/ui/DataTable'
-import type { Column } from '@/components/ui/DataTable'
+import type { Column, SortState } from '@/components/ui/DataTable'
 import SearchInput from '@/components/ui/SearchInput'
+import StatusFilter from '@/components/ui/StatusFilter'
 import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
@@ -18,8 +19,10 @@ export default function SucursalesListPage() {
   const { toast } = useToast()
   const pagination = usePagination()
   const debouncedFilter = useDebounce(pagination.filter)
+  const [statusFilter, setStatusFilter] = useState('active')
   const [data, setData] = useState<Sucursal[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sort, setSort] = useState<SortState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Sucursal | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -28,6 +31,7 @@ export default function SucursalesListPage() {
     try {
       const response = await getSucursales({
         Filter: debouncedFilter || undefined,
+        Estado: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
         PageIndex: pagination.pageIndex,
         PageSize: pagination.pageSize,
       })
@@ -38,11 +42,16 @@ export default function SucursalesListPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [debouncedFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedFilter, statusFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void fetchData()
   }, [fetchData])
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value)
+    pagination.setPage(0)
+  }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -60,13 +69,14 @@ export default function SucursalesListPage() {
   }
 
   const columns: Column<Sucursal>[] = [
-    { key: 'codigoSucursal', header: 'Codigo', width: '120px' },
-    { key: 'nombre', header: 'Nombre' },
-    { key: 'direccion', header: 'Direccion' },
+    { key: 'codigoSucursal', header: 'Codigo', width: '120px', sortable: true },
+    { key: 'nombre', header: 'Nombre', sortable: true },
+    { key: 'direccion', header: 'Direccion', sortable: true },
     {
       key: 'activo',
       header: 'Estado',
       width: '100px',
+      sortable: true,
       render: (value) => (
         <Badge variant={value ? 'success' : 'danger'}>
           {value ? 'Activo' : 'Inactivo'}
@@ -108,12 +118,13 @@ export default function SucursalesListPage() {
         <Button onClick={() => navigate('/sucursales/create')}>Nueva Sucursal</Button>
       </PageHeader>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
           value={pagination.filter}
           onChange={pagination.setFilter}
           placeholder="Buscar por nombre, codigo..."
         />
+        <StatusFilter value={statusFilter} onChange={handleStatusChange} />
       </div>
 
       <DataTable
@@ -125,6 +136,8 @@ export default function SucursalesListPage() {
         onPageChange={pagination.setPage}
         onPageSizeChange={pagination.setPageSize}
         isLoading={isLoading}
+        sort={sort}
+        onSortChange={setSort}
       />
 
       <ConfirmDialog
