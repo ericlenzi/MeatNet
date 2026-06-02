@@ -36,7 +36,13 @@ namespace Meat.Application.Empresas.UpdateEmpresa
                     throw new ValidationException("Ya existe una empresa propia. Solo puede haber una empresa con tipo PRP.");
             }
 
+            var empresaActiva = await this.context.Empresas
+                .FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresaActiva, cancellationToken);
+            if (empresaActiva == null)
+                throw new ValidationException("La empresa activa no es valida.");
+
             this.mapper.Map(request, empresa);
+            empresa.EmpresaId = empresaActiva.Id;
             empresa.FechaActualizacion = DateTime.Now;
 
             await this.context.SaveChangesAsync(cancellationToken);

@@ -22,7 +22,7 @@ namespace Meat.Application.Sucursales.GetSucursalByCodigo
         {
             var sucursal = await this.context.Sucursales
                 .Include(x => x.Empresa)
-                .FirstOrDefaultAsync(x => x.CodigoSucursal == request.Codigo);
+                .FirstOrDefaultAsync(x => x.CodigoSucursal == request.Codigo && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
 
             var suc = this.mapper.Map<GetSucursalByCodigoResponse>(sucursal);
             return suc;

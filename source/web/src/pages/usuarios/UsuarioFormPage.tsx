@@ -61,11 +61,12 @@ export default function UsuarioFormPage() {
         setEmpresas(empList)
         setAllSucursales(sucursalesRes.data || [])
 
-        if (!isEdit && user?.codigoEmpresa) {
-          const empresaActiva = empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
-          if (empresaActiva) {
-            setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
-          }
+        const empresaActiva = user?.codigoEmpresa
+          ? empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
+          : undefined
+
+        if (!isEdit && empresaActiva) {
+          setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
         }
 
         if (isEdit && id) {
@@ -80,7 +81,7 @@ export default function UsuarioFormPage() {
             Email: usuario.email || '',
             Legajo: usuario.legajo || '',
             RolId: usuario.rolId || '',
-            EmpresaId: usuario.empresaId || '',
+            EmpresaId: empresaActiva?.id || usuario.empresaId || '',
             Activo: usuario.activo,
           })
           setUsuarioSucursales(userSucs)
@@ -260,6 +261,7 @@ export default function UsuarioFormPage() {
               }))}
               placeholder="Seleccionar empresa..."
               error={errors['EmpresaId']}
+              disabled
             />
           </div>
 

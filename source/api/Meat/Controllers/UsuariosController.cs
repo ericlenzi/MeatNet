@@ -23,24 +23,34 @@ namespace Meat.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsuariosAsync([FromQuery] GetUsuariosRequest request) => await this.Handle(request);
+        public async Task<IActionResult> GetUsuariosAsync([FromQuery] GetUsuariosRequest request)
+        {
+            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            return await this.Handle(request);
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUsuarioByIdAsync([FromRoute] Guid id) => await this.Handle(
             new GetUsuarioRequest
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
             }
         );
 
         [HttpPost]
-        public async Task<IActionResult> CreateUsuarioAsync([FromBody] CreateUsuarioRequest request) => await this.Handle(request);
+        public async Task<IActionResult> CreateUsuarioAsync([FromBody] CreateUsuarioRequest request)
+        {
+            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            return await this.Handle(request);
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUsuarioAsync([FromRoute] Guid id, [FromBody] UpdateUsuarioRequestFromBody body) => await this.Handle(
             new UpdateUsuarioRequest()
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
                 UserName = body.UserName,
                 Nombre = body.Nombre,
                 Apellido = body.Apellido,
@@ -57,6 +67,7 @@ namespace Meat.Controllers
             new DeleteUsuarioRequest
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
             }
         );
 

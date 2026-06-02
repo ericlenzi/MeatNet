@@ -1,11 +1,14 @@
 ﻿using MediatR;
 using System.ComponentModel.DataAnnotations;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Meat.Application.Usuarios.CreateUsuario
 {
     public class CreateUsuarioRequest : IRequest<CreateUsuarioResponse>
     {
+        [JsonIgnore]
+        public string CodigoEmpresa { get; set; }
         [Required]
         public string UserName { get; set; }
 

@@ -142,6 +142,7 @@ const navGroups: NavGroup[] = [
         icon: icons.adjustments,
         items: [
           { label: 'Usuarios', path: '/usuarios', icon: icons.users },
+          { label: 'Roles', path: '/roles', icon: icons.tag },
         ],
       },
       {
@@ -149,7 +150,6 @@ const navGroups: NavGroup[] = [
         icon: icons.cog,
         items: [
           { label: 'Parámetros Generales', path: '/parametros', icon: icons.adjustments },
-          { label: 'Parámetros por Sucursal', path: '/parametros-sucursales', icon: icons.tag },
         ],
       },
     ],

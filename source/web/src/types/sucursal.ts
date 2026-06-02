@@ -15,7 +15,7 @@ export interface Sucursal {
 }
 
 export interface CreateSucursalRequest {
-  NumeroSucursal: string
+  CodigoSucursal: string
   Nombre: string
   EmpresaId: string
   Direccion?: string

@@ -33,6 +33,7 @@ MeatNet/
 - Arquitectura y decisiones técnicas: `docs/`
 - Reglas específicas de API: `.claude/rules/api.md`
 - Reglas específicas de Web: `.claude/rules/web.md`
+- **Guia para CRUDs nuevos: `docs/BasisCRUD.md`** — Seguir SIEMPRE este documento al crear un CRUD de una entidad nueva. Contiene los patrones de backend (Entity, Handlers, Controller, migraciones) y frontend (Types, Service, Pages, rutas), incluyendo la regla obligatoria de filtro por empresa activa.
 
 ## Lo que NO hacer
 - No modificar migraciones de EF Core ya aplicadas — crear una nueva migración

@@ -23,7 +23,9 @@ namespace Meat.Application.Usuarios.UpdateUsuario
 
         public async Task<UpdateUsuarioResponse> Handle(UpdateUsuarioRequest request, CancellationToken cancellationToken)
         {
-            var usuario = await this.context.Usuarios.FirstOrDefaultAsync(x => x.Id == request.Id);
+            var usuario = await this.context.Usuarios
+                .Include(u => u.Empresa)
+                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
 
             if (usuario == null)
             {

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Meat.Repositories;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,8 +22,17 @@ namespace Meat.Application.Sucursales.CreateSucursal
 
         public async Task<CreateSucursalResponse> Handle(CreateSucursalRequest request, CancellationToken cancellationToken)
         {
+            var existe = await this.context.Sucursales.AnyAsync(s => s.CodigoSucursal == request.CodigoSucursal, cancellationToken);
+            if (existe)
+                throw new ValidationException("Ya existe una sucursal con ese codigo.");
+
+            var empresa = await this.context.Empresas.FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+            if (empresa == null)
+                throw new ValidationException("La empresa activa no es valida.");
+
             var sucursal = Domain.Sucursales.SucursalFactory.Create();
             this.mapper.Map(request, sucursal);
+            sucursal.EmpresaId = empresa.Id;
 
             this.context.Sucursales.Add(sucursal);
 

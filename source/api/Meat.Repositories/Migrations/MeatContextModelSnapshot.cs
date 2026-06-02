@@ -101,6 +101,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("EmpresaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
@@ -123,6 +126,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("TipoEmpresaId");
 
@@ -230,6 +235,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
@@ -240,6 +248,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Codigo");
+
+                    b.HasIndex("EmpresaId");
 
                     b.ToTable("Parametros");
                 });
@@ -306,6 +316,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
@@ -313,6 +326,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Codigo");
+
+                    b.HasIndex("EmpresaId");
 
                     b.ToTable("Roles");
                 });
@@ -572,9 +587,15 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "EmpresaPadre")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId");
+
                     b.HasOne("Meat.Domain.TiposEmpresas.TipoEmpresa", "TipoEmpresa")
                         .WithMany()
                         .HasForeignKey("TipoEmpresaId");
+
+                    b.Navigation("EmpresaPadre");
 
                     b.Navigation("TipoEmpresa");
                 });
@@ -607,6 +628,17 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("Empresa");
                 });
 
+            modelBuilder.Entity("Meat.Domain.Parametros.Parametro", b =>
+                {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
             modelBuilder.Entity("Meat.Domain.Puestos.Puesto", b =>
                 {
                     b.HasOne("Meat.Domain.Sucursales.Sucursal", "Sucursal")
@@ -616,6 +648,17 @@ namespace Meat.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("Meat.Domain.Roles.Rol", b =>
+                {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("Meat.Domain.Sucursales.Sucursal", b =>

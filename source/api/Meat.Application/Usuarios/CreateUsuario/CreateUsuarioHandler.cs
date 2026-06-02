@@ -27,6 +27,10 @@ namespace Meat.Application.Usuarios.CreateUsuario
                 throw new ValidationException("Ya existe un usuario con el nombre de usuario ingresado.");
             }
 
+            var empresa = await this.context.Empresas.FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa);
+            if (empresa == null)
+                throw new ValidationException("La empresa activa no es valida.");
+
             var generatePasswordResponse = this.mediator.Send(new GeneratePasswordRequest()
             {
                 Contraseña = request.Apellido,
@@ -34,13 +38,13 @@ namespace Meat.Application.Usuarios.CreateUsuario
 
             var usuario = Domain.Usuarios.UsuarioFactory.Create(
                 request.UserName,
-                generatePasswordResponse.PasswordHash, 
-                request.Nombre, 
+                generatePasswordResponse.PasswordHash,
+                request.Nombre,
                 request.Apellido,
                 request.Email,
                 request.Legajo,
                 request.RolId,
-                request.EmpresaId,
+                empresa.Id,
                 request.Activo
             );
 

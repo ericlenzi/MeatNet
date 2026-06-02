@@ -36,12 +36,17 @@ namespace Meat.Controllers
             new GetSucursalRequest
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
             }
         );
 
         [HttpPost]
         [Authorize(Roles = "ADMIN, ABAST")]
-        public async Task<IActionResult> CreateSucursalAsync([FromBody] CreateSucursalRequest request) => await Handle(request);
+        public async Task<IActionResult> CreateSucursalAsync([FromBody] CreateSucursalRequest request)
+        {
+            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            return await Handle(request);
+        }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN, ABAST")]
@@ -49,6 +54,7 @@ namespace Meat.Controllers
             new UpdateSucursalRequest()
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
                 Nombre = body.Nombre,
                 EmpresaId = body.EmpresaId,
                 Activa = body.Activa,
@@ -69,6 +75,7 @@ namespace Meat.Controllers
             new DeleteSucursalRequest
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
             }
         );
 
@@ -79,7 +86,8 @@ namespace Meat.Controllers
             return await this.Handle(
                 new GetSucursalByCodigoRequest()
                 {
-                    Codigo = codigo
+                    Codigo = codigo,
+                    CodigoEmpresa = base.CurrentUser.CodigoEmpresa
                 }
             );
         }

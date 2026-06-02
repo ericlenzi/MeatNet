@@ -20,7 +20,9 @@ namespace Meat.Application.Roles.GetRol
 
         public async Task<GetRolResponse> Handle(GetRolRequest request, CancellationToken cancellationToken)
         {
-            var rol = await this.context.Roles.FirstOrDefaultAsync(r => r.Codigo == request.Codigo, cancellationToken);
+            var rol = await this.context.Roles
+                .Include(r => r.Empresa)
+                .FirstOrDefaultAsync(r => r.Codigo == request.Codigo && r.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
 
             return this.mapper.Map<GetRolResponse>(rol);
         }

@@ -37,3 +37,14 @@ export interface Rol {
   nombre: string
   activo: boolean
 }
+
+export interface CreateRolRequest {
+  Codigo: string
+  Nombre: string
+  Activo: boolean
+}
+
+export interface UpdateRolRequest {
+  Nombre: string
+  Activo: boolean
+}

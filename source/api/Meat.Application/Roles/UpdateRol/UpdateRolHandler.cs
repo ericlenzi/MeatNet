@@ -18,7 +18,9 @@ namespace Meat.Application.Roles.UpdateRol
 
         public async Task<UpdateRolResponse> Handle(UpdateRolRequest request, CancellationToken cancellationToken)
         {
-            var rol = await this.context.Roles.FirstOrDefaultAsync(r => r.Codigo == request.Codigo, cancellationToken);
+            var rol = await this.context.Roles
+                .Include(r => r.Empresa)
+                .FirstOrDefaultAsync(r => r.Codigo == request.Codigo && r.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
 
             if (rol == null)
                 throw new ValidationException("El rol no existe.");

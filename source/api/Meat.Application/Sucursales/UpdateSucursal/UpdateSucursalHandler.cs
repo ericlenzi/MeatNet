@@ -23,7 +23,9 @@ namespace Meat.Application.Sucursales.UpdateSucursal
 
         public async Task<UpdateSucursalResponse> Handle(UpdateSucursalRequest request, CancellationToken cancellationToken)
         {
-            var sucursal = await this.context.Sucursales.FirstOrDefaultAsync(x => x.Id == request.Id);
+            var sucursal = await this.context.Sucursales
+                .Include(s => s.Empresa)
+                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
             if (sucursal == null)
             {
                 throw new ValidationException("La sucursal no existe");

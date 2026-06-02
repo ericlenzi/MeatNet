@@ -28,7 +28,9 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
 
             queryable = this.context.Establecimientos
                 .Include(x => x.Sucursal)
-                .Include(x => x.Especie);
+                    .ThenInclude(s => s.Empresa)
+                .Include(x => x.Especie)
+                .Where(x => x.Sucursal.Empresa.CodigoEmpresa == request.CodigoEmpresa);
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);

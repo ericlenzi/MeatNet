@@ -26,6 +26,7 @@ namespace Meat.Application.Usuarios.GetUsuarios
         {
             IQueryable<Usuario> queryable = this.context.Usuarios
                 .Include(x => x.Empresa)
+                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa)
                 .AsQueryable();
 
             if (request.Estado.HasValue)

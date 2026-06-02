@@ -14,6 +14,10 @@ import UsuariosListPage from '@/pages/usuarios/UsuariosListPage'
 import UsuarioFormPage from '@/pages/usuarios/UsuarioFormPage'
 import EstablecimientosListPage from '@/pages/establecimientos/EstablecimientosListPage'
 import EstablecimientoFormPage from '@/pages/establecimientos/EstablecimientoFormPage'
+import ParametrosListPage from '@/pages/parametros/ParametrosListPage'
+import ParametroFormPage from '@/pages/parametros/ParametroFormPage'
+import RolesListPage from '@/pages/roles/RolesListPage'
+import RolFormPage from '@/pages/roles/RolFormPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -47,6 +51,12 @@ function App() {
                   <Route path="establecimientos" element={<EstablecimientosListPage />} />
                   <Route path="establecimientos/create" element={<EstablecimientoFormPage />} />
                   <Route path="establecimientos/:id/edit" element={<EstablecimientoFormPage />} />
+                  <Route path="parametros" element={<ParametrosListPage />} />
+                  <Route path="parametros/create" element={<ParametroFormPage />} />
+                  <Route path="parametros/:codigo/edit" element={<ParametroFormPage />} />
+                  <Route path="roles" element={<RolesListPage />} />
+                  <Route path="roles/create" element={<RolFormPage />} />
+                  <Route path="roles/:codigo/edit" element={<RolFormPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />

@@ -25,18 +25,23 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetEstablecimientosAsync([FromQuery] GetEstablecimientosRequest request)
         {
+            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
             return await this.Handle(request);
         }
 
         [HttpGet("{id}")]
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetEstablecimientoAsync([FromRoute] Guid id) => await this.Handle(
-            new GetEstablecimientoRequest { Id = id }
+            new GetEstablecimientoRequest { Id = id, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
         );
 
         [HttpPost]
         [Authorize(Roles = "ADMIN, ABAST")]
-        public async Task<IActionResult> CreateEstablecimientoAsync([FromBody] CreateEstablecimientoRequest request) => await Handle(request);
+        public async Task<IActionResult> CreateEstablecimientoAsync([FromBody] CreateEstablecimientoRequest request)
+        {
+            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            return await Handle(request);
+        }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN, ABAST")]
@@ -44,6 +49,7 @@ namespace Meat.Controllers
             new UpdateEstablecimientoRequest()
             {
                 Id = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
                 Nombre = body.Nombre,
                 SucursalId = body.SucursalId,
                 EspecieId = body.EspecieId,
@@ -56,7 +62,7 @@ namespace Meat.Controllers
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> DeleteEstablecimientoByIdAsync([FromRoute] Guid id) => await this.Handle(
-            new DeleteEstablecimientoRequest { Id = id }
+            new DeleteEstablecimientoRequest { Id = id, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
         );
     }
 }

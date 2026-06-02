@@ -1,11 +1,14 @@
 using MediatR;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Meat.Application.Establecimientos.CreateEstablecimiento
 {
     public class CreateEstablecimientoRequest : IRequest<CreateEstablecimientoResponse>
     {
+        [JsonIgnore]
+        public string CodigoEmpresa { get; set; }
         [Required]
         public string CodigoEstablecimiento { get; set; }
 

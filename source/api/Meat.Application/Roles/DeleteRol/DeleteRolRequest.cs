@@ -7,5 +7,7 @@ namespace Meat.Application.Roles.DeleteRol
     {
         [Required]
         public string Codigo { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string CodigoEmpresa { get; set; }
     }
 }

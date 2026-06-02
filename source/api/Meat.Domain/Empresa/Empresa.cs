@@ -24,6 +24,9 @@ namespace Meat.Domain.Empresas
         public bool Activo { get; set; }
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }
+        public Guid? EmpresaId { get; set; }
+        [ForeignKey("EmpresaId")]
+        public virtual Empresa EmpresaPadre { get; set; }
         public virtual IEnumerable<Sucursal> Sucursales { get; set; }
     }
 }

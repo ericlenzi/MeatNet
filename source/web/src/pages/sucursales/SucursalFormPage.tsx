@@ -110,7 +110,7 @@ export default function SucursalFormPage() {
         toast('success', 'Sucursal actualizada')
       } else {
         await createSucursal({
-          NumeroSucursal: form.CodigoSucursal,
+          CodigoSucursal: form.CodigoSucursal,
           Nombre: form.Nombre,
           EmpresaId: form.EmpresaId,
           Direccion: form.Direccion,
@@ -174,6 +174,7 @@ export default function SucursalFormPage() {
                 label: `${emp.codigoEmpresa} - ${emp.nombre}`,
               }))}
               placeholder="Seleccionar..."
+              disabled
             />
             <Input
               label="Codigo ERP"

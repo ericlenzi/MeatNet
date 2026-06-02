@@ -23,7 +23,8 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
         public async Task<UpdateEstablecimientoResponse> Handle(UpdateEstablecimientoRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Establecimientos
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+                .Include(x => x.Sucursal).ThenInclude(s => s.Empresa)
+                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Sucursal.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El establecimiento no existe");
