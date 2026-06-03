@@ -78,6 +78,13 @@ export async function addUsuarioSucursal(
   return response.data
 }
 
+export async function setMainUsuarioSucursal(
+  usuarioId: string,
+  usuarioSucursalId: string,
+): Promise<void> {
+  await api.patch(`/Usuarios/${usuarioId}/Sucursales/${usuarioSucursalId}/SetMain`)
+}
+
 export async function removeUsuarioSucursal(
   usuarioId: string,
   usuarioSucursalId: string,

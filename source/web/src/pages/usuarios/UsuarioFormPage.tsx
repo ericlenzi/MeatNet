@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { getUsuario, createUsuario, updateUsuario, getUsuarioSucursales, addUsuarioSucursal, removeUsuarioSucursal } from '@/services/usuarios.service'
+import { getUsuario, createUsuario, updateUsuario, getUsuarioSucursales, addUsuarioSucursal, setMainUsuarioSucursal, removeUsuarioSucursal } from '@/services/usuarios.service'
 import type { UsuarioSucursalItem } from '@/services/usuarios.service'
 import { getRoles } from '@/services/roles.service'
 import { getEmpresas } from '@/services/empresas.service'
@@ -45,6 +45,7 @@ export default function UsuarioFormPage() {
   const [selectedSucursalId, setSelectedSucursalId] = useState('')
   const [addingSucursal, setAddingSucursal] = useState(false)
   const [removingSucursalId, setRemovingSucursalId] = useState<string | null>(null)
+  const [settingMainId, setSettingMainId] = useState<string | null>(null)
   // Track sucursales to add when creating (no userId yet)
   const [pendingSucursales, setPendingSucursales] = useState<{ sucursalId: string; nombre: string; codigoSucursal: string; esMain: boolean }[]>([])
 
@@ -174,11 +175,30 @@ export default function UsuarioFormPage() {
     }
   }, [selectedSucursalId, isEdit, id, allSucursales, toast])
 
-  const handleRemoveSucursal = useCallback(async (usuarioSucursalId: string) => {
+  const handleSetMain = useCallback(async (key: string, sucursalId: string) => {
     if (isEdit && id) {
-      setRemovingSucursalId(usuarioSucursalId)
+      setSettingMainId(key)
       try {
-        await removeUsuarioSucursal(id, usuarioSucursalId)
+        await setMainUsuarioSucursal(id, key)
+        const updated = await getUsuarioSucursales(id)
+        setUsuarioSucursales(updated)
+      } catch (err) {
+        toast('error', err instanceof Error ? err.message : 'Error al establecer principal')
+      } finally {
+        setSettingMainId(null)
+      }
+    } else {
+      setPendingSucursales((prev) =>
+        prev.map((ps) => ({ ...ps, esMain: ps.sucursalId === sucursalId })),
+      )
+    }
+  }, [isEdit, id, toast])
+
+  const handleRemoveSucursal = useCallback(async (key: string, sucursalId: string, esMain: boolean) => {
+    if (isEdit && id) {
+      setRemovingSucursalId(key)
+      try {
+        await removeUsuarioSucursal(id, key)
         const updated = await getUsuarioSucursales(id)
         setUsuarioSucursales(updated)
         toast('success', 'Sucursal removida')
@@ -188,7 +208,13 @@ export default function UsuarioFormPage() {
         setRemovingSucursalId(null)
       }
     } else {
-      setPendingSucursales((prev) => prev.filter((ps) => ps.sucursalId !== usuarioSucursalId))
+      setPendingSucursales((prev) => {
+        const remaining = prev.filter((ps) => ps.sucursalId !== sucursalId)
+        if (esMain && remaining.length > 0 && !remaining.some((ps) => ps.esMain)) {
+          remaining[0] = { ...remaining[0], esMain: true }
+        }
+        return remaining
+      })
     }
   }, [isEdit, id, toast])
 
@@ -343,12 +369,25 @@ export default function UsuarioFormPage() {
                       <td className="px-4 py-2 text-text">{item.codigoSucursal}</td>
                       <td className="px-4 py-2 text-text">{item.nombre}</td>
                       <td className="px-4 py-2">
-                        {item.esMain && <Badge variant="info">Principal</Badge>}
+                        {item.esMain
+                          ? <Badge variant="info">Principal</Badge>
+                          : displaySucursales.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetMain(item.key, item.sucursalId)}
+                              disabled={settingMainId === item.key}
+                              className="text-xs text-text-light hover:text-primary-600 transition-colors disabled:opacity-50"
+                              title="Marcar como principal"
+                            >
+                              Marcar principal
+                            </button>
+                          )
+                        }
                       </td>
                       <td className="px-4 py-2 text-right">
                         <button
                           type="button"
-                          onClick={() => handleRemoveSucursal(isEdit ? item.key : item.sucursalId)}
+                          onClick={() => handleRemoveSucursal(item.key, item.sucursalId, item.esMain)}
                           disabled={removingSucursalId === item.key}
                           className="rounded p-1.5 text-text-light hover:bg-red-50 hover:text-danger transition-colors disabled:opacity-50"
                           title="Quitar"

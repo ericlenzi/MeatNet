@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Meat.Application.Usuarios.GetUsuarioSucursales;
 using Meat.Application.Usuarios.AddUsuarioSucursal;
 using Meat.Application.Usuarios.RemoveUsuarioSucursal;
+using Meat.Application.Usuarios.SetMainUsuarioSucursal;
 using System;
 using System.Threading.Tasks;
 
@@ -32,6 +33,11 @@ namespace Meat.Controllers
                 SucursalId = body.SucursalId,
                 EsMain = body.EsMain
             }
+        );
+
+        [HttpPatch("{id}/SetMain")]
+        public async Task<IActionResult> SetMainAsync([FromRoute] Guid usuarioId, [FromRoute] Guid id) => await this.Handle(
+            new SetMainUsuarioSucursalRequest { UsuarioId = usuarioId, UsuarioSucursalId = id }
         );
 
         [HttpDelete("{id}")]

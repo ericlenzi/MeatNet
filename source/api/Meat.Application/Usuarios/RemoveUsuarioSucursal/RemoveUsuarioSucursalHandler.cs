@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Repositories;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,6 +24,16 @@ namespace Meat.Application.Usuarios.RemoveUsuarioSucursal
 
             if (usuarioSucursal == null)
                 throw new ValidationException("La asignacion no existe.");
+
+            var otrasAsignaciones = await this.context.UsuariosSucursales
+                .Where(us => us.UsuarioId == usuarioSucursal.UsuarioId && us.Id != usuarioSucursal.Id)
+                .ToListAsync(cancellationToken);
+
+            if (!otrasAsignaciones.Any())
+                throw new ValidationException("El usuario debe tener al menos una sucursal asignada.");
+
+            if (usuarioSucursal.esMain)
+                throw new ValidationException("No se puede quitar la sucursal principal. Primero establecé otra como principal.");
 
             this.context.UsuariosSucursales.Remove(usuarioSucursal);
             await this.context.SaveChangesAsync(cancellationToken);

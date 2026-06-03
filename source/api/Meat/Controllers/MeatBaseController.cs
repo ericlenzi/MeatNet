@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.Autenticacion;
+using Meat.Application.Shared;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -21,7 +22,19 @@ namespace Meat.Controllers
 
         public async Task<IActionResult> Handle<TResponse>(IRequest<TResponse> request)
         {
-            var response = await this.mediator.Send(request);
+            object response;
+            try
+            {
+                response = await this.mediator.Send(request);
+            }
+            catch (ArgumentException ex)
+            {
+                return this.BadRequest(new { message = ex.Message });
+            }
+            catch (ValidationException ex)
+            {
+                return this.BadRequest(new { message = ex.Message });
+            }
 
             if (HttpMethods.IsGet(this.Request.Method))
             {
