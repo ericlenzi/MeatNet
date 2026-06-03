@@ -44,6 +44,10 @@ export async function deleteUsuario(id: string): Promise<void> {
   await api.delete(`/Usuarios/${id}`)
 }
 
+export async function restaurarPasswordUsuario(id: string): Promise<void> {
+  await api.put(`/Usuarios/${id}/RestaurarPassword`)
+}
+
 export interface UsuarioSucursalItem {
   id: string
   sucursalId: string

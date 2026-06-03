@@ -11,6 +11,7 @@ using Meat.Application.Usuarios.ImportUsuarios;
 using System;
 using System.Threading.Tasks;
 using Meat.Application.Usuarios.ResetearPasswordUsuario;
+using Meat.Application.Usuarios.RestaurarPasswordUsuario;
 namespace Meat.Controllers
 {
     [ApiController]
@@ -83,5 +84,15 @@ namespace Meat.Controllers
         {
             return await this.Handle(request);
         }
+
+        [HttpPut("{id}/RestaurarPassword")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> RestaurarPasswordAsync([FromRoute] Guid id) => await this.Handle(
+            new RestaurarPasswordUsuarioRequest
+            {
+                UsuarioId = id,
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+            }
+        );
     }
 }
