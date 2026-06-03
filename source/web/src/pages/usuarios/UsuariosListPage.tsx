@@ -187,6 +187,8 @@ export default function UsuariosListPage() {
         title="Restaurar contraseña"
         message={`¿Esta seguro que desea restaurar la contraseña de "${restaurarTarget?.userName}" a la contraseña inicial?`}
         isLoading={isRestaurando}
+        confirmLabel="Aceptar"
+        confirmVariant="primary"
       />
     </>
   )
