@@ -32,6 +32,17 @@ namespace Meat.Application.Usuarios.RemoveUsuarioSucursal
             if (!otrasAsignaciones.Any())
                 throw new ValidationException("El usuario debe tener al menos una sucursal asignada.");
 
+            var tieneEstablecimientos = await this.context.UsuariosEstablecimientos
+                .Join(this.context.Establecimientos,
+                    ue => ue.EstablecimientoId,
+                    e => e.Id,
+                    (ue, e) => new { ue.UsuarioId, e.SucursalId })
+                .AnyAsync(x => x.UsuarioId == usuarioSucursal.UsuarioId && x.SucursalId == usuarioSucursal.SucursalId,
+                    cancellationToken);
+
+            if (tieneEstablecimientos)
+                throw new ValidationException("No se puede quitar la sucursal porque el usuario tiene establecimientos asignados de esa sucursal.");
+
             if (usuarioSucursal.esMain)
                 throw new ValidationException("No se puede quitar la sucursal principal. Primero establecé otra como principal.");
 

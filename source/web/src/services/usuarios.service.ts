@@ -91,3 +91,53 @@ export async function removeUsuarioSucursal(
 ): Promise<void> {
   await api.delete(`/Usuarios/${usuarioId}/Sucursales/${usuarioSucursalId}`)
 }
+
+export interface UsuarioEstablecimientoItem {
+  id: string
+  establecimientoId: string
+  codigoEstablecimiento: string
+  nombre: string
+  sucursalId: string
+  codigoSucursal: string
+  nombreSucursal: string
+  esMain: boolean
+}
+
+interface UsuarioEstablecimientosResponse {
+  data: UsuarioEstablecimientoItem[]
+}
+
+export async function getUsuarioEstablecimientos(
+  usuarioId: string,
+): Promise<UsuarioEstablecimientoItem[]> {
+  const response = await api.get<UsuarioEstablecimientosResponse>(
+    `/Usuarios/${usuarioId}/Establecimientos`,
+  )
+  return response.data.data || []
+}
+
+export async function addUsuarioEstablecimiento(
+  usuarioId: string,
+  establecimientoId: string,
+  esMain: boolean,
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>(
+    `/Usuarios/${usuarioId}/Establecimientos`,
+    { EstablecimientoId: establecimientoId, EsMain: esMain },
+  )
+  return response.data
+}
+
+export async function setMainUsuarioEstablecimiento(
+  usuarioId: string,
+  usuarioEstablecimientoId: string,
+): Promise<void> {
+  await api.patch(`/Usuarios/${usuarioId}/Establecimientos/${usuarioEstablecimientoId}/SetMain`)
+}
+
+export async function removeUsuarioEstablecimiento(
+  usuarioId: string,
+  usuarioEstablecimientoId: string,
+): Promise<void> {
+  await api.delete(`/Usuarios/${usuarioId}/Establecimientos/${usuarioEstablecimientoId}`)
+}

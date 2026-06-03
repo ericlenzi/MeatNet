@@ -25,6 +25,11 @@ namespace Meat.Application.Establecimientos.DeleteEstablecimiento
             if (entity == null)
                 throw new ValidationException("El establecimiento no existe");
 
+            var tieneUsuarios = await this.context.UsuariosEstablecimientos
+                .AnyAsync(ue => ue.EstablecimientoId == request.Id, cancellationToken);
+            if (tieneUsuarios)
+                throw new ValidationException("No se puede eliminar el establecimiento porque tiene usuarios asignados.");
+
             this.context.Establecimientos.Remove(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 

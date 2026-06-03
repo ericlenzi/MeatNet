@@ -1,15 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router'
 import { useApp } from '@/contexts/AppContext'
 
 export default function EstablecimientoSelector() {
   const { currentEstablecimiento, establecimientos, isLoadingEstablecimientos, selectEstablecimiento } = useApp()
-  const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const isDashboard = location.pathname === '/'
-  const canChange = isDashboard && establecimientos.length > 1
+  const canChange = establecimientos.length > 1
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

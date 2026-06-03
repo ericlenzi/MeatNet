@@ -1,14 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { getUsuario, createUsuario, updateUsuario, getUsuarioSucursales, addUsuarioSucursal, setMainUsuarioSucursal, removeUsuarioSucursal } from '@/services/usuarios.service'
-import type { UsuarioSucursalItem } from '@/services/usuarios.service'
+import {
+  getUsuario, createUsuario, updateUsuario,
+  getUsuarioSucursales, addUsuarioSucursal, setMainUsuarioSucursal, removeUsuarioSucursal,
+  getUsuarioEstablecimientos, addUsuarioEstablecimiento, setMainUsuarioEstablecimiento, removeUsuarioEstablecimiento,
+} from '@/services/usuarios.service'
+import type { UsuarioSucursalItem, UsuarioEstablecimientoItem } from '@/services/usuarios.service'
 import { getRoles } from '@/services/roles.service'
 import { getEmpresas } from '@/services/empresas.service'
 import { getSucursales } from '@/services/sucursales.service'
+import { getEstablecimientos } from '@/services/establecimientos.service'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Rol, Empresa, Sucursal } from '@/types'
+import type { Rol, Empresa, Sucursal, Establecimiento } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
@@ -39,28 +44,38 @@ export default function UsuarioFormPage() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Sucursales del usuario
+  // Sucursales
   const [usuarioSucursales, setUsuarioSucursales] = useState<UsuarioSucursalItem[]>([])
   const [allSucursales, setAllSucursales] = useState<Sucursal[]>([])
   const [selectedSucursalId, setSelectedSucursalId] = useState('')
   const [addingSucursal, setAddingSucursal] = useState(false)
   const [removingSucursalId, setRemovingSucursalId] = useState<string | null>(null)
-  const [settingMainId, setSettingMainId] = useState<string | null>(null)
-  // Track sucursales to add when creating (no userId yet)
+  const [settingMainSucursalId, setSettingMainSucursalId] = useState<string | null>(null)
   const [pendingSucursales, setPendingSucursales] = useState<{ sucursalId: string; nombre: string; codigoSucursal: string; esMain: boolean }[]>([])
+
+  // Establecimientos
+  const [usuarioEstablecimientos, setUsuarioEstablecimientos] = useState<UsuarioEstablecimientoItem[]>([])
+  const [allEstablecimientos, setAllEstablecimientos] = useState<Establecimiento[]>([])
+  const [selectedEstablecimientoId, setSelectedEstablecimientoId] = useState('')
+  const [addingEstablecimiento, setAddingEstablecimiento] = useState(false)
+  const [removingEstablecimientoId, setRemovingEstablecimientoId] = useState<string | null>(null)
+  const [settingMainEstablecimientoId, setSettingMainEstablecimientoId] = useState<string | null>(null)
+  const [pendingEstablecimientos, setPendingEstablecimientos] = useState<{ establecimientoId: string; nombre: string; codigoEstablecimiento: string; sucursalId: string; esMain: boolean }[]>([])
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [rolesRes, empresasRes, sucursalesRes] = await Promise.all([
+        const [rolesRes, empresasRes, sucursalesRes, establecimientosRes] = await Promise.all([
           getRoles(),
           getEmpresas({ PageSize: 1000 }),
           getSucursales({ PageSize: 1000 }),
+          getEstablecimientos({ PageSize: 1000, Estado: true }),
         ])
         setRoles(rolesRes.data || [])
         const empList = (empresasRes.data || []).filter((e) => e.tipoEmpresaId === 'PRP')
         setEmpresas(empList)
         setAllSucursales(sucursalesRes.data || [])
+        setAllEstablecimientos(establecimientosRes.data || [])
 
         const empresaActiva = user?.codigoEmpresa
           ? empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
@@ -71,9 +86,10 @@ export default function UsuarioFormPage() {
         }
 
         if (isEdit && id) {
-          const [usuario, userSucs] = await Promise.all([
+          const [usuario, userSucs, userEsts] = await Promise.all([
             getUsuario(id),
             getUsuarioSucursales(id),
+            getUsuarioEstablecimientos(id),
           ])
           setForm({
             UserName: usuario.userName || '',
@@ -86,6 +102,7 @@ export default function UsuarioFormPage() {
             Activo: usuario.activo,
           })
           setUsuarioSucursales(userSucs)
+          setUsuarioEstablecimientos(userEsts)
         }
       } catch {
         toast('error', 'Error al cargar datos')
@@ -119,9 +136,11 @@ export default function UsuarioFormPage() {
         toast('success', 'Usuario actualizado')
       } else {
         const result = await createUsuario(form)
-        // Add pending sucursales
         for (const ps of pendingSucursales) {
           await addUsuarioSucursal(result.id, ps.sucursalId, ps.esMain)
+        }
+        for (const pe of pendingEstablecimientos) {
+          await addUsuarioEstablecimiento(result.id, pe.establecimientoId, pe.esMain)
         }
         toast('success', 'Usuario creado. Se le asigno una contraseña por defecto.')
       }
@@ -138,7 +157,8 @@ export default function UsuarioFormPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
   }
 
-  // Sucursales available to add (not already assigned)
+  // --- Sucursales ---
+
   const assignedSucursalIds = isEdit
     ? usuarioSucursales.map((us) => us.sucursalId)
     : pendingSucursales.map((ps) => ps.sucursalId)
@@ -175,9 +195,9 @@ export default function UsuarioFormPage() {
     }
   }, [selectedSucursalId, isEdit, id, allSucursales, toast])
 
-  const handleSetMain = useCallback(async (key: string, sucursalId: string) => {
+  const handleSetMainSucursal = useCallback(async (key: string, sucursalId: string) => {
     if (isEdit && id) {
-      setSettingMainId(key)
+      setSettingMainSucursalId(key)
       try {
         await setMainUsuarioSucursal(id, key)
         const updated = await getUsuarioSucursales(id)
@@ -185,7 +205,7 @@ export default function UsuarioFormPage() {
       } catch (err) {
         toast('error', err instanceof Error ? err.message : 'Error al establecer principal')
       } finally {
-        setSettingMainId(null)
+        setSettingMainSucursalId(null)
       }
     } else {
       setPendingSucursales((prev) =>
@@ -199,8 +219,12 @@ export default function UsuarioFormPage() {
       setRemovingSucursalId(key)
       try {
         await removeUsuarioSucursal(id, key)
-        const updated = await getUsuarioSucursales(id)
-        setUsuarioSucursales(updated)
+        const [updatedSucs, updatedEsts] = await Promise.all([
+          getUsuarioSucursales(id),
+          getUsuarioEstablecimientos(id),
+        ])
+        setUsuarioSucursales(updatedSucs)
+        setUsuarioEstablecimientos(updatedEsts)
         toast('success', 'Sucursal removida')
       } catch (err) {
         toast('error', err instanceof Error ? err.message : 'Error al remover')
@@ -208,19 +232,137 @@ export default function UsuarioFormPage() {
         setRemovingSucursalId(null)
       }
     } else {
+      const removedSucId = sucursalId
       setPendingSucursales((prev) => {
-        const remaining = prev.filter((ps) => ps.sucursalId !== sucursalId)
+        const remaining = prev.filter((ps) => ps.sucursalId !== removedSucId)
         if (esMain && remaining.length > 0 && !remaining.some((ps) => ps.esMain)) {
-          remaining[0] = { ...remaining[0], esMain: true }
+          remaining[0] = { sucursalId: remaining[0]!.sucursalId, nombre: remaining[0]!.nombre, codigoSucursal: remaining[0]!.codigoSucursal, esMain: true }
         }
         return remaining
       })
+      // Remove pending establecimientos of that sucursal
+      setPendingEstablecimientos((prev) =>
+        prev.filter((pe) => pe.sucursalId !== removedSucId),
+      )
     }
   }, [isEdit, id, toast])
 
   const displaySucursales = isEdit
     ? usuarioSucursales.map((us) => ({ key: us.id, sucursalId: us.sucursalId, nombre: us.nombre, codigoSucursal: us.codigoSucursal, esMain: us.esMain }))
     : pendingSucursales.map((ps) => ({ key: ps.sucursalId, sucursalId: ps.sucursalId, nombre: ps.nombre, codigoSucursal: ps.codigoSucursal, esMain: ps.esMain }))
+
+  // --- Establecimientos ---
+
+  const activeSucursalIds = isEdit
+    ? usuarioSucursales.map((us) => us.sucursalId)
+    : pendingSucursales.map((ps) => ps.sucursalId)
+
+  const assignedEstablecimientoIds = isEdit
+    ? usuarioEstablecimientos.map((ue) => ue.establecimientoId)
+    : pendingEstablecimientos.map((pe) => pe.establecimientoId)
+
+  const availableEstablecimientos = allEstablecimientos.filter(
+    (e) => e.activo && activeSucursalIds.includes(e.sucursalId) && !assignedEstablecimientoIds.includes(e.id),
+  )
+
+  const handleAddEstablecimiento = useCallback(async () => {
+    if (!selectedEstablecimientoId) return
+
+    if (isEdit && id) {
+      setAddingEstablecimiento(true)
+      try {
+        await addUsuarioEstablecimiento(id, selectedEstablecimientoId, false)
+        const updated = await getUsuarioEstablecimientos(id)
+        setUsuarioEstablecimientos(updated)
+        setSelectedEstablecimientoId('')
+        toast('success', 'Establecimiento asignado')
+      } catch (err) {
+        toast('error', err instanceof Error ? err.message : 'Error al asignar')
+      } finally {
+        setAddingEstablecimiento(false)
+      }
+    } else {
+      const est = allEstablecimientos.find((e) => e.id === selectedEstablecimientoId)
+      if (est) {
+        setPendingEstablecimientos((prev) => [
+          ...prev,
+          {
+            establecimientoId: est.id,
+            nombre: est.nombre,
+            codigoEstablecimiento: est.codigoEstablecimiento,
+            sucursalId: est.sucursalId,
+            esMain: prev.length === 0,
+          },
+        ])
+        setSelectedEstablecimientoId('')
+      }
+    }
+  }, [selectedEstablecimientoId, isEdit, id, allEstablecimientos, toast])
+
+  const handleSetMainEstablecimiento = useCallback(async (key: string, establecimientoId: string) => {
+    if (isEdit && id) {
+      setSettingMainEstablecimientoId(key)
+      try {
+        await setMainUsuarioEstablecimiento(id, key)
+        const updated = await getUsuarioEstablecimientos(id)
+        setUsuarioEstablecimientos(updated)
+      } catch (err) {
+        toast('error', err instanceof Error ? err.message : 'Error al establecer principal')
+      } finally {
+        setSettingMainEstablecimientoId(null)
+      }
+    } else {
+      setPendingEstablecimientos((prev) =>
+        prev.map((pe) => ({ ...pe, esMain: pe.establecimientoId === establecimientoId })),
+      )
+    }
+  }, [isEdit, id, toast])
+
+  const handleRemoveEstablecimiento = useCallback(async (key: string, establecimientoId: string, esMain: boolean) => {
+    if (isEdit && id) {
+      setRemovingEstablecimientoId(key)
+      try {
+        await removeUsuarioEstablecimiento(id, key)
+        const updated = await getUsuarioEstablecimientos(id)
+        setUsuarioEstablecimientos(updated)
+        toast('success', 'Establecimiento removido')
+      } catch (err) {
+        toast('error', err instanceof Error ? err.message : 'Error al remover')
+      } finally {
+        setRemovingEstablecimientoId(null)
+      }
+    } else {
+      setPendingEstablecimientos((prev) => {
+        const remaining = prev.filter((pe) => pe.establecimientoId !== establecimientoId)
+        if (esMain && remaining.length > 0 && !remaining.some((pe) => pe.esMain)) {
+          const r = remaining[0]!
+          remaining[0] = { establecimientoId: r.establecimientoId, nombre: r.nombre, codigoEstablecimiento: r.codigoEstablecimiento, sucursalId: r.sucursalId, esMain: true }
+        }
+        return remaining
+      })
+    }
+  }, [isEdit, id, toast])
+
+  const displayEstablecimientos = isEdit
+    ? usuarioEstablecimientos.map((ue) => ({
+        key: ue.id,
+        establecimientoId: ue.establecimientoId,
+        nombre: ue.nombre,
+        codigoEstablecimiento: ue.codigoEstablecimiento,
+        nombreSucursal: ue.nombreSucursal,
+        esMain: ue.esMain,
+      }))
+    : pendingEstablecimientos.map((pe) => {
+        const suc = allSucursales.find((s) => s.id === pe.sucursalId)
+        return {
+          key: pe.establecimientoId,
+          establecimientoId: pe.establecimientoId,
+          nombre: pe.nombre,
+          codigoEstablecimiento: pe.codigoEstablecimiento,
+          nombreSucursal: suc?.nombre || '',
+          esMain: pe.esMain,
+        }
+      })
 
   if (fetching) {
     return (
@@ -322,7 +464,6 @@ export default function UsuarioFormPage() {
             </div>
           )}
 
-          {/* Agregar sucursal */}
           <div className="mb-4 flex items-end gap-3">
             <div className="flex-1">
               <Select
@@ -347,7 +488,6 @@ export default function UsuarioFormPage() {
             </Button>
           </div>
 
-          {/* Lista de sucursales asignadas */}
           {displaySucursales.length === 0 ? (
             <p className="py-4 text-center text-sm text-text-light">
               No tiene sucursales asignadas
@@ -374,10 +514,9 @@ export default function UsuarioFormPage() {
                           : displaySucursales.length > 1 && (
                             <button
                               type="button"
-                              onClick={() => handleSetMain(item.key, item.sucursalId)}
-                              disabled={settingMainId === item.key}
+                              onClick={() => handleSetMainSucursal(item.key, item.sucursalId)}
+                              disabled={settingMainSucursalId === item.key}
                               className="text-xs text-text-light hover:text-primary-600 transition-colors disabled:opacity-50"
-                              title="Marcar como principal"
                             >
                               Marcar principal
                             </button>
@@ -389,6 +528,93 @@ export default function UsuarioFormPage() {
                           type="button"
                           onClick={() => handleRemoveSucursal(item.key, item.sucursalId, item.esMain)}
                           disabled={removingSucursalId === item.key}
+                          className="rounded p-1.5 text-text-light hover:bg-red-50 hover:text-danger transition-colors disabled:opacity-50"
+                          title="Quitar"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Establecimientos del usuario */}
+        <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-text">Establecimientos Asignados</h2>
+
+          <div className="mb-4 flex items-end gap-3">
+            <div className="flex-1">
+              <Select
+                label="Agregar establecimiento"
+                value={selectedEstablecimientoId}
+                onChange={(e) => setSelectedEstablecimientoId(e.target.value)}
+                options={availableEstablecimientos.map((e) => ({
+                  value: e.id,
+                  label: `${e.codigoEstablecimiento} - ${e.nombre}`,
+                }))}
+                placeholder={activeSucursalIds.length === 0 ? 'Asigne sucursales primero' : 'Seleccionar establecimiento...'}
+                disabled={activeSucursalIds.length === 0}
+              />
+            </div>
+            <Button
+              type="button"
+              size="md"
+              onClick={handleAddEstablecimiento}
+              disabled={!selectedEstablecimientoId}
+              loading={addingEstablecimiento}
+            >
+              Agregar
+            </Button>
+          </div>
+
+          {displayEstablecimientos.length === 0 ? (
+            <p className="py-4 text-center text-sm text-text-light">
+              No tiene establecimientos asignados
+            </p>
+          ) : (
+            <div className="overflow-hidden rounded-lg border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-gray-50">
+                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Codigo</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Nombre</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Sucursal</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Principal</th>
+                    <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wider text-text-light">Accion</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {displayEstablecimientos.map((item) => (
+                    <tr key={item.key} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-text">{item.codigoEstablecimiento}</td>
+                      <td className="px-4 py-2 text-text">{item.nombre}</td>
+                      <td className="px-4 py-2 text-text-light">{item.nombreSucursal}</td>
+                      <td className="px-4 py-2">
+                        {item.esMain
+                          ? <Badge variant="info">Principal</Badge>
+                          : displayEstablecimientos.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetMainEstablecimiento(item.key, item.establecimientoId)}
+                              disabled={settingMainEstablecimientoId === item.key}
+                              className="text-xs text-text-light hover:text-primary-600 transition-colors disabled:opacity-50"
+                            >
+                              Marcar principal
+                            </button>
+                          )
+                        }
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveEstablecimiento(item.key, item.establecimientoId, item.esMain)}
+                          disabled={removingEstablecimientoId === item.key}
                           className="rounded p-1.5 text-text-light hover:bg-red-50 hover:text-danger transition-colors disabled:opacity-50"
                           title="Quitar"
                         >

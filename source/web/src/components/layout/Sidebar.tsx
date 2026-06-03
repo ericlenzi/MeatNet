@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, Link } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
+import { useApp } from '@/contexts/AppContext'
 
 interface SidebarProps {
   isOpen: boolean
@@ -233,6 +234,7 @@ function NavSubGroup({
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { isAdmin } = useAuth()
+  const { hasEstablecimientos } = useApp()
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Operaciones Ciclo I': false,
     'Operaciones Ciclo II': false,
@@ -246,7 +248,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   }
 
   const filteredGroups = navGroups.filter(
-    (group) => !group.adminOnly || isAdmin,
+    (group) => {
+      if (group.title === 'Operaciones Ciclo I' || group.title === 'Operaciones Ciclo II') {
+        return hasEstablecimientos
+      }
+      return !group.adminOnly || isAdmin
+    },
   )
 
   const sidebarContent = (

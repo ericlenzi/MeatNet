@@ -1,15 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router'
 import { useApp } from '@/contexts/AppContext'
 
 export default function SucursalSelector() {
   const { currentSucursal, sucursales, isLoadingSucursales, selectSucursal } = useApp()
-  const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const isDashboard = location.pathname === '/'
-  const canChange = isDashboard && sucursales.length > 1
+  const canChange = sucursales.length > 1
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -22,11 +19,11 @@ export default function SucursalSelector() {
   }, [])
 
   if (isLoadingSucursales) {
-    return <span className="text-sm text-text-light">Cargando sucursales...</span>
+    return <span className="text-sm text-text-light">Cargando...</span>
   }
 
-  if (sucursales.length === 0) {
-    return <span className="text-sm text-text-light">Sin sucursales</span>
+  if (!currentSucursal) {
+    return null
   }
 
   return (
@@ -40,9 +37,7 @@ export default function SucursalSelector() {
         <svg className="h-4 w-4 text-text-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
-        <span className="max-w-[150px] truncate">
-          {currentSucursal?.nombre || 'Seleccionar sucursal'}
-        </span>
+        <span className="max-w-[150px] truncate">{currentSucursal.nombre}</span>
         {canChange && (
           <svg className={`h-3.5 w-3.5 text-text-light transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -60,7 +55,7 @@ export default function SucursalSelector() {
                 setIsOpen(false)
               }}
               className={`flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                currentSucursal?.sucursalId === s.sucursalId
+                currentSucursal.sucursalId === s.sucursalId
                   ? 'bg-primary-50 text-primary-700 font-medium'
                   : 'text-text hover:bg-gray-50'
               }`}
