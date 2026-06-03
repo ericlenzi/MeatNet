@@ -1,6 +1,5 @@
 ﻿using Meat.Domain.Empresas;
-using Meat.Domain.Enums;
-using Meat.Domain.Especies;
+using Meat.Domain.EstablecimientosEspecies;
 using Meat.Domain.Sucursales;
 using System;
 using System.Collections.Generic;
@@ -18,13 +17,12 @@ namespace Meat.Domain.Establecimientos
         public string Nombre { get; set; }
         public Guid SucursalId { get; set; }
         public virtual Sucursal Sucursal { get; set; }
-        public string EspecieId { get; set; }
-        public virtual Especie Especie { get; set; }
         public string NumeroSenasa { get; set; }
         public string NumeroOncca { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public Guid EmpresaId { get; set; }
         public virtual Empresa Empresa { get; set; }
+        public virtual ICollection<EstablecimientoEspecie> Especies { get; set; }
     }
 }

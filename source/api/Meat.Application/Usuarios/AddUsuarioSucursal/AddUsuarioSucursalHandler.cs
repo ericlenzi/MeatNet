@@ -30,7 +30,7 @@ namespace Meat.Application.Usuarios.AddUsuarioSucursal
                 Id = Guid.NewGuid(),
                 UsuarioId = request.UsuarioId,
                 SucursalId = request.SucursalId,
-                esMain = request.EsMain,
+                EsMain = request.EsMain,
                 FechaActualizacion = DateTime.Now
             };
 

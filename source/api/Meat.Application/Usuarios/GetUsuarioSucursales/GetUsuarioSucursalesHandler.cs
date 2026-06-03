@@ -32,7 +32,7 @@ namespace Meat.Application.Usuarios.GetUsuarioSucursales
                         CodigoSucursal = s.CodigoSucursal,
                         Nombre = s.Nombre,
                         Color = s.Color,
-                        EsMain = us.esMain
+                        EsMain = us.EsMain
                     })
                 .OrderBy(x => x.Nombre)
                 .ToListAsync(cancellationToken);

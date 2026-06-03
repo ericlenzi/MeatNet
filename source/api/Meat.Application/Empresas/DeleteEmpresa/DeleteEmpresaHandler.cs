@@ -19,11 +19,18 @@ namespace Meat.Application.Empresas.DeleteEmpresa
         public async Task<DeleteEmpresaResponse> Handle(DeleteEmpresaRequest request, CancellationToken cancellationToken)
         {
             var empresa = await this.context.Empresas
-                .Include(x => x.Sucursales)
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (empresa == null)
                 throw new ValidationException("La empresa no existe");
+
+            var tieneSucursales = await this.context.Sucursales.AnyAsync(x => x.EmpresaId == request.Id, cancellationToken);
+            if (tieneSucursales)
+                throw new ValidationException("No se puede eliminar la empresa porque tiene sucursales asignadas.");
+
+            var tieneEstablecimientos = await this.context.Establecimientos.AnyAsync(x => x.EmpresaId == request.Id, cancellationToken);
+            if (tieneEstablecimientos)
+                throw new ValidationException("No se puede eliminar la empresa porque tiene establecimientos asignados.");
 
             this.context.Empresas.Remove(empresa);
             await this.context.SaveChangesAsync(cancellationToken);

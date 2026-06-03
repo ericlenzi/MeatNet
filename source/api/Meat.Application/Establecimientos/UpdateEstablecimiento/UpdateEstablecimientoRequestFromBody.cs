@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Meat.Application.Establecimientos.UpdateEstablecimiento
@@ -8,7 +9,7 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
         [Required]
         public string Nombre { get; set; }
         public Guid SucursalId { get; set; }
-        public string EspecieId { get; set; }
+        public IEnumerable<string> EspecieIds { get; set; }
         public string NumeroSenasa { get; set; }
         public string NumeroOncca { get; set; }
         public bool Activo { get; set; }

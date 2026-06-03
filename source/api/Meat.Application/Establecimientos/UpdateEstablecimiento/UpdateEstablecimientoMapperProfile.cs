@@ -9,7 +9,8 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
         {
             this.CreateMap<UpdateEstablecimientoRequest, Establecimiento>()
                 .ForMember(dest => dest.EmpresaId, opt => opt.Ignore())
-                .ForMember(dest => dest.Empresa, opt => opt.Ignore());
+                .ForMember(dest => dest.Empresa, opt => opt.Ignore())
+                .ForMember(dest => dest.Especies, opt => opt.Ignore());
         }
     }
 }

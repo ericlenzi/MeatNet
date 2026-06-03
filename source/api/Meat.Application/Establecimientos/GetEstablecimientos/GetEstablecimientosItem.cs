@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Meat.Application.Establecimientos.GetEstablecimientos
 {
@@ -9,8 +10,7 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
         public string Nombre { get; set; }
         public Guid SucursalId { get; set; }
         public string SucursalNombre { get; set; }
-        public string EspecieId { get; set; }
-        public string EspecieNombre { get; set; }
+        public IEnumerable<EspecieItem> Especies { get; set; }
         public string NumeroSenasa { get; set; }
         public string NumeroOncca { get; set; }
         public Guid EmpresaId { get; set; }

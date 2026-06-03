@@ -22,9 +22,12 @@ namespace Meat.Application.Especies.DeleteEspecie
                 .FirstOrDefaultAsync(x => x.Codigo == request.Codigo);
 
             if (especie == null)
-            {
                 throw new ValidationException("La especie no existe");
-            }
+
+            var tieneEstablecimientos = await this.context.EstablecimientosEspecies
+                .AnyAsync(ee => ee.EspecieId == request.Codigo, cancellationToken);
+            if (tieneEstablecimientos)
+                throw new ValidationException("No se puede eliminar la especie porque tiene establecimientos asignados.");
 
             this.context.Remove(especie);
 

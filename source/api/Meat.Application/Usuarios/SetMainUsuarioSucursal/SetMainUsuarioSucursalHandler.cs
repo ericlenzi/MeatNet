@@ -28,7 +28,7 @@ namespace Meat.Application.Usuarios.SetMainUsuarioSucursal
                 throw new ValidationException("La asignacion no existe.");
 
             foreach (var us in asignaciones)
-                us.esMain = us.Id == request.UsuarioSucursalId;
+                us.EsMain = us.Id == request.UsuarioSucursalId;
 
             await this.context.SaveChangesAsync(cancellationToken);
 

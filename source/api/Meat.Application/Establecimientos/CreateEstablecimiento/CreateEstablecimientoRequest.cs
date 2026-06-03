@@ -1,5 +1,6 @@
 using MediatR;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -16,7 +17,7 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
         public string Nombre { get; set; }
 
         public Guid SucursalId { get; set; }
-        public string EspecieId { get; set; }
+        public IEnumerable<string> EspecieIds { get; set; }
         public string NumeroSenasa { get; set; }
         public string NumeroOncca { get; set; }
     }

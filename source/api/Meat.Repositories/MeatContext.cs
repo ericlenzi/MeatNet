@@ -13,6 +13,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Parametros.Parametro> Parametros { get; set; }
         public virtual DbSet<Domain.Clientes.Cliente> Clientes { get; set; }
         public virtual DbSet<Domain.Establecimientos.Establecimiento> Establecimientos { get; set; }
+        public virtual DbSet<Domain.EstablecimientosEspecies.EstablecimientoEspecie> EstablecimientosEspecies { get; set; }
         public virtual DbSet<Domain.Roles.Rol> Roles { get; set; }
         public virtual DbSet<Domain.Usuarios.Usuario> Usuarios { get; set; }
         public virtual DbSet<Domain.UsuariosSucursales.UsuarioSucursal> UsuariosSucursales { get; set; }

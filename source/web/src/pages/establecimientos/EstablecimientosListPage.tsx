@@ -72,7 +72,15 @@ export default function EstablecimientosListPage() {
     { key: 'codigoEstablecimiento', header: 'Codigo', width: '120px', sortable: true },
     { key: 'nombre', header: 'Nombre', sortable: true },
     { key: 'sucursalNombre', header: 'Sucursal', width: '150px', sortable: true },
-    { key: 'especieNombre', header: 'Especie', width: '120px', sortable: true },
+    {
+      key: 'especies',
+      header: 'Especies',
+      width: '160px',
+      render: (value: Establecimiento['especies']) =>
+        value && value.length > 0
+          ? <div className="flex flex-wrap gap-1">{value.map((e) => <Badge key={e.id} variant="default">{e.nombre}</Badge>)}</div>
+          : <span className="text-text-light text-xs">—</span>,
+    },
     { key: 'numeroSenasa', header: 'SENASA', width: '120px', sortable: true },
     {
       key: 'activo',

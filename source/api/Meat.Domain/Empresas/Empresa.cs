@@ -1,4 +1,5 @@
-﻿using Meat.Domain.Sucursales;
+﻿using Meat.Domain.Establecimientos;
+using Meat.Domain.Sucursales;
 using Meat.Domain.TiposEmpresas;
 using System;
 using System.Collections.Generic;
@@ -24,5 +25,6 @@ namespace Meat.Domain.Empresas
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public virtual IEnumerable<Sucursal> Sucursales { get; set; }
+        public virtual IEnumerable<Establecimiento> Establecimientos { get; set; }
     }
 }

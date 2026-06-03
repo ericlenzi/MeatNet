@@ -61,8 +61,7 @@ namespace Meat.Application.Autenticacion
             if (!sucursalesUsuario.Any())
                 throw new ArgumentException("El usuario no tiene sucursales asignadas. Debe tener al menos una sucursal para iniciar sesión.");
 
-            //ToDo: en Update Usuario no se valida como se asigna esMain
-            var mainSucursal = sucursalesUsuario.FirstOrDefault(x => x.esMain);
+            var mainSucursal = sucursalesUsuario.FirstOrDefault(x => x.EsMain);
             if (mainSucursal == null)
                 //throw new ArgumentException("El usuario no tiene una sucursal principal asignada (esMain).");
                 mainSucursal = sucursalesUsuario.FirstOrDefault();

@@ -1,4 +1,5 @@
 ﻿using Meat.Domain.Empresas;
+using Meat.Domain.Establecimientos;
 using Meat.Domain.Puestos;
 using System;
 using System.Collections.Generic;
@@ -27,5 +28,6 @@ namespace Meat.Domain.Sucursales
         public string Pais { get; set; }
         public string Color { get; set; }
         public virtual ICollection<Puesto> Puestos { get; set; }
+        public virtual ICollection<Establecimiento> Establecimientos { get; set; }
     }
 }

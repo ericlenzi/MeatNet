@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Repositories;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,6 +30,13 @@ namespace Meat.Application.Establecimientos.DeleteEstablecimiento
                 .AnyAsync(ue => ue.EstablecimientoId == request.Id, cancellationToken);
             if (tieneUsuarios)
                 throw new ValidationException("No se puede eliminar el establecimiento porque tiene usuarios asignados.");
+
+            // Eliminar en cascada las especies asignadas al establecimiento
+            var especies = await this.context.EstablecimientosEspecies
+                .Where(ee => ee.EstablecimientoId == request.Id)
+                .ToListAsync(cancellationToken);
+            if (especies.Any())
+                this.context.EstablecimientosEspecies.RemoveRange(especies);
 
             this.context.Establecimientos.Remove(entity);
             await this.context.SaveChangesAsync(cancellationToken);

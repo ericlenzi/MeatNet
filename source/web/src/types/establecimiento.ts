@@ -1,11 +1,15 @@
+export interface EspecieItem {
+  id: string
+  nombre: string
+}
+
 export interface Establecimiento {
   id: string
   codigoEstablecimiento: string
   nombre: string
   sucursalId: string
   sucursalNombre: string
-  especieId: string
-  especieNombre: string
+  especies: EspecieItem[]
   empresaId: string
   empresaNombre: string
   numeroSenasa: string
@@ -17,7 +21,7 @@ export interface CreateEstablecimientoRequest {
   CodigoEstablecimiento: string
   Nombre: string
   SucursalId: string
-  EspecieId?: string
+  EspecieIds?: string[]
   NumeroSenasa?: string
   NumeroOncca?: string
 }
@@ -25,7 +29,7 @@ export interface CreateEstablecimientoRequest {
 export interface UpdateEstablecimientoRequest {
   Nombre: string
   SucursalId: string
-  EspecieId?: string
+  EspecieIds?: string[]
   NumeroSenasa?: string
   NumeroOncca?: string
   Activo: boolean

@@ -14,7 +14,7 @@ namespace Meat.Domain.UsuariosSucursales
         public Guid UsuarioId { get; set; }
         public virtual Usuario Usuario { get; set; }
         public Guid SucursalId { get; set; }
-        public bool esMain { get; set; }
+        public bool EsMain { get; set; }
         public DateTime FechaActualizacion { get; set; }
 
         //ToDo: roles por sucursal

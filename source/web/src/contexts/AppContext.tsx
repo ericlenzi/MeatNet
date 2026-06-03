@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo } 
 import type { ReactNode } from 'react'
 import { getUsuarioSucursales, getUsuarioEstablecimientos } from '@/services/usuarios.service'
 import type { UsuarioSucursalItem, UsuarioEstablecimientoItem } from '@/services/usuarios.service'
+import { getEstablecimiento } from '@/services/establecimientos.service'
 import { useAuth } from './AuthContext'
 
 interface SucursalOption {
@@ -20,6 +21,11 @@ interface EstablecimientoOption {
   sucursalId: string
 }
 
+interface EspecieOption {
+  id: string
+  nombre: string
+}
+
 interface AppContextType {
   currentSucursal: SucursalOption | null
   sucursales: SucursalOption[]
@@ -33,6 +39,10 @@ interface AppContextType {
   selectEstablecimiento: (establecimiento: EstablecimientoOption) => void
   // true solo si la sucursal activa tiene establecimientos asignados al usuario
   hasEstablecimientos: boolean
+  currentEspecie: EspecieOption | null
+  especies: EspecieOption[]
+  isLoadingEspecies: boolean
+  selectEspecie: (especie: EspecieOption) => void
 }
 
 const AppContext = createContext<AppContextType | null>(null)
@@ -43,6 +53,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sucursales, setSucursales] = useState<SucursalOption[]>([])
   const [currentSucursal, setCurrentSucursal] = useState<SucursalOption | null>(null)
   const [isLoadingSucursales, setIsLoadingSucursales] = useState(false)
+
+  const [especies, setEspecies] = useState<EspecieOption[]>([])
+  const [currentEspecie, setCurrentEspecie] = useState<EspecieOption | null>(null)
+  const [isLoadingEspecies, setIsLoadingEspecies] = useState(false)
 
   // Lista completa de establecimientos asignados al usuario (todas las sucursales)
   const [allEstablecimientos, setAllEstablecimientos] = useState<EstablecimientoOption[]>([])
@@ -133,6 +147,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user?.id])
 
+  // Cargar especies del establecimiento activo
+  useEffect(() => {
+    if (!currentEstablecimiento) {
+      setEspecies([])
+      setCurrentEspecie(null)
+      return
+    }
+    const load = async () => {
+      setIsLoadingEspecies(true)
+      try {
+        const entity = await getEstablecimiento(currentEstablecimiento.id)
+        const opts: EspecieOption[] = (entity.especies || []).map((e) => ({ id: e.id, nombre: e.nombre }))
+        setEspecies(opts)
+        setCurrentEspecie((prev) => {
+          if (prev && opts.some((o) => o.id === prev.id)) return prev
+          return opts[0] ?? null
+        })
+      } catch {
+        setEspecies([])
+        setCurrentEspecie(null)
+      } finally {
+        setIsLoadingEspecies(false)
+      }
+    }
+    void load()
+  }, [currentEstablecimiento?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
       setSucursales([])
@@ -205,6 +246,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
   }, [allEstablecimientos])
 
+  const selectEspecie = useCallback((especie: EspecieOption) => {
+    setCurrentEspecie(especie)
+  }, [])
+
   const selectEstablecimiento = useCallback((establecimiento: EstablecimientoOption) => {
     setCurrentEstablecimiento(establecimiento)
     localStorage.setItem('currentEstablecimiento', JSON.stringify(establecimiento))
@@ -226,6 +271,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         currentSucursal, sucursales, isLoadingSucursales, selectSucursal, loadSucursales,
         currentEstablecimiento, establecimientos, isLoadingEstablecimientos, selectEstablecimiento,
         hasEstablecimientos: establecimientos.length > 0,
+        currentEspecie, especies, isLoadingEspecies, selectEspecie,
       }}
     >
       {children}

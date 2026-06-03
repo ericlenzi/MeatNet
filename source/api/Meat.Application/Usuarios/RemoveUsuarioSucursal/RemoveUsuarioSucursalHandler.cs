@@ -43,7 +43,7 @@ namespace Meat.Application.Usuarios.RemoveUsuarioSucursal
             if (tieneEstablecimientos)
                 throw new ValidationException("No se puede quitar la sucursal porque el usuario tiene establecimientos asignados de esa sucursal.");
 
-            if (usuarioSucursal.esMain)
+            if (usuarioSucursal.EsMain)
                 throw new ValidationException("No se puede quitar la sucursal principal. Primero establecé otra como principal.");
 
             this.context.UsuariosSucursales.Remove(usuarioSucursal);

@@ -23,7 +23,7 @@ namespace Meat.Application.Establecimientos.GetEstablecimiento
             var entity = await this.context.Establecimientos
                 .Include(x => x.Empresa)
                 .Include(x => x.Sucursal)
-                .Include(x => x.Especie)
+                .Include(x => x.Especies).ThenInclude(ee => ee.Especie)
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
 
             return this.mapper.Map<GetEstablecimientoResponse>(entity);
