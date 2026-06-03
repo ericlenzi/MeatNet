@@ -7,6 +7,8 @@ import { useApp } from '@/contexts/AppContext'
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
+  isCollapsed: boolean
+  onToggleCollapse: () => void
 }
 
 interface NavItem {
@@ -102,7 +104,21 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
     </svg>
   ),
-  
+  logout: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  ),
+  collapseLeft: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
+    </svg>
+  ),
+  expandRight: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+    </svg>
+  ),
 }
 
 const navGroups: NavGroup[] = [
@@ -232,8 +248,31 @@ function NavSubGroup({
   )
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { isAdmin } = useAuth()
+function CollapsedNavItem({ item, onClose }: { item: NavItem; onClose: () => void }) {
+  return (
+    <NavLink
+      to={item.path}
+      onClick={onClose}
+      title={item.label}
+      className={({ isActive }) =>
+        `flex items-center justify-center rounded-lg p-2.5 transition-colors ${
+          isActive
+            ? 'bg-sidebar-active text-white'
+            : 'text-blue-300 hover:bg-sidebar-hover hover:text-white'
+        }`
+      }
+    >
+      <span className="h-5 w-5 [&>svg]:h-5 [&>svg]:w-5">{item.icon}</span>
+    </NavLink>
+  )
+}
+
+const roleLabels: Record<string, string> = {
+  ADMIN: 'Administrador',
+}
+
+export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) {
+  const { isAdmin, user, logout } = useAuth()
   const { hasEstablecimientos } = useApp()
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Operaciones Ciclo I': false,
@@ -247,66 +286,148 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     setExpandedGroups((prev) => ({ ...prev, [title]: !prev[title] }))
   }
 
-  const filteredGroups = navGroups.filter(
-    (group) => {
-      if (group.title === 'Operaciones Ciclo I' || group.title === 'Operaciones Ciclo II') {
-        return hasEstablecimientos
-      }
-      return !group.adminOnly || isAdmin
-    },
-  )
+  const filteredGroups = navGroups.filter((group) => {
+    if (group.title === 'Operaciones Ciclo I' || group.title === 'Operaciones Ciclo II') {
+      return hasEstablecimientos
+    }
+    return !group.adminOnly || isAdmin
+  })
+
+  const allItems = filteredGroups.flatMap((group) => [
+    ...(group.items ?? []),
+    ...(group.children ?? []).flatMap((child) => child.items ?? []),
+  ])
+
+  const userInitials =
+    user?.nombreCompleto
+      ?.split(' ')
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() ?? 'U'
+
+  const roleLabel = user?.rolId ? (roleLabels[user.rolId] ?? user.rolId) : ''
 
   const sidebarContent = (
     <div className="flex h-full flex-col bg-sidebar text-white">
       {/* Logo */}
-      <Link to="/" onClick={onClose} className="flex h-16 items-center gap-3 border-b border-white/10 px-5 hover:bg-sidebar-hover transition-colors">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 font-bold text-sm">
+      <Link
+        to="/"
+        onClick={onClose}
+        className={`flex h-16 shrink-0 items-center border-b border-white/10 hover:bg-sidebar-hover transition-colors ${
+          isCollapsed ? 'justify-center px-2' : 'gap-3 px-5'
+        }`}
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-600 font-bold text-sm">
           MN
         </div>
-        <span className="text-lg font-semibold tracking-tight">MeatNet</span>
+        {!isCollapsed && (
+          <span className="text-lg font-semibold tracking-tight">MeatNet</span>
+        )}
       </Link>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        {filteredGroups.map((group) => (
-          <div key={group.title} className="mb-2">
-            <button
-              onClick={() => toggleGroup(group.title)}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white/80 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                {group.icon && <span className="opacity-60">{group.icon}</span>}
-                {group.title}
-              </span>
-              <ChevronIcon expanded={!!expandedGroups[group.title]} />
-            </button>
-
-            {expandedGroups[group.title] && (
-              <>
-                {group.items && group.items.length > 0 && (
-                  <NavGroupItems items={group.items} onClose={onClose} />
-                )}
-                {group.children && group.children.map((child) => (
-                  <NavSubGroup
-                    key={child.title}
-                    group={child}
-                    expanded={expandedGroups}
-                    onToggle={toggleGroup}
-                    onClose={onClose}
-                  />
-                ))}
-              </>
-            )}
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {isCollapsed ? (
+          <div className="space-y-1">
+            {allItems.map((item) => (
+              <CollapsedNavItem key={item.path} item={item} onClose={onClose} />
+            ))}
           </div>
-        ))}
+        ) : (
+          filteredGroups.map((group) => (
+            <div key={group.title} className="mb-2">
+              <button
+                onClick={() => toggleGroup(group.title)}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white/80 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  {group.icon && <span className="opacity-60">{group.icon}</span>}
+                  {group.title}
+                </span>
+                <ChevronIcon expanded={!!expandedGroups[group.title]} />
+              </button>
+
+              {expandedGroups[group.title] && (
+                <>
+                  {group.items && group.items.length > 0 && (
+                    <NavGroupItems items={group.items} onClose={onClose} />
+                  )}
+                  {group.children && group.children.map((child) => (
+                    <NavSubGroup
+                      key={child.title}
+                      group={child}
+                      expanded={expandedGroups}
+                      onToggle={toggleGroup}
+                      onClose={onClose}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          ))
+        )}
       </nav>
+
+      {/* Collapse toggle */}
+      <div className="hidden lg:flex shrink-0 justify-end border-t border-white/10 px-2 py-1.5">
+        <button
+          onClick={onToggleCollapse}
+          title={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+          className="flex items-center justify-center rounded-lg p-1.5 text-white/40 hover:bg-sidebar-hover hover:text-white transition-colors"
+        >
+          {isCollapsed ? icons.expandRight : icons.collapseLeft}
+        </button>
+      </div>
+
+      {/* User footer */}
+      <div className={`shrink-0 border-t border-white/10 p-3 ${isCollapsed ? 'flex flex-col items-center gap-2' : ''}`}>
+        {isCollapsed ? (
+          <>
+            <div
+              title={user?.nombreCompleto}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-600/40 text-xs font-semibold text-white"
+            >
+              {userInitials}
+            </div>
+            <button
+              onClick={logout}
+              title="Salir del Sistema"
+              className="flex items-center justify-center rounded-lg p-1.5 text-blue-300 hover:bg-sidebar-hover hover:text-white transition-colors"
+            >
+              {icons.logout}
+            </button>
+          </>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600/40 text-xs font-semibold text-white">
+              {userInitials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium text-white">{user?.nombreCompleto}</p>
+              <p className="truncate text-xs text-blue-300">{roleLabel}</p>
+            </div>
+            <button
+              onClick={logout}
+              title="Salir del Sistema"
+              className="shrink-0 rounded-lg p-1.5 text-blue-300 hover:bg-sidebar-hover hover:text-white transition-colors"
+            >
+              {icons.logout}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+      <aside
+        className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ${
+          isCollapsed ? 'lg:w-16' : 'lg:w-64'
+        }`}
+      >
         {sidebarContent}
       </aside>
 

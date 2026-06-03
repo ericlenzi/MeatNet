@@ -4,7 +4,19 @@
       "Bash(git init *)",
       "Bash(git commit -m ' *)",
       "PowerShell(git remote add origin https://github.com/ericlenzi/MeatNet.git)",
-      "PowerShell(git branch -M main)"
+      "PowerShell(git branch -M main)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\" -Directory)",
+      "Bash(Select-Object Name)",
+      "PowerShell(dotnet build C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api\\\\Meat.Application --no-restore 2>&1)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet ef *)",
+      "Bash(find \"/mnt/c/Eric/App/Claude/Projects/MeatNet/source/api/Meat.Repositories\" -name \"*.csproj\" 2>/dev/null)",
+      "Bash(find \"/mnt/c/Eric/App/Claude/Projects/MeatNet/source/api\" -name \"*.csproj\" 2>/dev/null)",
+      "Bash(grep -n \"sucursalId\\\\|codigoEstablecimiento\\\\|Estado\\\\|SucursalId\" \"/mnt/c/Eric/App/Claude/Projects/MeatNet/source/web/src/types/establecimiento.ts\" \"/mnt/c/Eric/App/Claude/Projects/MeatNet/source/web/src/services/establecimientos.service.ts\" 2>/dev/null)",
+      "Read(//mnt/c/Eric/App/Claude/Projects/MeatNet/source/**)",
+      "Bash(npx tsc *)",
+      "Bash(git add *)",
+      "Bash(git push *)"
     ]
   }
 }
