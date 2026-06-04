@@ -6,6 +6,17 @@ Desde el Ingreso de hacienda y Ubicación en corrales, hasta la Planificación, 
 La aplicación funciona sola, y debe estar preparada para integrarse con un ERP y con aplicaciones en los puestos de producción. 
 Es una aplicación que corre en la nube, web (React-Vite), api (.net 8), bd propia (SQL Server)
 
+## Modelo de Negocio
+La aplicación opera para **una única Empresa**, que puede tener múltiples **Sucursales**.
+Cada Sucursal puede tener múltiples **Establecimientos** (plantas de faena), y cada Establecimiento pertenece a una Sucursal.
+Cada Establecimiento puede operar con distintas **Especies** a través de **EstablecimientosEspecies**, lo que hace al sistema **multiespecie**.
+
+Entidades globales (no pertenecen a ninguna empresa específica, son compartidas):
+`Especie`, `Categoria`, `Cliente`, `Material`, `Rol`, `Usuario`
+
+Entidades que sí pertenecen a la estructura organizacional:
+`Empresa` → `Sucursal` → `Establecimiento` → `EstablecimientoEspecie`
+
 ## Estructura del Repositorio
 ```
 MeatNet/
@@ -33,7 +44,7 @@ MeatNet/
 - Arquitectura y decisiones técnicas: `docs/`
 - Reglas específicas de API: `.claude/rules/api.md`
 - Reglas específicas de Web: `.claude/rules/web.md`
-- **Guia para CRUDs nuevos: `docs/BasisCRUD.md`** — Seguir SIEMPRE este documento al crear un CRUD de una entidad nueva. Contiene los patrones de backend (Entity, Handlers, Controller, migraciones) y frontend (Types, Service, Pages, rutas), incluyendo la regla obligatoria de filtro por empresa activa.
+- **Guia para CRUDs nuevos: `docs/BasisCRUD.md`** — Seguir SIEMPRE este documento al crear un CRUD de una entidad nueva. Contiene los patrones de backend (Entity, Handlers, Controller, migraciones) y frontend (Types, Service, Pages, rutas). Las entidades globales no llevan EmpresaId ni filtro por empresa.
 
 ## Lo que NO hacer
 - No modificar migraciones de EF Core ya aplicadas — crear una nueva migración
