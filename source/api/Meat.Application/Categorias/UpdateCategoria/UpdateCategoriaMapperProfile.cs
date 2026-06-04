@@ -10,7 +10,8 @@ namespace Meat.Application.Categorias.UpdateCategoria
             this.CreateMap<UpdateCategoriaRequest, Categoria>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Especie, opt => opt.Ignore())
-                .ForMember(dest => dest.TipoSexo, opt => opt.Ignore());
+                .ForMember(dest => dest.TipoSexo, opt => opt.Ignore())
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.Ignore());
         }
     }
 }
