@@ -22,8 +22,7 @@ namespace Meat.Application.Usuarios.GetUsuario
         public async Task<GetUsuarioResponse> Handle(GetUsuarioRequest request, CancellationToken cancellationToken)
         {
             var usuario = await this.context.Usuarios
-                .Include(u => u.Empresa)
-                .FirstOrDefaultAsync(p => p.Id == request.Id && p.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .FirstOrDefaultAsync(p => p.Id == request.Id);
 
             return this.mapper.Map<GetUsuarioResponse>(usuario);
         }

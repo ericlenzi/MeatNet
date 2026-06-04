@@ -24,24 +24,18 @@ namespace Meat.Controllers
         [HttpGet]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetClientesAsync([FromQuery] GetClientesRequest request)
-        {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
-            return await this.Handle(request);
-        }
+            => await this.Handle(request);
 
         [HttpGet("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetClienteAsync([FromRoute] Guid id) => await this.Handle(
-            new GetClienteRequest { Id = id, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
+            new GetClienteRequest { Id = id }
         );
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateClienteAsync([FromBody] CreateClienteRequest request)
-        {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
-            return await Handle(request);
-        }
+            => await Handle(request);
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
@@ -49,7 +43,6 @@ namespace Meat.Controllers
             new UpdateClienteRequest()
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
                 Nombre = body.Nombre,
                 TipoClienteId = body.TipoClienteId,
                 NumeroCuit = body.NumeroCuit,
@@ -64,7 +57,7 @@ namespace Meat.Controllers
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteClienteByIdAsync([FromRoute] Guid id) => await this.Handle(
-            new DeleteClienteRequest { Id = id, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
+            new DeleteClienteRequest { Id = id }
         );
     }
 }

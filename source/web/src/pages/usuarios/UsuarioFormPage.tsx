@@ -8,12 +8,10 @@ import {
 } from '@/services/usuarios.service'
 import type { UsuarioSucursalItem, UsuarioEstablecimientoItem } from '@/services/usuarios.service'
 import { getRoles } from '@/services/roles.service'
-import { getEmpresas } from '@/services/empresas.service'
 import { getSucursales } from '@/services/sucursales.service'
 import { getEstablecimientos } from '@/services/establecimientos.service'
 import { useToast } from '@/components/ui/Toast'
-import { useAuth } from '@/contexts/AuthContext'
-import type { Rol, Empresa, Sucursal, Establecimiento } from '@/types'
+import type { Rol, Sucursal, Establecimiento } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
@@ -25,13 +23,11 @@ export default function UsuarioFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { user } = useAuth()
   const isEdit = !!id
 
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [roles, setRoles] = useState<Rol[]>([])
-  const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [form, setForm] = useState({
     UserName: '',
     Nombre: '',
@@ -39,7 +35,6 @@ export default function UsuarioFormPage() {
     Email: '',
     Legajo: '',
     RolId: '',
-    EmpresaId: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -65,25 +60,14 @@ export default function UsuarioFormPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [rolesRes, empresasRes, sucursalesRes, establecimientosRes] = await Promise.all([
+        const [rolesRes, sucursalesRes, establecimientosRes] = await Promise.all([
           getRoles(),
-          getEmpresas({ PageSize: 1000 }),
           getSucursales({ PageSize: 1000 }),
           getEstablecimientos({ PageSize: 1000, Estado: true }),
         ])
         setRoles(rolesRes.data || [])
-        const empList = (empresasRes.data || []).filter((e) => e.tipoEmpresaId === 'PRP')
-        setEmpresas(empList)
         setAllSucursales(sucursalesRes.data || [])
         setAllEstablecimientos(establecimientosRes.data || [])
-
-        const empresaActiva = user?.codigoEmpresa
-          ? empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
-          : undefined
-
-        if (!isEdit && empresaActiva) {
-          setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
-        }
 
         if (isEdit && id) {
           const [usuario, userSucs, userEsts] = await Promise.all([
@@ -98,7 +82,6 @@ export default function UsuarioFormPage() {
             Email: usuario.email || '',
             Legajo: usuario.legajo || '',
             RolId: usuario.rolId || '',
-            EmpresaId: empresaActiva?.id || usuario.empresaId || '',
             Activo: usuario.activo,
           })
           setUsuarioSucursales(userSucs)
@@ -119,7 +102,6 @@ export default function UsuarioFormPage() {
     if (!form.Nombre.trim()) newErrors['Nombre'] = 'Requerido'
     if (!form.Apellido.trim()) newErrors['Apellido'] = 'Requerido'
     if (!form.RolId) newErrors['RolId'] = 'Requerido'
-    if (!form.EmpresaId) newErrors['EmpresaId'] = 'Requerido'
     if (!isEdit && pendingSucursales.length === 0) newErrors['Sucursales'] = 'Debe asignar al menos una sucursal'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -418,18 +400,6 @@ export default function UsuarioFormPage() {
               options={roles.map((r) => ({ value: r.codigo, label: r.nombre }))}
               placeholder="Seleccionar rol..."
               error={errors['RolId']}
-            />
-            <Select
-              label="Empresa"
-              value={form.EmpresaId}
-              onChange={(e) => updateField('EmpresaId', e.target.value)}
-              options={empresas.map((emp) => ({
-                value: emp.id,
-                label: `${emp.codigoEmpresa} - ${emp.nombre}`,
-              }))}
-              placeholder="Seleccionar empresa..."
-              error={errors['EmpresaId']}
-              disabled
             />
           </div>
 

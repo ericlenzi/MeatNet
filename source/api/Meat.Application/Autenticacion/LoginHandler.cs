@@ -41,7 +41,6 @@ namespace Meat.Application.Autenticacion
             }
 
             var user = await this.context.Usuarios
-                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(p => p.UserName == request.Usuario && p.PasswordHash == passwordHash, cancellationToken);
 
             if (user == null)
@@ -49,10 +48,6 @@ namespace Meat.Application.Autenticacion
 
             if (!user.Activo)
                 throw new ArgumentException("Usuario inactivo.");
-
-            var empresaJwt = user.Empresa?.CodigoEmpresa;
-            if (string.IsNullOrEmpty(empresaJwt))
-                throw new ArgumentException("El usuario no tiene una empresa asignada.");
 
             var sucursalesUsuario = await this.context.UsuariosSucursales
                 .Where(x => x.UsuarioId == user.Id)
@@ -67,15 +62,20 @@ namespace Meat.Application.Autenticacion
                 mainSucursal = sucursalesUsuario.FirstOrDefault();
 
             var sucursal = await this.context.Sucursales
+                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(x => x.Id == mainSucursal.SucursalId, cancellationToken);
 
             if (sucursal == null)
                 throw new ArgumentException("La sucursal principal asignada al usuario no existe.");
 
+            var empresaJwt = sucursal.Empresa?.CodigoEmpresa;
+            if (string.IsNullOrEmpty(empresaJwt))
+                throw new ArgumentException("La sucursal no tiene una empresa asignada.");
+
             var sucursalJwt = sucursal.CodigoSucursal;
 
             var parametroPasswordInicial = await this.context.Parametros
-                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == user.EmpresaId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == sucursal.EmpresaId, cancellationToken);
 
             bool debeCambiarContrasena = parametroPasswordInicial != null
                 && !string.IsNullOrWhiteSpace(parametroPasswordInicial.Valor)
@@ -92,7 +92,7 @@ namespace Meat.Application.Autenticacion
                     NombreCompleto = $"{user.Nombre} {user.Apellido}",
                     RolId = user.RolId,
                     CodigoEmpresa = empresaJwt,
-                    NombreEmpresa = user.Empresa?.Nombre ?? string.Empty,
+                    NombreEmpresa = sucursal.Empresa?.Nombre ?? string.Empty,
                     CodigoSucursal = sucursalJwt
                 }
             };

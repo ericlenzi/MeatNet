@@ -12,7 +12,6 @@ namespace Meat.Domain.Usuarios
             string email,
             string legajo,
             string rolId,
-            Guid empresaId,
             bool activo
         )
         {
@@ -26,7 +25,6 @@ namespace Meat.Domain.Usuarios
                 Email = email,
                 Legajo = legajo,
                 RolId = rolId,
-                EmpresaId = empresaId,
                 FechaActualizacion = DateTime.Now,
                 Activo = activo
             };

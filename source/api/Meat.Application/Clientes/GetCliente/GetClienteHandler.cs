@@ -21,9 +21,8 @@ namespace Meat.Application.Clientes.GetCliente
         public async Task<GetClienteResponse> Handle(GetClienteRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Clientes
-                .Include(x => x.EmpresaPadre)
                 .Include(x => x.TipoCliente)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.EmpresaPadre.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             return this.mapper.Map<GetClienteResponse>(entity);
         }

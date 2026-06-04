@@ -6,8 +6,6 @@ namespace Meat.Application.Clientes.CreateCliente
 {
     public class CreateClienteRequest : IRequest<CreateClienteResponse>
     {
-        [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
         [Required]
         public string CodigoCliente { get; set; }
         [Required]

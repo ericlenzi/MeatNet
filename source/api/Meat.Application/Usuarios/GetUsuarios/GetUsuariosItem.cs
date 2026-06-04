@@ -19,8 +19,6 @@ namespace Meat.Application.Usuarios.GetUsuarios
 
         public string RolId { get; set; }
 
-        public Guid EmpresaId { get; set; }
-
         public bool Activo { get; set; }
     }
 }

@@ -6,7 +6,6 @@ export interface Usuario {
   email: string
   legajo: string
   rolId: string
-  empresaId: string
   activo: boolean
 }
 
@@ -17,7 +16,6 @@ export interface CreateUsuarioRequest {
   Email?: string
   Legajo?: string
   RolId: string
-  EmpresaId: string
   Activo: boolean
 }
 
@@ -28,7 +26,6 @@ export interface UpdateUsuarioRequest {
   Email?: string
   Legajo?: string
   RolId: string
-  EmpresaId: string
   Activo: boolean
 }
 

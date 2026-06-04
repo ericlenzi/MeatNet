@@ -23,8 +23,7 @@ namespace Meat.Application.Clientes.UpdateCliente
         public async Task<UpdateClienteResponse> Handle(UpdateClienteRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Clientes
-                .Include(x => x.EmpresaPadre)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.EmpresaPadre.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El cliente no existe");

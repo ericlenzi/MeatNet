@@ -1,5 +1,4 @@
-﻿using Meat.Domain.Empresas;
-using Meat.Domain.Enums;
+﻿using Meat.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,8 +13,6 @@ namespace Meat.Domain.Materiales
         public Guid Id { get; set; }
         public string CodigoMaterial { get; set; }
         public string Nombre { get; set; }
-        public Guid EmpresaId { get; set; }
-        public virtual Empresa Empresa { get; set; }
         public bool Activo { get; set; }
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }

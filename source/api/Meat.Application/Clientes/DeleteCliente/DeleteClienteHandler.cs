@@ -19,8 +19,7 @@ namespace Meat.Application.Clientes.DeleteCliente
         public async Task<DeleteClienteResponse> Handle(DeleteClienteRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Clientes
-                .Include(x => x.EmpresaPadre)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.EmpresaPadre.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El cliente no existe");

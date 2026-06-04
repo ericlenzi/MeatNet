@@ -20,8 +20,6 @@ namespace Meat.Application.Usuarios.UpdateUsuario
         [Required]
         public string RolId { get; set; }
 
-        public Guid EmpresaId { get; set; }
-
         [Required]
         public bool Activo { get; set; }
     }

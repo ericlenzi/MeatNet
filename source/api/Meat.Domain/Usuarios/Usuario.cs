@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Meat.Domain.Empresas;
 using Meat.Domain.Roles;
 namespace Meat.Domain.Usuarios
 {
@@ -18,8 +17,6 @@ namespace Meat.Domain.Usuarios
         public string Legajo { get; set; }
         public string RolId { get; set; }
         public virtual Rol Rol { get; set; }
-        public Guid EmpresaId { get; set; }
-        public virtual Empresa Empresa { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public bool Activo { get; set; }
     }

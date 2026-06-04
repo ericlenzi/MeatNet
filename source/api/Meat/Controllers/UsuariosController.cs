@@ -25,51 +25,35 @@ namespace Meat.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetUsuariosAsync([FromQuery] GetUsuariosRequest request)
-        {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
-            return await this.Handle(request);
-        }
+            => await this.Handle(request);
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUsuarioByIdAsync([FromRoute] Guid id) => await this.Handle(
-            new GetUsuarioRequest
-            {
-                Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
-            }
+            new GetUsuarioRequest { Id = id }
         );
 
         [HttpPost]
         public async Task<IActionResult> CreateUsuarioAsync([FromBody] CreateUsuarioRequest request)
-        {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
-            return await this.Handle(request);
-        }
+            => await this.Handle(request);
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUsuarioAsync([FromRoute] Guid id, [FromBody] UpdateUsuarioRequestFromBody body) => await this.Handle(
             new UpdateUsuarioRequest()
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
                 UserName = body.UserName,
                 Nombre = body.Nombre,
                 Apellido = body.Apellido,
                 Email = body.Email,
                 Legajo = body.Legajo,
                 RolId = body.RolId,
-                EmpresaId = body.EmpresaId,
                 Activo = body.Activo,
             }
         );
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsuarioByIdAsync([FromRoute] Guid id) => await this.Handle(
-            new DeleteUsuarioRequest
-            {
-                Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
-            }
+            new DeleteUsuarioRequest { Id = id }
         );
 
         [HttpPost("IsAutorizador")]

@@ -25,8 +25,6 @@ namespace Meat.Application.Usuarios.GetUsuarios
         public async Task<GetUsuariosResponse> Handle(GetUsuariosRequest request, CancellationToken cancellationToken)
         {
             IQueryable<Usuario> queryable = this.context.Usuarios
-                .Include(x => x.Empresa)
-                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa)
                 .AsQueryable();
 
             if (request.Estado.HasValue)

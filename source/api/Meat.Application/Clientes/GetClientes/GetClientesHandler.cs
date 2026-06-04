@@ -25,9 +25,8 @@ namespace Meat.Application.Clientes.GetClientes
         public async Task<GetClientesResponse> Handle(GetClientesRequest request, CancellationToken cancellationToken)
         {
             IQueryable<Cliente> queryable = this.context.Clientes
-                .Include(x => x.EmpresaPadre)
                 .Include(x => x.TipoCliente)
-                .Where(x => x.EmpresaPadre.CodigoEmpresa == request.CodigoEmpresa);
+                .AsQueryable();
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);

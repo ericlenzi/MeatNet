@@ -1,5 +1,4 @@
-﻿using Meat.Domain.Empresas;
-using Meat.Domain.Enums;
+﻿using Meat.Domain.Enums;
 using Meat.Domain.Sucursales;
 using Meat.Domain.TiposClientes;
 using Meat.Domain.TiposEmpresas;
@@ -26,7 +25,5 @@ namespace Meat.Domain.Clientes
         public bool Activo { get; set; }
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }
-        public Guid EmpresaId { get; set; }
-        public virtual Empresa EmpresaPadre { get; set; }
     }
 }

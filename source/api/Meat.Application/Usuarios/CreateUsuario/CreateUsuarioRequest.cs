@@ -7,8 +7,6 @@ namespace Meat.Application.Usuarios.CreateUsuario
 {
     public class CreateUsuarioRequest : IRequest<CreateUsuarioResponse>
     {
-        [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
         [Required]
         public string UserName { get; set; }
 
@@ -24,8 +22,6 @@ namespace Meat.Application.Usuarios.CreateUsuario
 
         [Required]
         public string RolId { get; set; }
-
-        public Guid EmpresaId { get; set; }
 
         [Required]
         public bool Activo { get; set; }
