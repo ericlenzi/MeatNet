@@ -1,3 +1,9 @@
+export interface TipoEmpresa {
+  codigo: string
+  nombre: string
+  activo: boolean
+}
+
 export interface Empresa {
   id: string
   codigoEmpresa: string

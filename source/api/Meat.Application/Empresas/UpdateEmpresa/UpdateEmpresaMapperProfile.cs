@@ -7,7 +7,8 @@ namespace Meat.Application.Empresas.UpdateEmpresa
     {
         public UpdateEmpresaMapperProfile()
         {
-            this.CreateMap<UpdateEmpresaRequest, Empresa>();
+            this.CreateMap<UpdateEmpresaRequest, Empresa>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
         }
     }
 }

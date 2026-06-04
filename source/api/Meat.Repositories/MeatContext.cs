@@ -23,13 +23,15 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Puestos.Puesto> Puestos { get; set; }
         public virtual DbSet<Domain.Almacenes.Almacen> Almacenes { get; set; }
         public virtual DbSet<Domain.Materiales.Material> Materiales { get; set; }
+        public virtual DbSet<Domain.AlmacenesMateriales.AlmacenMaterial> AlmacenesMateriales { get; set; }
         public virtual DbSet<Domain.Especies.Especie> Especies { get; set; }
         public virtual DbSet<Domain.TiposEmpresas.TipoEmpresa> TiposEmpresas { get; set; }
         public virtual DbSet<Domain.TiposClientes.TipoCliente> TiposClientes { get; set; }
         public virtual DbSet<Domain.TiposAlmacenes.TipoAlmacen> TiposAlmacenes { get; set; }
         public virtual DbSet<Domain.TiposSexos.TipoSexo> TiposSexos { get; set; }
         public virtual DbSet<Domain.Categorias.Categoria> Categorias { get; set; }
-        public virtual DbSet<Domain.AlmacenesMateriales.AlmacenMaterial> AlmacenesMateriales { get; set; }
+        public virtual DbSet<Domain.OrigenesHaciendas.OrigenHacienda> OrigenesHaciendas { get; set; }
+        public virtual DbSet<Domain.UsosHaciendas.UsoHacienda> UsosHaciendas { get; set; }
 
         public MeatContext(DbContextOptions<MeatContext> options)
             : base(options)

@@ -2,18 +2,14 @@ import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getEmpresa, createEmpresa, updateEmpresa } from '@/services/empresas.service'
+import { getTiposEmpresas } from '@/services/tiposEmpresas.service'
+import type { TipoEmpresa } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
-
-const tipoEmpresaOptions = [
-  { value: 'PRP', label: 'Propia' },
-  { value: 'PRV', label: 'Proveedor' },
-  { value: 'CLI', label: 'Cliente' },
-]
 
 export default function EmpresaFormPage() {
   const { id } = useParams()
@@ -22,7 +18,8 @@ export default function EmpresaFormPage() {
   const isEdit = !!id
 
   const [loading, setLoading] = useState(false)
-  const [fetching, setFetching] = useState(isEdit)
+  const [fetching, setFetching] = useState(true)
+  const [tiposEmpresa, setTiposEmpresa] = useState<TipoEmpresa[]>([])
   const [form, setForm] = useState({
     CodigoEmpresa: '',
     Nombre: '',
@@ -37,10 +34,12 @@ export default function EmpresaFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (isEdit && id) {
-      setFetching(true)
-      getEmpresa(id)
-        .then((data) => {
+    const loadData = async () => {
+      try {
+        const tipos = await getTiposEmpresas()
+        setTiposEmpresa(tipos)
+        if (isEdit && id) {
+          const data = await getEmpresa(id)
           setForm({
             CodigoEmpresa: data.codigoEmpresa || '',
             Nombre: data.nombre || '',
@@ -52,10 +51,14 @@ export default function EmpresaFormPage() {
             ERP_Codigo: data.erP_Codigo || '',
             Activo: data.activo,
           })
-        })
-        .catch(() => toast('error', 'Error al cargar la empresa'))
-        .finally(() => setFetching(false))
+        }
+      } catch {
+        toast('error', 'Error al cargar los datos')
+      } finally {
+        setFetching(false)
+      }
     }
+    loadData()
   }, [id, isEdit, toast])
 
   const validate = (): boolean => {
@@ -125,7 +128,7 @@ export default function EmpresaFormPage() {
               label="Tipo Empresa"
               value={form.TipoEmpresaId}
               onChange={(e) => updateField('TipoEmpresaId', e.target.value)}
-              options={tipoEmpresaOptions}
+              options={tiposEmpresa.map((t) => ({ value: t.codigo, label: t.nombre }))}
               placeholder="Seleccionar..."
               error={errors['TipoEmpresaId']}
             />
