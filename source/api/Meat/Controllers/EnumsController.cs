@@ -3,6 +3,7 @@
     using MediatR;
     using Microsoft.AspNetCore.Mvc;
     using Meat.Application.Enums.GetSexos;
+    using Meat.Application.TiposSexos.GetTiposSexos;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -19,5 +20,8 @@
 
         [HttpGet("diasSemana")]
         public async Task<IActionResult> GetDiasSemanaAsync([FromRoute] GetDiasSemanaRequest request) => await this.Handle(request);
+
+        [HttpGet("tiposSexos")]
+        public async Task<IActionResult> GetTiposSexosAsync() => await this.Handle(new GetTiposSexosRequest());
     }
 }

@@ -7,3 +7,4 @@ export type { Establecimiento, CreateEstablecimientoRequest, UpdateEstablecimien
 export type { Parametro, CreateParametroRequest, UpdateParametroRequest } from './parametro'
 export type { Especie, CreateEspecieRequest, UpdateEspecieRequest } from './especie'
 export type { Cliente, CreateClienteRequest, UpdateClienteRequest, TipoCliente } from './cliente'
+export type { Categoria, CreateCategoriaRequest, UpdateCategoriaRequest, TipoSexo } from './categoria'

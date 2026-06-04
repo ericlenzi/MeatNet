@@ -23,6 +23,8 @@ import EspeciesListPage from '@/pages/especies/EspeciesListPage'
 import EspecieFormPage from '@/pages/especies/EspecieFormPage'
 import ClientesListPage from '@/pages/clientes/ClientesListPage'
 import ClienteFormPage from '@/pages/clientes/ClienteFormPage'
+import CategoriasListPage from '@/pages/categorias/CategoriasListPage'
+import CategoriaFormPage from '@/pages/categorias/CategoriaFormPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -66,6 +68,9 @@ function AppRoutes() {
                   <Route path="clientes" element={<ClientesListPage />} />
                   <Route path="clientes/create" element={<ClienteFormPage />} />
                   <Route path="clientes/:id/edit" element={<ClienteFormPage />} />
+                  <Route path="categorias" element={<CategoriasListPage />} />
+                  <Route path="categorias/create" element={<CategoriaFormPage />} />
+                  <Route path="categorias/:id/edit" element={<CategoriaFormPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />
