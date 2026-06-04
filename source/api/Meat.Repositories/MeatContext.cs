@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Meat.Domain.Categorias;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
 using System.Threading;
@@ -27,7 +28,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.TiposClientes.TipoCliente> TiposClientes { get; set; }
         public virtual DbSet<Domain.TiposAlmacenes.TipoAlmacen> TiposAlmacenes { get; set; }
         public virtual DbSet<Domain.TiposSexos.TipoSexo> TiposSexos { get; set; }
-        public virtual DbSet<Domain.TiposEspecies.TipoEspecie> TiposEspecies { get; set; }
+        public virtual DbSet<Domain.Categorias.Categoria> Categorias { get; set; }
         public virtual DbSet<Domain.AlmacenesMateriales.AlmacenMaterial> AlmacenesMateriales { get; set; }
 
         public MeatContext(DbContextOptions<MeatContext> options)

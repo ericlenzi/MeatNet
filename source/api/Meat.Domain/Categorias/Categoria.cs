@@ -1,17 +1,13 @@
-﻿using Meat.Domain.Empresas;
-using Meat.Domain.Enums;
-using Meat.Domain.Especies;
-using Meat.Domain.Materiales;
-using Meat.Domain.Sucursales;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.TiposSexos;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Meat.Domain.TiposEspecies
+namespace Meat.Domain.Categorias
 {
-    public class TipoEspecie
+    public class Categoria
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
