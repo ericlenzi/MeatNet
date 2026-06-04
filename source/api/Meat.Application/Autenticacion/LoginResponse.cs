@@ -6,6 +6,7 @@ namespace Meat.Application.Autenticacion
     {
         public CurrentUser CurrentUser { get; set; }
         public string Token { get; set; }
+        public bool DebeCambiarContrasena { get; set; }
     }
 
     public class CurrentUser

@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { AppProvider } from '@/contexts/AppContext'
 import { ToastProvider } from '@/components/ui/Toast'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import MainLayout from '@/layouts/MainLayout'
+import CambiarContrasenaModal from '@/components/layout/CambiarContrasenaModal'
 import LoginPage from '@/pages/login/LoginPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 import EmpresasListPage from '@/pages/empresas/EmpresasListPage'
@@ -25,13 +26,11 @@ import ClienteFormPage from '@/pages/clientes/ClienteFormPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
-function App() {
+function AppRoutes() {
+  const { debeCambiarContrasena, onContrasenaChanged } = useAuth()
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppProvider>
-          <ToastProvider>
-            <Routes>
+    <>
+      <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route element={<MainLayout />}>
@@ -71,6 +70,22 @@ function App() {
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
+      <CambiarContrasenaModal
+        isOpen={debeCambiarContrasena}
+        onClose={onContrasenaChanged}
+        forzado
+      />
+    </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppProvider>
+          <ToastProvider>
+            <AppRoutes />
           </ToastProvider>
         </AppProvider>
       </AuthProvider>

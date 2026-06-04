@@ -74,9 +74,17 @@ namespace Meat.Application.Autenticacion
 
             var sucursalJwt = sucursal.CodigoSucursal;
 
+            var parametroPasswordInicial = await this.context.Parametros
+                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == user.EmpresaId, cancellationToken);
+
+            bool debeCambiarContrasena = parametroPasswordInicial != null
+                && !string.IsNullOrWhiteSpace(parametroPasswordInicial.Valor)
+                && string.Equals(passwordHash, ComputeSha1(parametroPasswordInicial.Valor), StringComparison.OrdinalIgnoreCase);
+
             return new LoginResponse()
             {
                 Token = this.GenerateJwt(user, empresaJwt, sucursalJwt),
+                DebeCambiarContrasena = debeCambiarContrasena,
                 CurrentUser = new CurrentUser
                 {
                     Id = user.Id,
@@ -88,6 +96,13 @@ namespace Meat.Application.Autenticacion
                     CodigoSucursal = sucursalJwt
                 }
             };
+        }
+
+        private static string ComputeSha1(string value)
+        {
+            using SHA1 sha1 = SHA1.Create();
+            byte[] hashBytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(value));
+            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
         private string GenerateJwt(Usuario user, string codigoEmpresa, string codigoSucursal)

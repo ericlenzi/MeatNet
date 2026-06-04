@@ -9,9 +9,10 @@ import Button from '@/components/ui/Button'
 interface CambiarContrasenaModalProps {
   isOpen: boolean
   onClose: () => void
+  forzado?: boolean
 }
 
-export default function CambiarContrasenaModal({ isOpen, onClose }: CambiarContrasenaModalProps) {
+export default function CambiarContrasenaModal({ isOpen, onClose, forzado = false }: CambiarContrasenaModalProps) {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
@@ -27,6 +28,7 @@ export default function CambiarContrasenaModal({ isOpen, onClose }: CambiarContr
   }
 
   const handleClose = () => {
+    if (forzado) return
     resetForm()
     onClose()
   }
@@ -53,7 +55,8 @@ export default function CambiarContrasenaModal({ isOpen, onClose }: CambiarContr
         ContraseñaNueva: form.ContraseñaNueva,
       })
       toast('success', 'Contraseña actualizada correctamente')
-      handleClose()
+      resetForm()
+      onClose()
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al cambiar la contraseña')
     } finally {
@@ -67,8 +70,13 @@ export default function CambiarContrasenaModal({ isOpen, onClose }: CambiarContr
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Cambiar Contraseña" size="sm">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Cambiar Contraseña" size="sm" closeable={!forzado}>
       <form onSubmit={handleSubmit}>
+        {forzado && (
+          <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+            Su contraseña es la contraseña inicial del sistema. Debe establecer una nueva contraseña para continuar.
+          </div>
+        )}
         <div className="space-y-4">
           <Input
             label="Contraseña Actual"
@@ -97,9 +105,11 @@ export default function CambiarContrasenaModal({ isOpen, onClose }: CambiarContr
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="secondary" type="button" onClick={handleClose}>
-            Cancelar
-          </Button>
+          {!forzado && (
+            <Button variant="secondary" type="button" onClick={handleClose}>
+              Cancelar
+            </Button>
+          )}
           <Button type="submit" loading={loading}>
             Cambiar Contraseña
           </Button>

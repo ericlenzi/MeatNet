@@ -16,4 +16,5 @@ export interface CurrentUser {
 export interface LoginResponse {
   token: string
   currentUser: CurrentUser
+  debeCambiarContrasena: boolean
 }

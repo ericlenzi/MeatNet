@@ -9,6 +9,8 @@ interface AuthContextType {
   isAuthenticated: boolean
   isAdmin: boolean
   isLoading: boolean
+  debeCambiarContrasena: boolean
+  onContrasenaChanged: () => void
   login: (usuario: string, contraseña: string) => Promise<void>
   logout: () => void
 }
@@ -19,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [debeCambiarContrasena, setDebeCambiarContrasena] = useState(false)
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token')
@@ -41,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('user', JSON.stringify(response.currentUser))
     setToken(response.token)
     setUser(response.currentUser)
+    if (response.debeCambiarContrasena) {
+      setDebeCambiarContrasena(true)
+    }
   }, [])
 
   const logout = useCallback(() => {
@@ -49,6 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('currentSucursal')
     setToken(null)
     setUser(null)
+    setDebeCambiarContrasena(false)
+  }, [])
+
+  const onContrasenaChanged = useCallback(() => {
+    setDebeCambiarContrasena(false)
   }, [])
 
   const isAuthenticated = !!token && !!user
@@ -56,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isAuthenticated, isAdmin, isLoading, login, logout }}
+      value={{ user, token, isAuthenticated, isAdmin, isLoading, debeCambiarContrasena, onContrasenaChanged, login, logout }}
     >
       {children}
     </AuthContext.Provider>

@@ -8,6 +8,7 @@ interface ModalProps {
   title: string
   children: ReactNode
   size?: 'sm' | 'md' | 'lg'
+  closeable?: boolean
 }
 
 const sizeClasses = {
@@ -22,10 +23,11 @@ export default function Modal({
   title,
   children,
   size = 'md',
+  closeable = true,
 }: ModalProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && closeable) onClose()
     }
     if (isOpen) {
       document.addEventListener('keydown', handleEscape)
@@ -35,7 +37,7 @@ export default function Modal({
       document.removeEventListener('keydown', handleEscape)
       document.body.style.overflow = ''
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, closeable])
 
   if (!isOpen) return null
 
@@ -43,21 +45,23 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={onClose}
+        onClick={closeable ? onClose : undefined}
       />
       <div
         className={`relative z-10 w-full ${sizeClasses[size]} mx-4 rounded-xl bg-surface p-6 shadow-xl`}
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text">{title}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 text-text-light hover:bg-gray-100 hover:text-text transition-colors"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {closeable && (
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1 text-text-light hover:bg-gray-100 hover:text-text transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         {children}
       </div>
