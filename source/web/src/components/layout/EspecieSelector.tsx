@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 
-export default function EspecieSelector() {
+interface EspecieSelectorProps {
+  disabled?: boolean
+}
+
+export default function EspecieSelector({ disabled = false }: EspecieSelectorProps) {
   const { currentEspecie, especies, isLoadingEspecies, selectEspecie } = useApp()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const canChange = especies.length > 1
+  const canChange = !disabled && especies.length > 1
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

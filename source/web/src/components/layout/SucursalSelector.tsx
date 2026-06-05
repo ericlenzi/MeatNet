@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 
-export default function SucursalSelector() {
+interface SucursalSelectorProps {
+  disabled?: boolean
+}
+
+export default function SucursalSelector({ disabled = false }: SucursalSelectorProps) {
   const { currentSucursal, sucursales, isLoadingSucursales, selectSucursal } = useApp()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const canChange = sucursales.length > 1
+  const canChange = !disabled && sucursales.length > 1
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

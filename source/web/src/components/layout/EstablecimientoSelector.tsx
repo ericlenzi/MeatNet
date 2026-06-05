@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 
-export default function EstablecimientoSelector() {
+interface EstablecimientoSelectorProps {
+  disabled?: boolean
+}
+
+export default function EstablecimientoSelector({ disabled = false }: EstablecimientoSelectorProps) {
   const { currentEstablecimiento, establecimientos, isLoadingEstablecimientos, selectEstablecimiento } = useApp()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const canChange = establecimientos.length > 1
+  const canChange = !disabled && establecimientos.length > 1
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useLocation } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApp } from '@/contexts/AppContext'
 import SucursalSelector from './SucursalSelector'
@@ -14,6 +15,8 @@ interface HeaderProps {
 export default function Header({ onMenuToggle }: HeaderProps) {
   const { user, logout } = useAuth()
   const { establecimientos, isLoadingEstablecimientos, currentEstablecimiento } = useApp()
+  const { pathname } = useLocation()
+  const isDashboard = pathname === '/'
   const showEstablecimiento = !isLoadingEstablecimientos && establecimientos.length > 0
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [cambiarContrasenaOpen, setCambiarContrasenaOpen] = useState(false)
@@ -59,7 +62,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           </svg>
           Sucursal:
         </span>
-        <SucursalSelector />
+        <SucursalSelector disabled={!isDashboard} />
         {showEstablecimiento && (
           <>
             <div className="hidden h-4 w-px bg-border sm:block" />
@@ -69,7 +72,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               </svg>
               Establecimiento:
             </span>
-            <EstablecimientoSelector />
+            <EstablecimientoSelector disabled={!isDashboard} />
           </>
         )}
         {currentEstablecimiento && (
@@ -81,7 +84,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               </svg>
               Especie:
             </span>
-            <EspecieSelector />
+            <EspecieSelector disabled={!isDashboard} />
           </>
         )}
       </div>
