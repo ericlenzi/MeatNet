@@ -1,18 +1,25 @@
 # MeatNet
 
 ## Descripción del Proyecto
-Sistema de gestión para frigoríficos. Permite administrar operaciones del negocio cárnico relacionadas al Ciclo I de producción, 
-Desde el Ingreso de hacienda y Ubicación en corrales, hasta la Planificación, Ejecusión y Evaluación de la Faena.
-La aplicación funciona sola, y debe estar preparada para integrarse con un ERP y con aplicaciones en los puestos de producción. 
-Es una aplicación que corre en la nube, web (React-Vite), api (.net 8), bd propia (SQL Server)
+Sistema de gestión para frigoríficos que permite administrar operaciones del negocio cárnico relacionadas al Ciclo I de producción.
+La aplicación de tecnología web funciona en la nube, y debe estar preparada para integrarse con un ERP externo y con aplicaciones de captura de datos en los puestos de producción. 
+La tecnología de desarrollo básicamente se resume para el frontend (React-Vite), backend api (.net 8) y bd propia (SQL Server).
+
+## Ambito del Proyecto
+El proceso productivo de la cadena de valor cárnica en Argentina se organiza en tres bloques, cada uno dependiente del anterior: 
+- Campo (producción primaria)
+- Industria Frigorífica (industrialización)
+- Mercado (comercialización y distribución)
+Nuestro sistema se centra en la gestión para frigoríficos, donde el ser vivo se convierte en alimento perecedero, dividiéndose en subproductos y carne apta para el consumo.
+
+El proceso industrial del frigorífico completo abarca el Ciclo I (Faena) y el Ciclo II (Despostada):
+- Ciclo I: Se transforma la hacienda en "media res". 
+- Ciclo II: Se desarma esa "media res" en cortes primarios o minoristas envasados al vacío.
+Nuestro sistema se centra en la gestión del Ciclo I, haciendo foco en la Recepción de hacienda, Linea de faena, Tipificación y romaneo y Cámaras de enfriamiento.
 
 ## Modelo de Negocio
-La aplicación opera para **una única Empresa**, que puede tener múltiples **Sucursales**.
-Cada Sucursal puede tener múltiples **Establecimientos** (plantas de faena), y cada Establecimiento pertenece a una Sucursal.
-Cada Establecimiento puede operar con distintas **Especies** a través de **EstablecimientosEspecies**, lo que hace al sistema **multiespecie**.
-
-Entidades globales (no pertenecen a ninguna empresa específica, son compartidas):
-`Especie`, `Categoria`, `Cliente`, `Material`, `Rol`, `Usuario`
+La aplicación opera para **una única Empresa**, que puede tener múltiples **Sucursales** y múltiples **Establecimientos** (plantas de faena). 
+Cada Establecimiento está asociado a una Sucursal y puede operar con distintas **Especies** a través de **EstablecimientosEspecies**, lo que hace al sistema **multiespecie**.
 
 Entidades que sí pertenecen a la estructura organizacional:
 `Empresa` → `Sucursal` → `Establecimiento` → `EstablecimientoEspecie`

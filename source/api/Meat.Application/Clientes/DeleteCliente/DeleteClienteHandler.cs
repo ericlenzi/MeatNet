@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Repositories;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +25,11 @@ namespace Meat.Application.Clientes.DeleteCliente
             if (entity == null)
                 throw new ValidationException("El cliente no existe");
 
+            var clienteEstablecimientos = await this.context.ClientesEstablecimientos
+                .Where(ce => ce.ClienteId == request.Id)
+                .ToListAsync(cancellationToken);
+
+            this.context.ClientesEstablecimientos.RemoveRange(clienteEstablecimientos);
             this.context.Clientes.Remove(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 

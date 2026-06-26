@@ -33,7 +33,7 @@ export default function EstablecimientoFormPage() {
     EmpresaId: '',
     SucursalId: '',
     NumeroSenasa: '',
-    NumeroOncca: '',
+    NumeroRuca: '',
     Activo: true,
   })
   const [selectedEspecies, setSelectedEspecies] = useState<EspecieItem[]>([])
@@ -70,7 +70,7 @@ export default function EstablecimientoFormPage() {
             EmpresaId: empresaActiva?.id || '',
             SucursalId: entity.sucursalId || '',
             NumeroSenasa: entity.numeroSenasa || '',
-            NumeroOncca: entity.numeroOncca || '',
+            NumeroRuca: entity.numeroRuca || '',
             Activo: entity.activo,
           })
           setSelectedEspecies(entity.especies || [])
@@ -132,7 +132,7 @@ export default function EstablecimientoFormPage() {
           SucursalId: form.SucursalId,
           EspecieIds: especieIds,
           NumeroSenasa: form.NumeroSenasa,
-          NumeroOncca: form.NumeroOncca,
+          NumeroRuca: form.NumeroRuca,
           Activo: form.Activo,
         })
         toast('success', 'Establecimiento actualizado')
@@ -143,7 +143,7 @@ export default function EstablecimientoFormPage() {
           SucursalId: form.SucursalId,
           EspecieIds: especieIds,
           NumeroSenasa: form.NumeroSenasa,
-          NumeroOncca: form.NumeroOncca,
+          NumeroRuca: form.NumeroRuca,
         })
         toast('success', 'Establecimiento creado')
       }
@@ -216,9 +216,9 @@ export default function EstablecimientoFormPage() {
               onChange={(e) => updateField('NumeroSenasa', e.target.value)}
             />
             <Input
-              label="Numero ONCCA"
-              value={form.NumeroOncca}
-              onChange={(e) => updateField('NumeroOncca', e.target.value)}
+              label="Numero RUCA"
+              value={form.NumeroRuca}
+              onChange={(e) => updateField('NumeroRuca', e.target.value)}
             />
           </div>
 

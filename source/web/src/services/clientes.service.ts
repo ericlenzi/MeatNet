@@ -40,3 +40,50 @@ export async function updateCliente(
 export async function deleteCliente(id: string): Promise<void> {
   await api.delete(`/Clientes/${id}`)
 }
+
+// --- ClientesEstablecimientos ---
+
+export interface ClienteEstablecimientoItem {
+  id: string
+  establecimientoId: string
+  codigoEstablecimiento: string
+  nombre: string
+  sucursalId: string
+  codigoSucursal: string
+  nombreSucursal: string
+  codigoRenspa: string
+  numeroCUIG: string
+}
+
+interface ClienteEstablecimientosResponse {
+  data: ClienteEstablecimientoItem[]
+}
+
+export async function getClienteEstablecimientos(
+  clienteId: string,
+): Promise<ClienteEstablecimientoItem[]> {
+  const response = await api.get<ClienteEstablecimientosResponse>(
+    `/Clientes/${clienteId}/Establecimientos`,
+  )
+  return response.data.data || []
+}
+
+export async function addClienteEstablecimiento(
+  clienteId: string,
+  establecimientoId: string,
+  codigoRenspa: string,
+  numeroCUIG: string,
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>(
+    `/Clientes/${clienteId}/Establecimientos`,
+    { EstablecimientoId: establecimientoId, CodigoRenspa: codigoRenspa, NumeroCUIG: numeroCUIG },
+  )
+  return response.data
+}
+
+export async function removeClienteEstablecimiento(
+  clienteId: string,
+  clienteEstablecimientoId: string,
+): Promise<void> {
+  await api.delete(`/Clientes/${clienteId}/Establecimientos/${clienteEstablecimientoId}`)
+}

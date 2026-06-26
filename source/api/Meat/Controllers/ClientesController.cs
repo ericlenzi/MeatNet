@@ -47,8 +47,6 @@ namespace Meat.Controllers
                 TipoClienteId = body.TipoClienteId,
                 NumeroCuit = body.NumeroCuit,
                 NumeroIngresosBrutos = body.NumeroIngresosBrutos,
-                NumeroInscripcionRuca = body.NumeroInscripcionRuca,
-                CodigoActividad = body.CodigoActividad,
                 ERP_Codigo = body.ERP_Codigo,
                 Activo = body.Activo
             }

@@ -23,8 +23,10 @@ import EspeciesListPage from '@/pages/especies/EspeciesListPage'
 import EspecieFormPage from '@/pages/especies/EspecieFormPage'
 import ClientesListPage from '@/pages/clientes/ClientesListPage'
 import ClienteFormPage from '@/pages/clientes/ClienteFormPage'
-import CategoriasListPage from '@/pages/categorias/CategoriasListPage'
-import CategoriaFormPage from '@/pages/categorias/CategoriaFormPage'
+import TiposEspeciesListPage from '@/pages/tiposEspecies/TiposEspeciesListPage'
+import TipoEspecieFormPage from '@/pages/tiposEspecies/TipoEspecieFormPage'
+import NumeradoresTropasListPage from '@/pages/numeradoresTropas/NumeradoresTropasListPage'
+import NumeradorTropaFormPage from '@/pages/numeradoresTropas/NumeradorTropaFormPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -68,9 +70,12 @@ function AppRoutes() {
                   <Route path="clientes" element={<ClientesListPage />} />
                   <Route path="clientes/create" element={<ClienteFormPage />} />
                   <Route path="clientes/:id/edit" element={<ClienteFormPage />} />
-                  <Route path="categorias" element={<CategoriasListPage />} />
-                  <Route path="categorias/create" element={<CategoriaFormPage />} />
-                  <Route path="categorias/:id/edit" element={<CategoriaFormPage />} />
+                  <Route path="numeradores-tropas" element={<NumeradoresTropasListPage />} />
+                  <Route path="numeradores-tropas/create" element={<NumeradorTropaFormPage />} />
+                  <Route path="numeradores-tropas/:id/edit" element={<NumeradorTropaFormPage />} />
+                  <Route path="tipos-especies" element={<TiposEspeciesListPage />} />
+                  <Route path="tipos-especies/create" element={<TipoEspecieFormPage />} />
+                  <Route path="tipos-especies/:id/edit" element={<TipoEspecieFormPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />

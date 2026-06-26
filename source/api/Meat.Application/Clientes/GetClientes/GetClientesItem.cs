@@ -10,6 +10,7 @@ namespace Meat.Application.Clientes.GetClientes
         public string TipoClienteId { get; set; }
         public string TipoClienteNombre { get; set; }
         public string NumeroCuit { get; set; }
+        public string NumeroIngresosBrutos { get; set; }
         public string ERP_Codigo { get; set; }
         public bool Activo { get; set; }
     }

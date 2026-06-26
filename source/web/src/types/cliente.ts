@@ -6,8 +6,6 @@ export interface Cliente {
   tipoClienteNombre: string
   numeroCuit: string
   numeroIngresosBrutos: string
-  numeroInscripcionRuca: string
-  codigoActividad: string
   erP_Codigo: string
   activo: boolean
 }
@@ -18,8 +16,6 @@ export interface CreateClienteRequest {
   TipoClienteId: string
   NumeroCuit?: string
   NumeroIngresosBrutos?: string
-  NumeroInscripcionRuca?: string
-  CodigoActividad?: string
   ERP_Codigo?: string
 }
 
@@ -28,8 +24,6 @@ export interface UpdateClienteRequest {
   TipoClienteId: string
   NumeroCuit?: string
   NumeroIngresosBrutos?: string
-  NumeroInscripcionRuca?: string
-  CodigoActividad?: string
   ERP_Codigo?: string
   Activo: boolean
 }

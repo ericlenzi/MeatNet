@@ -76,10 +76,12 @@ export default function EstablecimientosListPage() {
       key: 'especies',
       header: 'Especies',
       width: '160px',
-      render: (value: Establecimiento['especies']) =>
-        value && value.length > 0
-          ? <div className="flex flex-wrap gap-1">{value.map((e) => <Badge key={e.id} variant="default">{e.nombre}</Badge>)}</div>
-          : <span className="text-text-light text-xs">—</span>,
+      render: (value) => {
+        const especies = value as Establecimiento['especies']
+        return especies && especies.length > 0
+          ? <div className="flex flex-wrap gap-1">{especies.map((e) => <Badge key={e.id} variant="neutral">{e.nombre}</Badge>)}</div>
+          : <span className="text-text-light text-xs">—</span>
+      },
     },
     { key: 'numeroSenasa', header: 'SENASA', width: '120px', sortable: true },
     {

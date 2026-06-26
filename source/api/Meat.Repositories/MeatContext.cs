@@ -1,5 +1,4 @@
-﻿using Meat.Domain.Categorias;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
 using System.Threading;
@@ -13,6 +12,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Sucursales.Sucursal> Sucursales { get; set; }
         public virtual DbSet<Domain.Parametros.Parametro> Parametros { get; set; }
         public virtual DbSet<Domain.Clientes.Cliente> Clientes { get; set; }
+        public virtual DbSet<Domain.ClientesEstablecimientos.ClienteEstablecimiento> ClientesEstablecimientos { get; set; }
         public virtual DbSet<Domain.Establecimientos.Establecimiento> Establecimientos { get; set; }
         public virtual DbSet<Domain.EstablecimientosEspecies.EstablecimientoEspecie> EstablecimientosEspecies { get; set; }
         public virtual DbSet<Domain.Roles.Rol> Roles { get; set; }
@@ -29,9 +29,13 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.TiposClientes.TipoCliente> TiposClientes { get; set; }
         public virtual DbSet<Domain.TiposAlmacenes.TipoAlmacen> TiposAlmacenes { get; set; }
         public virtual DbSet<Domain.TiposSexos.TipoSexo> TiposSexos { get; set; }
-        public virtual DbSet<Domain.Categorias.Categoria> Categorias { get; set; }
+        public virtual DbSet<Domain.TiposEspecies.TipoEspecie> TiposEspecies { get; set; }
         public virtual DbSet<Domain.OrigenesHaciendas.OrigenHacienda> OrigenesHaciendas { get; set; }
         public virtual DbSet<Domain.UsosHaciendas.UsoHacienda> UsosHaciendas { get; set; }
+        public virtual DbSet<Domain.TiposMateriales.TipoMaterial> TiposMateriales { get; set; }
+        public virtual DbSet<Domain.UnidadesMedidas.UnidadMedida> UnidadesMedidas { get; set; }
+        public virtual DbSet<Domain.TiposAnimales.TipoAnimal> TiposAnimales { get; set; }
+        public virtual DbSet<Domain.NumeradoresTropas.NumeradorTropa> NumeradoresTropas { get; set; }
 
         public MeatContext(DbContextOptions<MeatContext> options)
             : base(options)
@@ -74,6 +78,57 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.Sucursales.Sucursal>().Property(x => x.FechaActualizacion).HasDefaultValueSql("getdate()");
 
             #endregion FechaActualizacion Default Value
+
+            #region Indices Unicos
+
+            // Tablas de relacion (unicidad compuesta)
+            modelBuilder.Entity<Domain.NumeradoresTropas.NumeradorTropa>()
+                .HasIndex(nt => new { nt.ClienteEstablecimientoId, nt.EspecieCodigo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.ClientesEstablecimientos.ClienteEstablecimiento>()
+                .HasIndex(ce => new { ce.ClienteId, ce.EstablecimientoId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.UsuariosEstablecimientos.UsuarioEstablecimiento>()
+                .HasIndex(ue => new { ue.UsuarioId, ue.EstablecimientoId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.UsuariosSucursales.UsuarioSucursal>()
+                .HasIndex(us => new { us.UsuarioId, us.SucursalId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.EstablecimientosEspecies.EstablecimientoEspecie>()
+                .HasIndex(ee => new { ee.EstablecimientoId, ee.EspecieId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Codigos unicos (una columna)
+            modelBuilder.Entity<Domain.Sucursales.Sucursal>()
+                .HasIndex(s => s.CodigoSucursal)
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.Usuarios.Usuario>()
+                .HasIndex(u => u.UserName)
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.Establecimientos.Establecimiento>()
+                .HasIndex(e => e.CodigoEstablecimiento)
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.Clientes.Cliente>()
+                .HasIndex(c => c.CodigoCliente)
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            #endregion Indices Unicos
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

@@ -54,7 +54,7 @@ namespace Meat.Controllers
                 SucursalId = body.SucursalId,
                 EspecieIds = body.EspecieIds,
                 NumeroSenasa = body.NumeroSenasa,
-                NumeroOncca = body.NumeroOncca,
+                NumeroRuca = body.NumeroRuca,
                 Activo = body.Activo
             }
         );

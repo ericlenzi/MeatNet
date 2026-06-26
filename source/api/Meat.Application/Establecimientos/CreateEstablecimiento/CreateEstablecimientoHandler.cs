@@ -28,6 +28,11 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
             if (request.EspecieIds == null || !request.EspecieIds.Any(e => !string.IsNullOrEmpty(e)))
                 throw new ValidationException("El establecimiento debe tener al menos una especie asignada.");
 
+            var existe = await this.context.Establecimientos
+                .AnyAsync(e => e.CodigoEstablecimiento == request.CodigoEstablecimiento, cancellationToken);
+            if (existe)
+                throw new ValidationException("Ya existe un establecimiento con ese codigo.");
+
             var empresa = await this.context.Empresas
                 .FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
             if (empresa == null)

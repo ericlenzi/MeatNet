@@ -153,8 +153,9 @@ const navGroups: NavGroup[] = [
           { label: 'Sucursales', path: '/sucursales', icon: icons.locationMarker },
           { label: 'Establecimientos', path: '/establecimientos', icon: icons.library },
           { label: 'Especies', path: '/especies', icon: icons.tag },
-          { label: 'Categorias', path: '/categorias', icon: icons.tag },
+          { label: 'Tipos de Especies', path: '/tipos-especies', icon: icons.tag },
           { label: 'Clientes', path: '/clientes', icon: icons.users },
+          { label: 'Numeradores de Tropas', path: '/numeradores-tropas', icon: icons.chartBar },
         ],
       },
       {

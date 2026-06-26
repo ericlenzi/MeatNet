@@ -31,12 +31,15 @@ namespace Meat.Application.Establecimientos.DeleteEstablecimiento
             if (tieneUsuarios)
                 throw new ValidationException("No se puede eliminar el establecimiento porque tiene usuarios asignados.");
 
-            // Eliminar en cascada las especies asignadas al establecimiento
             var especies = await this.context.EstablecimientosEspecies
                 .Where(ee => ee.EstablecimientoId == request.Id)
                 .ToListAsync(cancellationToken);
-            if (especies.Any())
-                this.context.EstablecimientosEspecies.RemoveRange(especies);
+            this.context.EstablecimientosEspecies.RemoveRange(especies);
+
+            var clientesEstablecimientos = await this.context.ClientesEstablecimientos
+                .Where(ce => ce.EstablecimientoId == request.Id)
+                .ToListAsync(cancellationToken);
+            this.context.ClientesEstablecimientos.RemoveRange(clientesEstablecimientos);
 
             this.context.Establecimientos.Remove(entity);
             await this.context.SaveChangesAsync(cancellationToken);

@@ -144,6 +144,31 @@ public virtual DbSet<Domain.{Entidades}.{Entidad}> {Entidades} { get; set; }
 > - **Soft delete** via shadow property `FechaBaja` (intercepta `EntityState.Deleted`)
 > - **Query filter** global `WHERE FechaBaja IS NULL`
 
+#### Indices unicos filtrados
+
+Cuando la entidad tiene campos que deben ser **unicos** (un codigo de negocio, o la clave compuesta de una tabla de relacion), agregar un indice unico **filtrado** en la region `Indices Unicos` de `OnModelCreating` (`MeatContext.cs`).
+
+```csharp
+// Codigo unico (una columna)
+modelBuilder.Entity<Domain.{Entidades}.{Entidad}>()
+    .HasIndex(x => x.Codigo)
+    .IsUnique()
+    .HasFilter("[FechaBaja] IS NULL");
+
+// Tabla de relacion (clave compuesta)
+modelBuilder.Entity<Domain.{Relaciones}.{Relacion}>()
+    .HasIndex(x => new { x.PadreId, x.HijoId })
+    .IsUnique()
+    .HasFilter("[FechaBaja] IS NULL");
+```
+
+> **CRITICO: el filtro `[FechaBaja] IS NULL` es obligatorio.** Sin el, los registros con soft-delete (que conservan su clave) bloquearian la reutilizacion del codigo al dar de alta uno nuevo. Con el filtro, la unicidad solo aplica a los registros activos.
+
+Reglas:
+- Indexar columnas `string` requiere que sean `nvarchar(450)`, no `nvarchar(max)`. EF lo ajusta solo al generar la migracion (puede avisar "possible data loss" por el cambio de tipo, es seguro).
+- El indice unico **no reemplaza** la validacion en el handler: el `AnyAsync(...)` previo en Create/Add devuelve un `ValidationException` (HTTP 400) con mensaje amigable, mientras que el indice solo lanza un error SQL crudo (HTTP 500). Mantener ambos.
+- Antes de aplicar la migracion en una base con datos, verificar que no existan duplicados activos (la creacion del indice unico falla si los hay).
+
 ### 2.3 Application Layer (Handlers)
 
 Arquitectura: **CQRS con MediatR**. Cada operacion tiene su carpeta con Request, Response, Handler y opcionalmente MapperProfile.
@@ -799,6 +824,7 @@ Excepciones personalizadas:
 - [ ] Crear entity en `Meat.Domain/{Entidad}/{Entidad}.cs` con `EmpresaId` + navegacion `Empresa`
 - [ ] (Opcional) Crear factory en `Meat.Domain/{Entidad}/{Entidad}Factory.cs`
 - [ ] Registrar DbSet en `MeatContext.cs`
+- [ ] (Si hay campos unicos) Agregar indice unico filtrado (`HasFilter("[FechaBaja] IS NULL")`) en la region `Indices Unicos` de `OnModelCreating`
 - [ ] Crear carpeta `Meat.Application/{Entidades}/`
 - [ ] Crear `Get{Entidades}/` - Request (hereda RequestListBase), Response, Handler (con filtro empresa)
 - [ ] Crear `Get{Entidad}/` - Request, Response, MapperProfile, Handler (con filtro empresa)

@@ -18,7 +18,7 @@ namespace Meat.Domain.Establecimientos
         public Guid SucursalId { get; set; }
         public virtual Sucursal Sucursal { get; set; }
         public string NumeroSenasa { get; set; }
-        public string NumeroOncca { get; set; }
+        public string NumeroRuca { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public Guid EmpresaId { get; set; }

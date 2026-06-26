@@ -13,7 +13,7 @@ export interface Establecimiento {
   empresaId: string
   empresaNombre: string
   numeroSenasa: string
-  numeroOncca: string
+  numeroRuca: string
   activo: boolean
 }
 
@@ -23,7 +23,7 @@ export interface CreateEstablecimientoRequest {
   SucursalId: string
   EspecieIds?: string[]
   NumeroSenasa?: string
-  NumeroOncca?: string
+  NumeroRuca?: string
 }
 
 export interface UpdateEstablecimientoRequest {
@@ -31,6 +31,6 @@ export interface UpdateEstablecimientoRequest {
   SucursalId: string
   EspecieIds?: string[]
   NumeroSenasa?: string
-  NumeroOncca?: string
+  NumeroRuca?: string
   Activo: boolean
 }

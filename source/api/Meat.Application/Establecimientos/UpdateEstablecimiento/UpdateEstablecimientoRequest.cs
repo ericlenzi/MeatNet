@@ -14,7 +14,7 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
         public Guid SucursalId { get; set; }
         public IEnumerable<string> EspecieIds { get; set; }
         public string NumeroSenasa { get; set; }
-        public string NumeroOncca { get; set; }
+        public string NumeroRuca { get; set; }
         public bool Activo { get; set; }
     }
 }

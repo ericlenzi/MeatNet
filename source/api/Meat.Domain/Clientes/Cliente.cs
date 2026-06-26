@@ -20,8 +20,6 @@ namespace Meat.Domain.Clientes
         public TipoCliente TipoCliente { get; set; }
         public string NumeroCuit { get; set; }
         public string NumeroIngresosBrutos { get; set; }
-        public string NumeroInscripcionRuca { get; set; }
-        public string CodigoActividad { get; set; }
         public bool Activo { get; set; }
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }

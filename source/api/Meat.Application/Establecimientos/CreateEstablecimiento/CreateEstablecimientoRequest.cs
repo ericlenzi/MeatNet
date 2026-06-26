@@ -19,6 +19,6 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
         public Guid SucursalId { get; set; }
         public IEnumerable<string> EspecieIds { get; set; }
         public string NumeroSenasa { get; set; }
-        public string NumeroOncca { get; set; }
+        public string NumeroRuca { get; set; }
     }
 }
