@@ -40,8 +40,9 @@ namespace Meat.Controllers
                 Nombre = body.Nombre,
                 EspecieId = body.EspecieId,
                 TipoSexoId = body.TipoSexoId,
-                CodigoMaterialDesde = body.CodigoMaterialDesde,
-                CodigoMaterialHasta = body.CodigoMaterialHasta,
+                CodigoMaterial = body.CodigoMaterial,
+                ERP_Codigo = body.ERP_Codigo,
+                PesoTeorico = body.PesoTeorico,
                 Activo = body.Activo,
             });
 

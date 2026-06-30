@@ -2,6 +2,9 @@
 
 Este documento describe los patrones establecidos en el proyecto MeatNet para implementar un CRUD completo (Create, Read, Update, Delete) de una nueva entidad, tanto en el backend (API .NET 8) como en el frontend (React + Vite + TypeScript).
 
+> **Alcance:** esta guía aplica a las **tablas de proceso/negocio** con PK `Guid Id` (el patrón completo: Entity con Factory, Handlers CQRS, Controller, migraciones, frontend).
+> **No** aplica a las **tablas de catálogo** (PK `string Codigo` + `Nombre` + `Activo`, equivalentes a enums; ej: `TipoAlmacen`, `TipoEstadoIngreso`, `TipoEstadoHacienda`). Ver la sección "Patrones de Tablas" en `CLAUDE.md` para la distinción entre ambos tipos.
+
 ---
 
 ## Indice

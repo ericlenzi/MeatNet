@@ -27,6 +27,12 @@ import TiposEspeciesListPage from '@/pages/tiposEspecies/TiposEspeciesListPage'
 import TipoEspecieFormPage from '@/pages/tiposEspecies/TipoEspecieFormPage'
 import NumeradoresTropasListPage from '@/pages/numeradoresTropas/NumeradoresTropasListPage'
 import NumeradorTropaFormPage from '@/pages/numeradoresTropas/NumeradorTropaFormPage'
+import AlmacenesListPage from '@/pages/almacenes/AlmacenesListPage'
+import AlmacenFormPage from '@/pages/almacenes/AlmacenFormPage'
+import IngresosHaciendaListPage from '@/pages/ingresosHacienda/IngresosHaciendaListPage'
+import IngresoHaciendaFormPage from '@/pages/ingresosHacienda/IngresoHaciendaFormPage'
+import AprobacionHaciendaListPage from '@/pages/aprobacionHacienda/AprobacionHaciendaListPage'
+import ExistenciaHaciendaPage from '@/pages/existenciaHacienda/ExistenciaHaciendaPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -40,9 +46,11 @@ function AppRoutes() {
                 <Route element={<MainLayout />}>
                   <Route index element={<DashboardPage />} />
                   {/* Operaciones */}
-                  <Route path="operaciones/ingreso-hacienda" element={<PlaceholderPage title="Ingreso de Hacienda" />} />
-                  <Route path="operaciones/aprobacion-ingreso" element={<PlaceholderPage title="Aprobacion de Ingreso de Hacienda" />} />
-                  <Route path="operaciones/existencias-corrales" element={<PlaceholderPage title="Existencias en Corrales" />} />
+                  <Route path="operaciones/ingreso-hacienda" element={<IngresosHaciendaListPage />} />
+                  <Route path="operaciones/ingreso-hacienda/create" element={<IngresoHaciendaFormPage />} />
+                  <Route path="operaciones/ingreso-hacienda/:id/edit" element={<IngresoHaciendaFormPage />} />
+                  <Route path="operaciones/aprobacion-ingreso" element={<AprobacionHaciendaListPage />} />
+                  <Route path="operaciones/existencias-corrales" element={<ExistenciaHaciendaPage />} />
                   <Route path="operaciones/planificacion-faena" element={<PlaceholderPage title="Planificacion de Faena" />} />
                   <Route path="operaciones/evaluacion-faena" element={<PlaceholderPage title="Evaluacion de Faena" />} />
                   {/* Datos Maestros */}
@@ -73,6 +81,9 @@ function AppRoutes() {
                   <Route path="numeradores-tropas" element={<NumeradoresTropasListPage />} />
                   <Route path="numeradores-tropas/create" element={<NumeradorTropaFormPage />} />
                   <Route path="numeradores-tropas/:id/edit" element={<NumeradorTropaFormPage />} />
+                  <Route path="corrales" element={<AlmacenesListPage />} />
+                  <Route path="corrales/create" element={<AlmacenFormPage />} />
+                  <Route path="corrales/:id/edit" element={<AlmacenFormPage />} />
                   <Route path="tipos-especies" element={<TiposEspeciesListPage />} />
                   <Route path="tipos-especies/create" element={<TipoEspecieFormPage />} />
                   <Route path="tipos-especies/:id/edit" element={<TipoEspecieFormPage />} />

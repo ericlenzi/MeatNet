@@ -1,7 +1,5 @@
-﻿using Meat.Domain.Empresas;
-using Meat.Domain.Enums;
+﻿using Meat.Domain.Establecimientos;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Meat.Domain.TiposAlmacenes;
@@ -18,6 +16,8 @@ namespace Meat.Domain.Almacenes
         public int CantidadAnimales { get; set; }
         public string TipoAlmacenId { get; set; }
         public TipoAlmacen TipoAlmacen { get; set; }
+        public Guid EstablecimientoId { get; set; }
+        public virtual Establecimiento Establecimiento { get; set; }
         public bool Activo { get; set; }
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }

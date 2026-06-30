@@ -8,8 +8,9 @@ namespace Meat.Application.TiposEspecies.GetTiposEspecies
         public string EspecieNombre { get; set; }
         public string TipoSexoId { get; set; }
         public string TipoSexoNombre { get; set; }
-        public string CodigoMaterialDesde { get; set; }
-        public string CodigoMaterialHasta { get; set; }
+        public string CodigoMaterial { get; set; }
+        public string ERP_Codigo { get; set; }
+        public double PesoTeorico { get; set; }
         public bool Activo { get; set; }
     }
 }

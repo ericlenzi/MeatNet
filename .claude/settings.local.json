@@ -19,7 +19,9 @@
       "Bash(git push *)",
       "Bash(git commit -m 'Docs: documentar modelo de negocio \\(una Empresa, multiples Sucursales/Establecimientos, multiespecie\\) en CLAUDE.md *)",
       "PowerShell(dotnet build \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api\\\\Meat.sln\" -nologo -v q 2>&1)",
-      "PowerShell($p = \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\web\"; if \\(Test-Path \"$p\\\\node_modules\"\\) { Push-Location $p; npx tsc --noEmit; Write-Output \"exit=$LASTEXITCODE\"; Pop-Location } else { Write-Output \"no node_modules\" })"
+      "PowerShell($p = \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\web\"; if \\(Test-Path \"$p\\\\node_modules\"\\) { Push-Location $p; npx tsc --noEmit; Write-Output \"exit=$LASTEXITCODE\"; Pop-Location } else { Write-Output \"no node_modules\" })",
+      "PowerShell(dotnet --version)",
+      "PowerShell(dotnet ef --version)"
     ]
   }
 }

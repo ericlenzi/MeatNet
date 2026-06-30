@@ -23,7 +23,6 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Puestos.Puesto> Puestos { get; set; }
         public virtual DbSet<Domain.Almacenes.Almacen> Almacenes { get; set; }
         public virtual DbSet<Domain.Materiales.Material> Materiales { get; set; }
-        public virtual DbSet<Domain.AlmacenesMateriales.AlmacenMaterial> AlmacenesMateriales { get; set; }
         public virtual DbSet<Domain.Especies.Especie> Especies { get; set; }
         public virtual DbSet<Domain.TiposEmpresas.TipoEmpresa> TiposEmpresas { get; set; }
         public virtual DbSet<Domain.TiposClientes.TipoCliente> TiposClientes { get; set; }
@@ -34,8 +33,14 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.UsosHaciendas.UsoHacienda> UsosHaciendas { get; set; }
         public virtual DbSet<Domain.TiposMateriales.TipoMaterial> TiposMateriales { get; set; }
         public virtual DbSet<Domain.UnidadesMedidas.UnidadMedida> UnidadesMedidas { get; set; }
-        public virtual DbSet<Domain.TiposAnimales.TipoAnimal> TiposAnimales { get; set; }
         public virtual DbSet<Domain.NumeradoresTropas.NumeradorTropa> NumeradoresTropas { get; set; }
+        public virtual DbSet<Domain.TiposEstadosIngresos.TipoEstadoIngreso> TiposEstadosIngresos { get; set; }
+        public virtual DbSet<Domain.TiposEstadosTropas.TipoEstadoTropa> TiposEstadosTropas { get; set; }
+        public virtual DbSet<Domain.TiposEstadosHacienda.TipoEstadoHacienda> TiposEstadosHacienda { get; set; }
+        public virtual DbSet<Domain.IngresosHaciendas.IngresoHacienda> IngresosHaciendas { get; set; }
+        public virtual DbSet<Domain.IngresosHaciendas.IngresoHaciendaPesada> IngresosHaciendasPesadas { get; set; }
+        public virtual DbSet<Domain.IngresosHaciendas.IngresoHaciendaUbicacion> IngresosHaciendasUbicaciones { get; set; }
+        public virtual DbSet<Domain.Tropas.Tropa> Tropas { get; set; }
 
         public MeatContext(DbContextOptions<MeatContext> options)
             : base(options)
@@ -128,7 +133,60 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Numero de ingreso correlativo por establecimiento
+            modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHacienda>()
+                .HasIndex(i => new { i.EstablecimientoId, i.NumeroIngreso })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Numero de tropa unico por Cliente-Establecimiento + Especie
+            modelBuilder.Entity<Domain.Tropas.Tropa>()
+                .HasIndex(t => new { t.ClienteEstablecimientoId, t.EspecieCodigo, t.NumeroTropa })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             #endregion Indices Unicos
+
+            #region Relaciones - Ingreso de Hacienda
+
+            modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHacienda>(e =>
+            {
+                e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Cliente).WithMany().HasForeignKey(x => x.ClienteId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.ClienteEstablecimiento).WithMany().HasForeignKey(x => x.ClienteEstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Provincia).WithMany().HasForeignKey(x => x.ProvinciaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.OrigenHacienda).WithMany().HasForeignKey(x => x.OrigenHaciendaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.UsoHacienda).WithMany().HasForeignKey(x => x.UsoHaciendaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.EstadoIngreso).WithMany().HasForeignKey(x => x.EstadoIngresoId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.Tropas.Tropa>(e =>
+            {
+                e.HasOne(x => x.IngresoHacienda).WithMany(i => i.Tropas).HasForeignKey(x => x.IngresoHaciendaId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieCodigo).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.EstadoTropa).WithMany().HasForeignKey(x => x.EstadoTropaId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHaciendaPesada>(e =>
+            {
+                e.HasOne(x => x.IngresoHacienda).WithMany(i => i.Pesadas).HasForeignKey(x => x.IngresoHaciendaId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHaciendaUbicacion>(e =>
+            {
+                e.HasOne(x => x.IngresoHacienda).WithMany(i => i.Ubicaciones).HasForeignKey(x => x.IngresoHaciendaId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Almacen).WithMany().HasForeignKey(x => x.AlmacenId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.EstadoHacienda).WithMany().HasForeignKey(x => x.EstadoHaciendaId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Almacen ahora pertenece a un Establecimiento
+            modelBuilder.Entity<Domain.Almacenes.Almacen>()
+                .HasOne(a => a.Establecimiento).WithMany().HasForeignKey(a => a.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+
+            #endregion Relaciones - Ingreso de Hacienda
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

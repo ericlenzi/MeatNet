@@ -10,3 +10,19 @@ export type { Cliente, CreateClienteRequest, UpdateClienteRequest, TipoCliente }
 export type { TipoEspecie, CreateTipoEspecieRequest, UpdateTipoEspecieRequest, TipoSexo } from './tipoEspecie'
 export type { OrigenHacienda, UsoHacienda } from './hacienda'
 export type { NumeradorTropa, CreateNumeradorTropaRequest, UpdateNumeradorTropaRequest } from './numeradorTropa'
+export type {
+  IngresoHaciendaListItem,
+  IngresoHacienda,
+  IngresoHaciendaPesada,
+  IngresoHaciendaUbicacion,
+  IngresoHaciendaTropa,
+  PesadaInput,
+  UbicacionInput,
+  CreateIngresoHaciendaRequest,
+  UpdateIngresoHaciendaRequest,
+  TropaGenerada,
+  AprobarIngresoHaciendaResult,
+  ExistenciaCorralItem,
+  TropaDisponibleItem,
+} from './ingresoHacienda'
+export { EstadoIngreso, EstadoHacienda } from './ingresoHacienda'

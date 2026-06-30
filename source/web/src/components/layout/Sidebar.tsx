@@ -127,8 +127,8 @@ const navGroups: NavGroup[] = [
     icon: icons.chevronDoubleRight,
     items: [
       { label: 'Ingreso de Hacienda', path: '/operaciones/ingreso-hacienda', icon: icons.truck },
-      { label: 'Aprobación de Ingreso', path: '/operaciones/aprobacion-ingreso', icon: icons.clipboardCheck },
-      { label: 'Existencias en Corrales', path: '/operaciones/existencias-corrales', icon: icons.chartBar },
+      { label: 'Aprobación de Hacienda', path: '/operaciones/aprobacion-ingreso', icon: icons.clipboardCheck },
+      { label: 'Existencia de Hacienda', path: '/operaciones/existencias-corrales', icon: icons.chartBar },
       { label: 'Planificación de Faena', path: '/operaciones/planificacion-faena', icon: icons.calendar },
       { label: 'Monitor de Faena', path: '/operaciones/monitor-faena', icon: icons.desktopComputer },
       { label: 'Evaluación de Faena', path: '/operaciones/evaluacion-faena', icon: icons.documentReport },
@@ -152,6 +152,7 @@ const navGroups: NavGroup[] = [
           { label: 'Empresas', path: '/empresas', icon: icons.officeBuilding },
           { label: 'Sucursales', path: '/sucursales', icon: icons.locationMarker },
           { label: 'Establecimientos', path: '/establecimientos', icon: icons.library },
+          { label: 'Corrales', path: '/corrales', icon: icons.database },
           { label: 'Especies', path: '/especies', icon: icons.tag },
           { label: 'Tipos de Especies', path: '/tipos-especies', icon: icons.tag },
           { label: 'Clientes', path: '/clientes', icon: icons.users },

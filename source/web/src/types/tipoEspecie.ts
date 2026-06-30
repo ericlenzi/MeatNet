@@ -5,8 +5,9 @@ export interface TipoEspecie {
   especieNombre: string
   tipoSexoId: string
   tipoSexoNombre: string
-  codigoMaterialDesde: string
-  codigoMaterialHasta: string
+  codigoMaterial: string
+  erP_Codigo: string
+  pesoTeorico: number
   activo: boolean
 }
 
@@ -15,16 +16,18 @@ export interface CreateTipoEspecieRequest {
   Nombre: string
   EspecieId: string
   TipoSexoId?: string
-  CodigoMaterialDesde?: string
-  CodigoMaterialHasta?: string
+  CodigoMaterial?: string
+  ERP_Codigo?: string
+  PesoTeorico?: number
 }
 
 export interface UpdateTipoEspecieRequest {
   Nombre: string
   EspecieId: string
   TipoSexoId?: string
-  CodigoMaterialDesde?: string
-  CodigoMaterialHasta?: string
+  CodigoMaterial?: string
+  ERP_Codigo?: string
+  PesoTeorico?: number
   Activo: boolean
 }
 

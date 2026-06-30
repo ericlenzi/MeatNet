@@ -26,8 +26,9 @@ export default function TipoEspecieFormPage() {
     Nombre: '',
     EspecieId: '',
     TipoSexoId: '',
-    CodigoMaterialDesde: '',
-    CodigoMaterialHasta: '',
+    CodigoMaterial: '',
+    ERP_Codigo: '',
+    PesoTeorico: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -49,8 +50,9 @@ export default function TipoEspecieFormPage() {
             Nombre: entity.nombre || '',
             EspecieId: entity.especieId || '',
             TipoSexoId: entity.tipoSexoId || '',
-            CodigoMaterialDesde: entity.codigoMaterialDesde || '',
-            CodigoMaterialHasta: entity.codigoMaterialHasta || '',
+            CodigoMaterial: entity.codigoMaterial || '',
+            ERP_Codigo: entity.erP_Codigo || '',
+            PesoTeorico: entity.pesoTeorico != null ? String(entity.pesoTeorico) : '',
             Activo: entity.activo,
           })
         }
@@ -83,8 +85,9 @@ export default function TipoEspecieFormPage() {
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
-          CodigoMaterialDesde: form.CodigoMaterialDesde || undefined,
-          CodigoMaterialHasta: form.CodigoMaterialHasta || undefined,
+          CodigoMaterial: form.CodigoMaterial || undefined,
+          ERP_Codigo: form.ERP_Codigo || undefined,
+          PesoTeorico: form.PesoTeorico ? Number(form.PesoTeorico) : undefined,
           Activo: form.Activo,
         })
         toast('success', 'Tipo de especie actualizado')
@@ -94,8 +97,9 @@ export default function TipoEspecieFormPage() {
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
-          CodigoMaterialDesde: form.CodigoMaterialDesde || undefined,
-          CodigoMaterialHasta: form.CodigoMaterialHasta || undefined,
+          CodigoMaterial: form.CodigoMaterial || undefined,
+          ERP_Codigo: form.ERP_Codigo || undefined,
+          PesoTeorico: form.PesoTeorico ? Number(form.PesoTeorico) : undefined,
         })
         toast('success', 'Tipo de especie creado')
       }
@@ -156,14 +160,20 @@ export default function TipoEspecieFormPage() {
               placeholder="Seleccionar sexo..."
             />
             <Input
-              label="Cod. Material Desde"
-              value={form.CodigoMaterialDesde}
-              onChange={(e) => updateField('CodigoMaterialDesde', e.target.value)}
+              label="Codigo Material"
+              value={form.CodigoMaterial}
+              onChange={(e) => updateField('CodigoMaterial', e.target.value)}
             />
             <Input
-              label="Cod. Material Hasta"
-              value={form.CodigoMaterialHasta}
-              onChange={(e) => updateField('CodigoMaterialHasta', e.target.value)}
+              label="Codigo ERP"
+              value={form.ERP_Codigo}
+              onChange={(e) => updateField('ERP_Codigo', e.target.value)}
+            />
+            <Input
+              label="Peso Teorico"
+              type="number"
+              value={form.PesoTeorico}
+              onChange={(e) => updateField('PesoTeorico', e.target.value)}
             />
           </div>
 

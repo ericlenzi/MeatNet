@@ -39,6 +39,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("EstablecimientoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
@@ -53,40 +56,11 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EstablecimientoId");
+
                     b.HasIndex("TipoAlmacenId");
 
                     b.ToTable("Almacenes");
-                });
-
-            modelBuilder.Entity("Meat.Domain.AlmacenesMateriales.AlmacenMaterial", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AlmacenId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("FechaBaja")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("MaterialId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TipoAnimalId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AlmacenId");
-
-                    b.HasIndex("MaterialId");
-
-                    b.HasIndex("TipoAnimalId");
-
-                    b.ToTable("AlmacenesMateriales");
                 });
 
             modelBuilder.Entity("Meat.Domain.Clientes.Cliente", b =>
@@ -298,6 +272,174 @@ namespace Meat.Repositories.Migrations
                         .HasFilter("[FechaBaja] IS NULL");
 
                     b.ToTable("EstablecimientosEspecies");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHacienda", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Chofer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ClienteEstablecimientoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClienteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EstablecimientoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EstadoIngresoId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaAprobacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaEmisionDte")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaHoraIngreso")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Localidad")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroDte")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("NumeroIngreso")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OrigenHaciendaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PatenteCamion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PatenteJaula")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("PesoBruto")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PesoNeto")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ProvinciaId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Tara")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Transportista")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsoHaciendaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid?>("UsuarioAprobacionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteEstablecimientoId");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("EstadoIngresoId");
+
+                    b.HasIndex("OrigenHaciendaId");
+
+                    b.HasIndex("ProvinciaId");
+
+                    b.HasIndex("UsoHaciendaId");
+
+                    b.HasIndex("EstablecimientoId", "NumeroIngreso")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
+
+                    b.ToTable("IngresosHaciendas");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHaciendaPesada", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("IngresoHaciendaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("PesoIngreso")
+                        .HasColumnType("float");
+
+                    b.Property<string>("TipoEspecieId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UnidadMedida")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IngresoHaciendaId");
+
+                    b.HasIndex("TipoEspecieId");
+
+                    b.ToTable("IngresosHaciendasPesadas");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHaciendaUbicacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AlmacenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EstadoHaciendaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("IngresoHaciendaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("PesoPromedio")
+                        .HasColumnType("float");
+
+                    b.Property<string>("TipoEspecieId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid?>("TropaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlmacenId");
+
+                    b.HasIndex("EstadoHaciendaId");
+
+                    b.HasIndex("IngresoHaciendaId");
+
+                    b.HasIndex("TipoEspecieId");
+
+                    b.HasIndex("TropaId");
+
+                    b.ToTable("IngresosHaciendasUbicaciones");
                 });
 
             modelBuilder.Entity("Meat.Domain.Materiales.Material", b =>
@@ -567,25 +709,6 @@ namespace Meat.Repositories.Migrations
                     b.ToTable("TiposAlmacenes");
                 });
 
-            modelBuilder.Entity("Meat.Domain.TiposAnimales.TipoAnimal", b =>
-                {
-                    b.Property<string>("Codigo")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("FechaBaja")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nombre")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Codigo");
-
-                    b.ToTable("TiposAnimales");
-                });
-
             modelBuilder.Entity("Meat.Domain.TiposClientes.TipoCliente", b =>
                 {
                     b.Property<string>("Codigo")
@@ -632,10 +755,10 @@ namespace Meat.Repositories.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
-                    b.Property<string>("CodigoMaterialDesde")
+                    b.Property<string>("CodigoMaterial")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CodigoMaterialHasta")
+                    b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EspecieId")
@@ -650,6 +773,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("Nombre")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<double>("PesoTeorico")
+                        .HasColumnType("float");
+
                     b.Property<string>("TipoSexoId")
                         .HasColumnType("nvarchar(450)");
 
@@ -660,6 +786,63 @@ namespace Meat.Repositories.Migrations
                     b.HasIndex("TipoSexoId");
 
                     b.ToTable("TiposEspecies");
+                });
+
+            modelBuilder.Entity("Meat.Domain.TiposEstadosHacienda.TipoEstadoHacienda", b =>
+                {
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Codigo");
+
+                    b.ToTable("TiposEstadosHacienda");
+                });
+
+            modelBuilder.Entity("Meat.Domain.TiposEstadosIngresos.TipoEstadoIngreso", b =>
+                {
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Codigo");
+
+                    b.ToTable("TiposEstadosIngresos");
+                });
+
+            modelBuilder.Entity("Meat.Domain.TiposEstadosTropas.TipoEstadoTropa", b =>
+                {
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Codigo");
+
+                    b.ToTable("TiposEstadosTropas");
                 });
 
             modelBuilder.Entity("Meat.Domain.TiposMateriales.TipoMaterial", b =>
@@ -698,6 +881,47 @@ namespace Meat.Repositories.Migrations
                     b.HasKey("Codigo");
 
                     b.ToTable("TiposSexos");
+                });
+
+            modelBuilder.Entity("Meat.Domain.Tropas.Tropa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClienteEstablecimientoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EspecieCodigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EstadoTropaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaRecepcion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("IngresoHaciendaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("NumeroTropa")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EspecieCodigo");
+
+                    b.HasIndex("EstadoTropaId");
+
+                    b.HasIndex("IngresoHaciendaId");
+
+                    b.HasIndex("ClienteEstablecimientoId", "EspecieCodigo", "NumeroTropa")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
+
+                    b.ToTable("Tropas");
                 });
 
             modelBuilder.Entity("Meat.Domain.UnidadesMedidas.UnidadMedida", b =>
@@ -846,36 +1070,19 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Almacenes.Almacen", b =>
                 {
+                    b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
+                        .WithMany()
+                        .HasForeignKey("EstablecimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.TiposAlmacenes.TipoAlmacen", "TipoAlmacen")
                         .WithMany()
                         .HasForeignKey("TipoAlmacenId");
 
+                    b.Navigation("Establecimiento");
+
                     b.Navigation("TipoAlmacen");
-                });
-
-            modelBuilder.Entity("Meat.Domain.AlmacenesMateriales.AlmacenMaterial", b =>
-                {
-                    b.HasOne("Meat.Domain.Almacenes.Almacen", "Almacen")
-                        .WithMany()
-                        .HasForeignKey("AlmacenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Meat.Domain.Materiales.Material", "Material")
-                        .WithMany()
-                        .HasForeignKey("MaterialId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Meat.Domain.TiposAnimales.TipoAnimal", "TipoAnimal")
-                        .WithMany()
-                        .HasForeignKey("TipoAnimalId");
-
-                    b.Navigation("Almacen");
-
-                    b.Navigation("Material");
-
-                    b.Navigation("TipoAnimal");
                 });
 
             modelBuilder.Entity("Meat.Domain.Clientes.Cliente", b =>
@@ -949,6 +1156,120 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("Especie");
 
                     b.Navigation("Establecimiento");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHacienda", b =>
+                {
+                    b.HasOne("Meat.Domain.ClientesEstablecimientos.ClienteEstablecimiento", "ClienteEstablecimiento")
+                        .WithMany()
+                        .HasForeignKey("ClienteEstablecimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Clientes.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
+                        .WithMany()
+                        .HasForeignKey("EstablecimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.TiposEstadosIngresos.TipoEstadoIngreso", "EstadoIngreso")
+                        .WithMany()
+                        .HasForeignKey("EstadoIngresoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.OrigenesHaciendas.OrigenHacienda", "OrigenHacienda")
+                        .WithMany()
+                        .HasForeignKey("OrigenHaciendaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.Provincias.Provincia", "Provincia")
+                        .WithMany()
+                        .HasForeignKey("ProvinciaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.UsosHaciendas.UsoHacienda", "UsoHacienda")
+                        .WithMany()
+                        .HasForeignKey("UsoHaciendaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("ClienteEstablecimiento");
+
+                    b.Navigation("Establecimiento");
+
+                    b.Navigation("EstadoIngreso");
+
+                    b.Navigation("OrigenHacienda");
+
+                    b.Navigation("Provincia");
+
+                    b.Navigation("UsoHacienda");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHaciendaPesada", b =>
+                {
+                    b.HasOne("Meat.Domain.IngresosHaciendas.IngresoHacienda", "IngresoHacienda")
+                        .WithMany("Pesadas")
+                        .HasForeignKey("IngresoHaciendaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.TiposEspecies.TipoEspecie", "TipoEspecie")
+                        .WithMany()
+                        .HasForeignKey("TipoEspecieId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("IngresoHacienda");
+
+                    b.Navigation("TipoEspecie");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHaciendaUbicacion", b =>
+                {
+                    b.HasOne("Meat.Domain.Almacenes.Almacen", "Almacen")
+                        .WithMany()
+                        .HasForeignKey("AlmacenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.TiposEstadosHacienda.TipoEstadoHacienda", "EstadoHacienda")
+                        .WithMany()
+                        .HasForeignKey("EstadoHaciendaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.IngresosHaciendas.IngresoHacienda", "IngresoHacienda")
+                        .WithMany("Ubicaciones")
+                        .HasForeignKey("IngresoHaciendaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.TiposEspecies.TipoEspecie", "TipoEspecie")
+                        .WithMany()
+                        .HasForeignKey("TipoEspecieId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.Tropas.Tropa", "Tropa")
+                        .WithMany()
+                        .HasForeignKey("TropaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Almacen");
+
+                    b.Navigation("EstadoHacienda");
+
+                    b.Navigation("IngresoHacienda");
+
+                    b.Navigation("TipoEspecie");
+
+                    b.Navigation("Tropa");
                 });
 
             modelBuilder.Entity("Meat.Domain.Materiales.Material", b =>
@@ -1031,6 +1352,31 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("TipoSexo");
                 });
 
+            modelBuilder.Entity("Meat.Domain.Tropas.Tropa", b =>
+                {
+                    b.HasOne("Meat.Domain.Especies.Especie", "Especie")
+                        .WithMany()
+                        .HasForeignKey("EspecieCodigo")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.TiposEstadosTropas.TipoEstadoTropa", "EstadoTropa")
+                        .WithMany()
+                        .HasForeignKey("EstadoTropaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.IngresosHaciendas.IngresoHacienda", "IngresoHacienda")
+                        .WithMany("Tropas")
+                        .HasForeignKey("IngresoHaciendaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Especie");
+
+                    b.Navigation("EstadoTropa");
+
+                    b.Navigation("IngresoHacienda");
+                });
+
             modelBuilder.Entity("Meat.Domain.Usuarios.Usuario", b =>
                 {
                     b.HasOne("Meat.Domain.Roles.Rol", "Rol")
@@ -1080,6 +1426,15 @@ namespace Meat.Repositories.Migrations
             modelBuilder.Entity("Meat.Domain.Establecimientos.Establecimiento", b =>
                 {
                     b.Navigation("Especies");
+                });
+
+            modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHacienda", b =>
+                {
+                    b.Navigation("Pesadas");
+
+                    b.Navigation("Tropas");
+
+                    b.Navigation("Ubicaciones");
                 });
 
             modelBuilder.Entity("Meat.Domain.Sucursales.Sucursal", b =>

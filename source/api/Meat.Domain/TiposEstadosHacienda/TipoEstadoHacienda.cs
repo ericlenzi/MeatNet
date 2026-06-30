@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Meat.Domain.TiposAnimales
+namespace Meat.Domain.TiposEstadosHacienda
 {
-    public class TipoAnimal
+    public class TipoEstadoHacienda
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]

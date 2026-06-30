@@ -47,11 +47,25 @@ MeatNet/
 - Siempre respetar la separación `api/` y `web/` — no mezclar responsabilidades
 - Antes de crear un archivo nuevo, verificar si ya existe algo similar en el proyecto
 
+## Patrones de Tablas (Modelo de Datos)
+El proyecto distingue **dos tipos de tablas**, con patrones distintos. Antes de crear una entidad, identificar a cuál corresponde:
+
+1. **Tablas de catálogo** (tipos de datos especiales — equivalen a enums pero como tabla):
+   - PK `string Codigo` + `Nombre` + `Activo`. Sin Guid, sin Factory.
+   - Para conjuntos acotados y estables de valores que clasifican datos (ej: `TipoAlmacen`, `TipoEstadoIngreso`, `TipoEstadoHacienda`).
+   - Se siembran con sus códigos en la migración. **No** llevan EmpresaId ni filtro por empresa.
+
+2. **Tablas de proceso / negocio** (datos operativos del día a día):
+   - PK `Guid Id` (autogenerada por Factory), con sus FKs y navegaciones.
+   - Es el patrón completo (Entity, Handlers CQRS, Controller, migraciones, frontend) descrito en `docs/BasisCRUD.md`.
+
+> `docs/BasisCRUD.md` aplica al **tipo 2 (Guid Id)**, no a las tablas de catálogo.
+
 ## Documentación
 - Arquitectura y decisiones técnicas: `docs/`
 - Reglas específicas de API: `.claude/rules/api.md`
 - Reglas específicas de Web: `.claude/rules/web.md`
-- **Guia para CRUDs nuevos: `docs/BasisCRUD.md`** — Seguir SIEMPRE este documento al crear un CRUD de una entidad nueva. Contiene los patrones de backend (Entity, Handlers, Controller, migraciones) y frontend (Types, Service, Pages, rutas). Las entidades globales no llevan EmpresaId ni filtro por empresa.
+- **Guia para CRUDs nuevos: `docs/BasisCRUD.md`** — Seguir SIEMPRE este documento al crear un CRUD de una entidad nueva **de proceso/negocio (PK `Guid Id`)**. No aplica a las tablas de catálogo (PK `string Codigo`, ver "Patrones de Tablas"). Contiene los patrones de backend (Entity, Handlers, Controller, migraciones) y frontend (Types, Service, Pages, rutas). Las entidades globales no llevan EmpresaId ni filtro por empresa.
 
 ## Lo que NO hacer
 - No modificar migraciones de EF Core ya aplicadas — crear una nueva migración

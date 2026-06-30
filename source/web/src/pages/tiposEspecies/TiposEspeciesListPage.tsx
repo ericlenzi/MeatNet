@@ -89,8 +89,9 @@ export default function TiposEspeciesListPage() {
     { key: 'nombre', header: 'Nombre', sortable: true },
     { key: 'especieNombre', header: 'Especie', width: '130px', sortable: true },
     { key: 'tipoSexoNombre', header: 'Sexo', width: '110px', sortable: true },
-    { key: 'codigoMaterialDesde', header: 'Mat. Desde', width: '110px' },
-    { key: 'codigoMaterialHasta', header: 'Mat. Hasta', width: '110px' },
+    { key: 'codigoMaterial', header: 'Cod. Material', width: '120px' },
+    { key: 'erP_Codigo', header: 'Cod. ERP', width: '110px' },
+    { key: 'pesoTeorico', header: 'Peso Teorico', width: '110px' },
     {
       key: 'activo',
       header: 'Estado',
