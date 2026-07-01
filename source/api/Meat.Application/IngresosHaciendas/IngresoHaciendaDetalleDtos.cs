@@ -7,6 +7,7 @@ namespace Meat.Application.IngresosHaciendas
     {
         public string TipoEspecieId { get; set; }
         public double PesoIngreso { get; set; }
+        public string IdPesada { get; set; }
     }
 
     /// <summary>Linea de ubicacion en corral (entrada desde el cliente).</summary>

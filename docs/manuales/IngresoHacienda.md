@@ -72,31 +72,30 @@ El **operador de recepción** abre un nuevo Ingreso y carga la documentación:
 - **Origen geográfico**: **Provincia** (tabla `Provincias`) + **Localidad** (texto)
 - **Origen de hacienda** y **Uso de hacienda** (catálogos)
 - **Establecimiento destino** (el establecimiento activo) + fecha/hora de ingreso
+- **Especie** (`EspecieId`): por defecto la especie activa del establecimiento (como en el Header;
+  si el establecimiento tiene una sola, se muestra esa). Limita los tipos de especie a pesar.
 - **Transporte** (texto libre): `Transportista`, `Chofer`, `PatenteCamion`, `PatenteJaula`
 
 > **No se genera número de tropa todavía.** El ingreso queda en **Borrador**.
-> Regla: **1 Ingreso = 1 DT-e = 1 Cliente = 1 Camión**.
+> Regla: **1 Ingreso = 1 DT-e = 1 Cliente = 1 Camión = 1 Especie**.
 
-### Paso 2 — Pesaje del camión (jaula entera)
-Se registra el peso del camión cargado (**Bruto**) y vacío (**Tara**):
-
-```
-PesoNeto = PesoBruto − Tara   (kg)
-```
-
-### Paso 3 — Distribución del peso por tipo de especie (*registro de pesadas*)
-El neto se reparte por **TipoEspecie** (categoría). Cada línea de pesada: `TipoEspecie`,
-`PesoIngreso` (kg), UM = KG. El sistema estima la cantidad de animales:
+### Paso 2 — Registro de pesadas (grilla por tipo de especie)
+El peso se registra en una **grilla**, una línea por **TipoEspecie** (categoría) — los tipos
+disponibles están **filtrados por la Especie** del ingreso. Cada línea:
+`TipoEspecie`, `PesoIngreso` (kg), UM = KG, **CantidadEstimada** (según peso teórico) e
+**IdPesada** (número de ticket de la balanza del frigorífico, string). El sistema estima la
+cantidad de animales:
 
 ```
 CantidadEstimada = PesoIngreso / TipoEspecie.PesoTeorico   (ajustable por el operador)
+PesoNeto          = Σ PesoIngreso   (kg, suma de las pesadas)
 ```
 
-> Se valida que `Σ PesoIngreso` ≈ `PesoNeto` con **tolerancia del 5%** (configurable).
-> Si la diferencia supera la tolerancia, **se avisa** (no bloquea).
+> No se carga bruto ni tara del camión; el **PesoNeto** del ingreso es la suma de las pesadas.
 
-### Paso 4 — Ubicación en corrales (*ubicación en corrales*)
-Cada categoría se distribuye en **uno o más corrales**. Por línea de ubicación:
+### Paso 3 — Ubicación en corrales (*ubicación en corrales*)
+Cada categoría se distribuye en **uno o más corrales**. Solo pueden ubicarse los **tipos de
+especie cargados en el registro de pesadas**. Por línea de ubicación:
 
 - `TipoEspecie`, `Almacen` (corral), **Cantidad** (UN, ajustable)
 - **PesoPromedio** = PesoIngreso ÷ Cantidad del tipo especie (calculado)
@@ -106,11 +105,14 @@ Cada categoría se distribuye en **uno o más corrales**. Por línea de ubicaci�
 > La hacienda **En Pie** va a corrales estándar; **Caídos/Muertos** van a corrales
 > especiales y **no** cuentan como stock de faena (ver [§7](#7-reglas-de-negocio)).
 
-### Paso 5 — Envío a aprobación → `[Pendiente Aprobación]`
+### Paso 4 — Envío a aprobación → `[Pendiente Aprobación]`
 El operador finaliza la carga y envía el ingreso a aprobación. Pasa a **Pendiente
 Aprobación** y queda a la espera del supervisor.
 
-### Paso 6 — Aprobación del supervisor (pantalla separada) → `[Aprobado]` + nace la Tropa
+> **Guardar borrador** permite guardar el ingreso **sin cargar la ubicación en corrales**.
+> Las ubicaciones solo son obligatorias al **enviar a aprobación**.
+
+### Paso 5 — Aprobación del supervisor (pantalla separada) → `[Aprobado]` + nace la Tropa
 Desde una **pantalla de aprobación separada** del formulario de carga, el **supervisor**
 confirma el ingreso. El sistema, en una transacción:
 
@@ -183,6 +185,10 @@ namespace Meat.Domain.IngresosHaciendas
 
         public DateTime FechaHoraIngreso { get; set; }
 
+        // Especie del ingreso (habilitada para el establecimiento)
+        public string EspecieId { get; set; }
+        public virtual Especie Especie { get; set; }
+
         // DT-e (datos, no entidad)
         public string NumeroDte { get; set; }
         public DateTime FechaEmisionDte { get; set; }
@@ -212,10 +218,8 @@ namespace Meat.Domain.IngresosHaciendas
         public string PatenteCamion { get; set; }
         public string PatenteJaula { get; set; }
 
-        // Pesaje del camión (jaula entera, kg)
-        public double PesoBruto { get; set; }
-        public double Tara { get; set; }
-        public double PesoNeto { get; set; }               // = Bruto - Tara
+        // Peso neto total del ingreso (kg) = suma de las pesadas por tipo especie
+        public double PesoNeto { get; set; }
 
         // Estado
         public string EstadoIngresoId { get; set; }         // FK TiposEstadosIngresos
@@ -278,6 +282,7 @@ namespace Meat.Domain.IngresosHaciendas
 
         public double PesoIngreso { get; set; }              // kg
         public string UnidadMedida { get; set; }             // "KG"
+        public string IdPesada { get; set; }                 // n° de ticket de la balanza (string)
     }
 }
 ```
@@ -382,9 +387,9 @@ Registrar cada DbSet en `MeatContext` y **sembrar los códigos iniciales** en la
 | R2 | El número de tropa **no se genera en Borrador**; se genera al **Aprobar**. | Handler de aprobación |
 | R3 | **Una Tropa por (Ingreso, Especie)**. Si el camión trae varias especies → varias tropas. | Handler de aprobación |
 | R4 | Numeración de tropa vía `NumeradorTropa` (Cliente-Establecimiento + Especie): tomar `UltimoNumeroTropa`, incrementar y persistir. Si no existe el numerador, crearlo. **El número nunca se reutiliza** (ni tras anulación). | Handler de aprobación (transaccional) |
-| R5 | `PesoNeto = PesoBruto − Tara`. | Cálculo en cabecera |
-| R6 | **Tolerancia de pesos**: si `\|PesoNeto − Σ PesoIngreso\| / PesoNeto > 5%` → **avisar** (no bloquea). El 5% es **configurable** (parámetro). | Validación al guardar/aprobar |
-| R7 | Cantidad estimada por categoría = `PesoIngreso / TipoEspecie.PesoTeorico`, **ajustable** por el operador. | Cálculo en ubicación |
+| R5 | `PesoNeto = Σ PesoIngreso` (suma de las pesadas del registro). No se carga bruto ni tara del camión. | Cálculo en cabecera |
+| R6 | **Guardar borrador** no exige ubicaciones en corral; solo se ubican en corral los **tipos de especie del registro de pesadas**, y las ubicaciones son obligatorias al **enviar a aprobación**. | Validación de carga |
+| R7 | Cantidad estimada por categoría = `PesoIngreso / TipoEspecie.PesoTeorico`, **ajustable** por el operador. | Cálculo en registro de pesadas |
 | R8 | **Capacidad de corral**: `ocupación actual + cantidad a ubicar ≤ Almacen.CantidadAnimales`. **Tope duro** (bloquea). | Validación al aprobar |
 | R9 | Una tropa que **no entra** en un corral se **reparte** en otro(s) corral(es) (múltiples líneas de ubicación). | Ubicación |
 | R10 | Solo la hacienda **En Pie** de tropas **Recepcionadas** cuenta como **stock de faena**. | Consulta de stock |
@@ -398,14 +403,11 @@ Registrar cada DbSet en `MeatContext` y **sembrar los códigos iniciales** en la
 ## 8. Cálculos
 
 ```
-PesoNeto (camión)        = PesoBruto − Tara
+PesoNeto (ingreso)       = Σ PesoIngreso                                    // suma de las pesadas
 
 CantidadEstimada (cat.)  = round( PesoIngreso / TipoEspecie.PesoTeorico )   // ajustable
 
 PesoPromedio (ubicación) = PesoIngreso(cat.) / Σ Cantidad(cat.)             // por tipo especie
-
-Diferencia de pesaje     = | PesoNeto − Σ PesoIngreso | / PesoNeto
-                           → si > Tolerancia (5% configurable) ⇒ aviso
 ```
 
 ---
@@ -503,22 +505,28 @@ El formulario se carga **por bloques/cuadros**, no todo junto. Son **tres cuadro
 
 1. **Detalle de hacienda** — agrupa tres sub-bloques:
    - *Datos de ingreso*: **Fecha y hora de ingreso** → **primer dato a cargar**,
-     **pre-cargado con la fecha y hora actuales**; y **Establecimiento** → el
-     **establecimiento activo**, **pre-cargado y deshabilitado** (no se puede cambiar).
+     **pre-cargado con la fecha y hora actuales**; **Establecimiento** → el
+     **establecimiento activo**, **pre-cargado y deshabilitado** (no se puede cambiar); y
+     **Especie** → por defecto la especie activa del establecimiento (como en el Header).
    - *Datos de origen*: N° DT-e y fecha emisión, Cliente, Procedencia
      (`ClienteEstablecimiento` → RENSPA/CUIG), **Provincia** (tabla `Provincias`) y
      **Localidad** (texto), Origen y Uso de hacienda.
    - *Datos de transporte*: transportista, chofer, patente camión, patente jaula.
-2. **Registro de pesadas** — pesaje del camión (bruto, tara, neto calculado) y una línea por
-   tipo especie (peso ingreso) con cantidad estimada por peso teórico.
-3. **Ubicación en Corrales** — distribución por corral (cantidad, peso promedio, estado hacienda).
+   > El cuadro se titula **Detalle Ingreso** y separa visualmente las tres secciones.
+2. **Registro de pesadas** — grilla con una línea por tipo especie: peso ingreso, UM (KG),
+   cantidad estimada por peso teórico e **ID Pesada** (ticket de la balanza). Sin bruto ni tara.
+3. **Ubicación en Corrales** — distribución por corral (cantidad, peso promedio, estado hacienda);
+   solo se pueden ubicar los tipos de especie del registro de pesadas.
 
 ### Comportamiento del formulario (ver `docs/BasisCRUD.md` §3.4)
 - **Fecha/hora** pre-cargadas con el momento actual.
 - **Establecimiento** fijo (activo, `disabled`).
+- **Especie** por defecto = especie activa del establecimiento (si hay una sola, esa); al cambiarla
+  se reinicia el detalle. Los **tipos de especie** a pesar se filtran por la Especie del ingreso.
 - Los **corrales** del combo se filtran por establecimiento activo y tipo apto al `EstadoHacienda`.
 - **Peso promedio** y **cantidad estimada** se calculan en vivo; la cantidad es editable.
-- Aviso (no bloqueante) si `Σ pesadas` difiere del neto más allá de la tolerancia.
+- **Guardar borrador** permite guardar sin ubicaciones en corral; **enviar a aprobación** las exige.
+- Los tipos de especie de la **ubicación en corrales** se limitan a los del registro de pesadas.
 - Validación de capacidad de corral antes de permitir enviar a aprobación.
 
 Sidebar: **dos ítems separados** — **Ingreso de Hacienda** (ícono `truck`) y
@@ -575,7 +583,7 @@ Antes (o como parte) de implementar este proceso hay que ajustar el modelo exist
 ### Backend — Application (CQRS / MediatR)
 - [ ] CRUD de `IngresoHacienda` (Get/GetAll/Create/Update/Delete) con detalle anidado
 - [ ] Acción **Enviar a aprobación** (Borrador → Pendiente)
-- [ ] Acción **Aprobar** (crea Tropas, numeración transaccional, valida capacidad R8 y tolerancia R6, liga ubicaciones)
+- [ ] Acción **Aprobar** (crea Tropas, numeración transaccional, valida capacidad R8, liga ubicaciones)
 - [ ] Acción **Rechazar** (Pendiente → Borrador)
 - [ ] Acción **Anular** (anula tropas, descuenta stock)
 - [ ] Query **ExistenciaHacienda** (devuelve UN y KG)

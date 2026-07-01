@@ -9,7 +9,7 @@ interface ConfirmDialogProps {
   message: string
   isLoading?: boolean
   confirmLabel?: string
-  confirmVariant?: 'danger' | 'primary' | 'secondary'
+  confirmVariant?: 'danger' | 'primary' | 'secondary' | 'success'
 }
 
 export default function ConfirmDialog({

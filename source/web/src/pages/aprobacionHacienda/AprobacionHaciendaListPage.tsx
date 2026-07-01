@@ -18,7 +18,12 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 function formatFecha(value: string): string {
   if (!value) return ''
-  return new Date(value).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function formatHora(value: string): string {
+  if (!value) return ''
+  return new Date(value).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 type ActionTarget = { row: IngresoHaciendaListItem; type: 'aprobar' | 'rechazar' }
@@ -81,7 +86,8 @@ export default function AprobacionHaciendaListPage() {
 
   const columns: Column<IngresoHaciendaListItem>[] = [
     { key: 'numeroIngreso', header: 'N°', width: '80px', sortable: true },
-    { key: 'fechaHoraIngreso', header: 'Fecha Ingreso', width: '160px', render: (v) => formatFecha(String(v)) },
+    { key: 'fechaIngreso', header: 'Fecha', width: '110px', render: (_, row) => formatFecha(row.fechaHoraIngreso) },
+    { key: 'horaIngreso', header: 'Hora', width: '80px', render: (_, row) => formatHora(row.fechaHoraIngreso) },
     { key: 'numeroDte', header: 'DT-e', width: '130px' },
     { key: 'clienteNombre', header: 'Cliente', sortable: true },
     { key: 'totalCabezas', header: 'Cabezas', width: '100px', render: (v) => <span className="font-mono">{String(v)}</span> },
@@ -92,9 +98,9 @@ export default function AprobacionHaciendaListPage() {
       width: '200px',
       render: (_, row) => (
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => navigate(`/operaciones/ingreso-hacienda/${row.id}/edit`)}>Ver</Button>
-          <Button size="sm" onClick={() => setActionTarget({ row, type: 'aprobar' })}>Aprobar</Button>
-          <Button size="sm" variant="secondary" onClick={() => setActionTarget({ row, type: 'rechazar' })}>Rechazar</Button>
+          <Button size="sm" variant="ghost" onClick={() => navigate(`/operaciones/ingreso-hacienda/${row.id}/edit`, { state: { from: '/operaciones/aprobacion-ingreso' } })}>Ver</Button>
+          <Button size="sm" variant="success" onClick={() => setActionTarget({ row, type: 'aprobar' })}>Aprobar</Button>
+          <Button size="sm" variant="danger" onClick={() => setActionTarget({ row, type: 'rechazar' })}>Rechazar</Button>
         </div>
       ),
     },
@@ -127,6 +133,8 @@ export default function AprobacionHaciendaListPage() {
             ? `¿Aprobar el ingreso N° ${actionTarget?.row.numeroIngreso}? Se generaran las tropas y la hacienda contara como stock.`
             : `¿Rechazar el ingreso N° ${actionTarget?.row.numeroIngreso}? Volvera a estado Borrador.`
         }
+        confirmLabel={actionTarget?.type === 'aprobar' ? 'Aprobar' : 'Rechazar'}
+        confirmVariant={actionTarget?.type === 'aprobar' ? 'success' : 'danger'}
         isLoading={isProcessing}
       />
     </>

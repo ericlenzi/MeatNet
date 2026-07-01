@@ -1,5 +1,6 @@
 using Meat.Domain.Clientes;
 using Meat.Domain.ClientesEstablecimientos;
+using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
 using Meat.Domain.OrigenesHaciendas;
 using Meat.Domain.Provincias;
@@ -26,6 +27,10 @@ namespace Meat.Domain.IngresosHaciendas
         public virtual Establecimiento Establecimiento { get; set; }
 
         public DateTime FechaHoraIngreso { get; set; }
+
+        // Especie del ingreso (una por ingreso; habilitada para el establecimiento)
+        public string EspecieId { get; set; }
+        public virtual Especie Especie { get; set; }
 
         // DT-e (datos, no entidad)
         public string NumeroDte { get; set; }
@@ -56,10 +61,8 @@ namespace Meat.Domain.IngresosHaciendas
         public string PatenteCamion { get; set; }
         public string PatenteJaula { get; set; }
 
-        // Pesaje del camion (jaula entera, kg)
-        public double PesoBruto { get; set; }
-        public double Tara { get; set; }
-        public double PesoNeto { get; set; }               // = Bruto - Tara
+        // Peso neto total del ingreso (kg) = suma de las pesadas por tipo especie
+        public double PesoNeto { get; set; }
 
         // Estado
         public string EstadoIngresoId { get; set; }

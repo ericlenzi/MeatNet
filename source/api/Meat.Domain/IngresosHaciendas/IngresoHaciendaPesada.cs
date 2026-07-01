@@ -19,5 +19,6 @@ namespace Meat.Domain.IngresosHaciendas
 
         public double PesoIngreso { get; set; }            // kg
         public string UnidadMedida { get; set; }           // "KG"
+        public string IdPesada { get; set; }               // numero de ticket de la balanza (string)
     }
 }

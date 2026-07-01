@@ -8,7 +8,7 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
         /// <summary>Tropas generadas al aprobar (una por especie).</summary>
         public List<TropaGenerada> Tropas { get; set; } = new List<TropaGenerada>();
 
-        /// <summary>Advertencia no bloqueante (p. ej. diferencia de pesaje fuera de tolerancia).</summary>
+        /// <summary>Advertencia no bloqueante para mostrar al aprobar (opcional).</summary>
         public string Advertencia { get; set; }
     }
 

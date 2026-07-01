@@ -13,6 +13,8 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
         public Guid EstablecimientoId { get; set; }
         public DateTime FechaHoraIngreso { get; set; }
 
+        public string EspecieId { get; set; }
+
         public string NumeroDte { get; set; }
         public DateTime FechaEmisionDte { get; set; }
 
@@ -29,9 +31,6 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
         public string Chofer { get; set; }
         public string PatenteCamion { get; set; }
         public string PatenteJaula { get; set; }
-
-        public double PesoBruto { get; set; }
-        public double Tara { get; set; }
 
         public List<IngresoHaciendaPesadaInput> Pesadas { get; set; } = new List<IngresoHaciendaPesadaInput>();
         public List<IngresoHaciendaUbicacionInput> Ubicaciones { get; set; } = new List<IngresoHaciendaUbicacionInput>();

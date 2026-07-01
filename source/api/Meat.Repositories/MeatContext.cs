@@ -152,6 +152,7 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHacienda>(e =>
             {
                 e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Cliente).WithMany().HasForeignKey(x => x.ClienteId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.ClienteEstablecimiento).WithMany().HasForeignKey(x => x.ClienteEstablecimientoId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Provincia).WithMany().HasForeignKey(x => x.ProvinciaId).OnDelete(DeleteBehavior.Restrict);

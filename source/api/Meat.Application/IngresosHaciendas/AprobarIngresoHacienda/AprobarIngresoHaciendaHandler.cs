@@ -83,17 +83,6 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
 
             var response = new AprobarIngresoHaciendaResponse();
 
-            // R6 - Tolerancia de pesos (no bloquea, solo advierte)
-            var sumaPesadas = entity.Pesadas?.Sum(p => p.PesoIngreso) ?? 0;
-            if (entity.PesoNeto > 0)
-            {
-                var diferencia = Math.Abs(entity.PesoNeto - sumaPesadas) / entity.PesoNeto;
-                if (diferencia > IngresoHaciendaParametros.ToleranciaPeso)
-                    response.Advertencia =
-                        $"La suma de pesadas ({sumaPesadas:N0} kg) difiere del peso neto ({entity.PesoNeto:N0} kg) " +
-                        $"en {diferencia:P1}, supera la tolerancia del {IngresoHaciendaParametros.ToleranciaPeso:P0}.";
-            }
-
             // R3/R4 - Crear una Tropa por especie, con numeracion correlativa por
             // ClienteEstablecimiento + Especie, y ligar las ubicaciones a su tropa.
             var tipoEspecieIds = entity.Ubicaciones

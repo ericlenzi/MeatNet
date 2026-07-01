@@ -20,6 +20,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
         {
             var entity = await this.context.IngresosHaciendas
                 .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(i => i.Especie)
                 .Include(i => i.Cliente)
                 .Include(i => i.ClienteEstablecimiento)
                 .Include(i => i.Provincia)
@@ -43,6 +44,8 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
                 NumeroIngreso = entity.NumeroIngreso,
                 EstablecimientoId = entity.EstablecimientoId,
                 EstablecimientoNombre = entity.Establecimiento?.Nombre,
+                EspecieId = entity.EspecieId,
+                EspecieNombre = entity.Especie?.Nombre,
                 FechaHoraIngreso = entity.FechaHoraIngreso,
                 NumeroDte = entity.NumeroDte,
                 FechaEmisionDte = entity.FechaEmisionDte,
@@ -62,8 +65,6 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
                 Chofer = entity.Chofer,
                 PatenteCamion = entity.PatenteCamion,
                 PatenteJaula = entity.PatenteJaula,
-                PesoBruto = entity.PesoBruto,
-                Tara = entity.Tara,
                 PesoNeto = entity.PesoNeto,
                 EstadoIngresoId = entity.EstadoIngresoId,
                 EstadoIngresoNombre = entity.EstadoIngreso?.Nombre,
@@ -74,7 +75,8 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
                     TipoEspecieId = p.TipoEspecieId,
                     TipoEspecieNombre = p.TipoEspecie?.Nombre,
                     PesoIngreso = p.PesoIngreso,
-                    UnidadMedida = p.UnidadMedida
+                    UnidadMedida = p.UnidadMedida,
+                    IdPesada = p.IdPesada
                 }).ToList(),
                 Ubicaciones = entity.Ubicaciones.Select(u => new UbicacionItem
                 {

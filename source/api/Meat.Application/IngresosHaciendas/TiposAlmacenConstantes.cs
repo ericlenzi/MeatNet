@@ -10,10 +10,4 @@ namespace Meat.Application.IngresosHaciendas
         public const string CorralCaidos = "CORRAL_CAIDOS";
         public const string CorralMuertos = "CORRAL_MUERTOS";
     }
-
-    /// <summary>Tolerancia por defecto entre el peso neto del camion y la suma de pesadas.</summary>
-    public static class IngresoHaciendaParametros
-    {
-        public const double ToleranciaPeso = 0.05; // 5%
-    }
 }

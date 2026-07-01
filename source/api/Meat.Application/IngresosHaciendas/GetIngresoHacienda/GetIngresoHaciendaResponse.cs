@@ -13,6 +13,9 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
 
         public DateTime FechaHoraIngreso { get; set; }
 
+        public string EspecieId { get; set; }
+        public string EspecieNombre { get; set; }
+
         public string NumeroDte { get; set; }
         public DateTime FechaEmisionDte { get; set; }
 
@@ -37,8 +40,6 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
         public string PatenteCamion { get; set; }
         public string PatenteJaula { get; set; }
 
-        public double PesoBruto { get; set; }
-        public double Tara { get; set; }
         public double PesoNeto { get; set; }
 
         public string EstadoIngresoId { get; set; }
@@ -57,6 +58,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
         public string TipoEspecieNombre { get; set; }
         public double PesoIngreso { get; set; }
         public string UnidadMedida { get; set; }
+        public string IdPesada { get; set; }
     }
 
     public class UbicacionItem

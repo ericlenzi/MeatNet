@@ -4,6 +4,7 @@ using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Meat.Repositories.Migrations
 {
     [DbContext(typeof(MeatContext))]
-    partial class MeatContextModelSnapshot : ModelSnapshot
+    [Migration("20260701184717_33_IngresoPesadaIdPesadaSinBrutoTara")]
+    partial class _33_IngresoPesadaIdPesadaSinBrutoTara
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -288,9 +291,6 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("ClienteId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("EspecieId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<Guid>("EstablecimientoId")
                         .HasColumnType("uniqueidentifier");
 
@@ -350,8 +350,6 @@ namespace Meat.Repositories.Migrations
                     b.HasIndex("ClienteEstablecimientoId");
 
                     b.HasIndex("ClienteId");
-
-                    b.HasIndex("EspecieId");
 
                     b.HasIndex("EstadoIngresoId");
 
@@ -1174,11 +1172,6 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Meat.Domain.Especies.Especie", "Especie")
-                        .WithMany()
-                        .HasForeignKey("EspecieId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
                         .WithMany()
                         .HasForeignKey("EstablecimientoId")
@@ -1209,8 +1202,6 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("Cliente");
 
                     b.Navigation("ClienteEstablecimiento");
-
-                    b.Navigation("Especie");
 
                     b.Navigation("Establecimiento");
 

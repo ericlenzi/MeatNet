@@ -30,6 +30,15 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
             if (establecimiento == null)
                 throw new ValidationException("El establecimiento activo no es valido.");
 
+            // La especie debe estar habilitada para el establecimiento
+            if (string.IsNullOrEmpty(request.EspecieId))
+                throw new ValidationException("Debe indicar la especie del ingreso.");
+            var especieHabilitada = await this.context.EstablecimientosEspecies
+                .AnyAsync(ee => ee.EstablecimientoId == establecimiento.Id
+                    && ee.EspecieId == request.EspecieId, cancellationToken);
+            if (!especieHabilitada)
+                throw new ValidationException("La especie no esta habilitada para el establecimiento.");
+
             // Numero de ingreso correlativo por establecimiento (MAX + 1, transaccional)
             var maxNumero = await this.context.IngresosHaciendas
                 .Where(i => i.EstablecimientoId == establecimiento.Id)
@@ -39,6 +48,7 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
             var entity = IngresoHaciendaFactory.Create();
             entity.NumeroIngreso = maxNumero + 1;
             entity.EstablecimientoId = establecimiento.Id;
+            entity.EspecieId = request.EspecieId;
             entity.FechaHoraIngreso = request.FechaHoraIngreso;
             entity.NumeroDte = request.NumeroDte;
             entity.FechaEmisionDte = request.FechaEmisionDte;
@@ -52,9 +62,7 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
             entity.Chofer = request.Chofer;
             entity.PatenteCamion = request.PatenteCamion;
             entity.PatenteJaula = request.PatenteJaula;
-            entity.PesoBruto = request.PesoBruto;
-            entity.Tara = request.Tara;
-            entity.PesoNeto = request.PesoBruto - request.Tara;
+            entity.PesoNeto = request.Pesadas.Sum(p => p.PesoIngreso);
             entity.EstadoIngresoId = EstadosIngreso.Borrador;
 
             entity.Pesadas = request.Pesadas
@@ -64,7 +72,8 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
                     IngresoHaciendaId = entity.Id,
                     TipoEspecieId = p.TipoEspecieId,
                     PesoIngreso = p.PesoIngreso,
-                    UnidadMedida = "KG"
+                    UnidadMedida = "KG",
+                    IdPesada = p.IdPesada
                 })
                 .ToList();
 

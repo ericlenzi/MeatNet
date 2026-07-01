@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
-import { useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate, useLocation } from 'react-router'
 import {
   getIngresoHacienda,
   createIngresoHacienda,
@@ -46,14 +46,16 @@ function toDateInput(d: Date): string {
 }
 const num = (v: string | number): number => Number(v) || 0
 
-interface PesadaRow { TipoEspecieId: string; PesoIngreso: string }
+interface PesadaRow { TipoEspecieId: string; PesoIngreso: string; IdPesada: string }
 interface UbicacionRow { TipoEspecieId: string; AlmacenId: string; Cantidad: string; EstadoHaciendaId: string }
 
 export default function IngresoHaciendaFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/operaciones/ingreso-hacienda'
   const { toast } = useToast()
-  const { currentEstablecimiento } = useApp()
+  const { currentEstablecimiento, especies, currentEspecie } = useApp()
   const isEdit = !!id
 
   const [fetching, setFetching] = useState(true)
@@ -71,6 +73,7 @@ export default function IngresoHaciendaFormPage() {
 
   const [form, setForm] = useState({
     FechaHoraIngreso: toLocalInput(new Date()),
+    EspecieId: '',
     NumeroDte: '',
     FechaEmisionDte: toDateInput(new Date()),
     ClienteId: '',
@@ -83,8 +86,6 @@ export default function IngresoHaciendaFormPage() {
     Chofer: '',
     PatenteCamion: '',
     PatenteJaula: '',
-    PesoBruto: '',
-    Tara: '',
   })
   const [pesadas, setPesadas] = useState<PesadaRow[]>([])
   const [ubicaciones, setUbicaciones] = useState<UbicacionRow[]>([])
@@ -116,6 +117,7 @@ export default function IngresoHaciendaFormPage() {
           setEstablecimientoNombre(e.establecimientoNombre)
           setForm({
             FechaHoraIngreso: toLocalInput(new Date(e.fechaHoraIngreso)),
+            EspecieId: e.especieId ?? '',
             NumeroDte: e.numeroDte ?? '',
             FechaEmisionDte: toDateInput(new Date(e.fechaEmisionDte)),
             ClienteId: e.clienteId,
@@ -128,10 +130,8 @@ export default function IngresoHaciendaFormPage() {
             Chofer: e.chofer ?? '',
             PatenteCamion: e.patenteCamion ?? '',
             PatenteJaula: e.patenteJaula ?? '',
-            PesoBruto: String(e.pesoBruto),
-            Tara: String(e.tara),
           })
-          setPesadas(e.pesadas.map((p) => ({ TipoEspecieId: p.tipoEspecieId, PesoIngreso: String(p.pesoIngreso) })))
+          setPesadas(e.pesadas.map((p) => ({ TipoEspecieId: p.tipoEspecieId, PesoIngreso: String(p.pesoIngreso), IdPesada: p.idPesada ?? '' })))
           setUbicaciones(e.ubicaciones.map((u) => ({
             TipoEspecieId: u.tipoEspecieId,
             AlmacenId: u.almacenId,
@@ -154,6 +154,23 @@ export default function IngresoHaciendaFormPage() {
     void load()
   }, [id, isEdit, currentEstablecimiento?.id, currentEstablecimiento?.nombre, toast])
 
+  // Ingreso nuevo: por defecto la especie activa del establecimiento (como en el Header)
+  useEffect(() => {
+    if (isEdit || fetching) return
+    if (!form.EspecieId && currentEspecie) {
+      setForm((p) => ({ ...p, EspecieId: currentEspecie.id }))
+    }
+  }, [isEdit, fetching, currentEspecie, form.EspecieId])
+
+  const handleEspecieChange = (especieId: string) => {
+    if (especieId === form.EspecieId) return
+    setForm((p) => ({ ...p, EspecieId: especieId }))
+    setErrors((p) => ({ ...p, EspecieId: '' }))
+    // Al cambiar la especie, el detalle depende de ella: se reinicia
+    setPesadas([])
+    setUbicaciones([])
+  }
+
   const handleClienteChange = async (clienteId: string) => {
     setForm((p) => ({ ...p, ClienteId: clienteId, ClienteEstablecimientoId: '' }))
     setClienteEstablecimientos([])
@@ -172,7 +189,6 @@ export default function IngresoHaciendaFormPage() {
   }
 
   // --- Calculos ---
-  const pesoNeto = num(form.PesoBruto) - num(form.Tara)
   const pesoTeoricoById = new Map(tiposEspecies.map((t) => [t.id, t.pesoTeorico]))
   const pesoPorTipo = new Map<string, number>()
   pesadas.forEach((p) => pesoPorTipo.set(p.TipoEspecieId, (pesoPorTipo.get(p.TipoEspecieId) ?? 0) + num(p.PesoIngreso)))
@@ -197,13 +213,41 @@ export default function IngresoHaciendaFormPage() {
     return filtered.map((a) => ({ value: a.id, label: `${a.codigoAlmacen} - ${a.nombre} (cap. ${a.cantidadAnimales})` }))
   }
 
-  const tipoEspecieOptions = tiposEspecies.map((t) => ({ value: t.id, label: t.nombre }))
+  // Los tipos de especie a pesar se limitan a la Especie elegida en el ingreso
+  const tipoEspecieOptions = tiposEspecies
+    .filter((t) => !form.EspecieId || t.especieId === form.EspecieId)
+    .map((t) => ({ value: t.id, label: t.nombre }))
+
+  // En Corrales solo se pueden ubicar los tipos de especie cargados en el registro de pesadas
+  const tipoEspecieIdsPesadas = new Set(pesadas.map((p) => p.TipoEspecieId).filter(Boolean))
+  const tipoEspecieOptionsUbicacion = tipoEspecieOptions.filter((o) => tipoEspecieIdsPesadas.has(o.value))
+
+  // No se puede quitar (ni cambiar el tipo de) una pesada cuyo tipo de especie tiene ubicacion
+  // en corrales, salvo que otra pesada mantenga ese mismo tipo de especie.
+  const tipoEspecieIdsUbicaciones = new Set(ubicaciones.map((u) => u.TipoEspecieId).filter(Boolean))
+  const pesadaBloqueada = (row: PesadaRow): boolean =>
+    !!row.TipoEspecieId &&
+    tipoEspecieIdsUbicaciones.has(row.TipoEspecieId) &&
+    pesadas.filter((p) => p.TipoEspecieId === row.TipoEspecieId).length === 1
 
   // --- Rows handlers ---
-  const addPesada = () => setPesadas((p) => [...p, { TipoEspecieId: '', PesoIngreso: '' }])
-  const removePesada = (i: number) => setPesadas((p) => p.filter((_, idx) => idx !== i))
-  const updatePesada = (i: number, field: keyof PesadaRow, value: string) =>
-    setPesadas((p) => p.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)))
+  const addPesada = () => setPesadas((p) => [...p, { TipoEspecieId: '', PesoIngreso: '', IdPesada: '' }])
+  const removePesada = (i: number) => {
+    const row = pesadas[i]
+    if (row && pesadaBloqueada(row)) {
+      toast('error', 'No se puede eliminar: el tipo de especie tiene ubicacion en corrales. Quite primero la ubicacion.')
+      return
+    }
+    setPesadas((p) => p.filter((_, idx) => idx !== i))
+  }
+  const updatePesada = (i: number, field: keyof PesadaRow, value: string) => {
+    const row = pesadas[i]
+    if (field === 'TipoEspecieId' && row && value !== row.TipoEspecieId && pesadaBloqueada(row)) {
+      toast('error', 'No se puede cambiar el tipo de especie: tiene ubicacion en corrales. Quite primero la ubicacion.')
+      return
+    }
+    setPesadas((p) => p.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)))
+  }
 
   const addUbicacion = () => setUbicaciones((u) => [...u, { TipoEspecieId: '', AlmacenId: '', Cantidad: '', EstadoHaciendaId: EstadoHacienda.EnPie }])
   const removeUbicacion = (i: number) => setUbicaciones((u) => u.filter((_, idx) => idx !== i))
@@ -215,13 +259,14 @@ export default function IngresoHaciendaFormPage() {
       return next
     }))
 
-  const validate = (): boolean => {
+  const validate = (requireUbicaciones: boolean): boolean => {
     const e: Record<string, string> = {}
     if (!form.FechaHoraIngreso) e['FechaHoraIngreso'] = 'Requerido'
+    if (!form.EspecieId) e['EspecieId'] = 'Requerido'
     if (!form.ClienteId) e['ClienteId'] = 'Requerido'
     if (!form.ClienteEstablecimientoId) e['ClienteEstablecimientoId'] = 'Requerido'
     if (!form.ProvinciaId) e['ProvinciaId'] = 'Requerido'
-    if (ubicaciones.length === 0) e['Ubicaciones'] = 'Cargue al menos una ubicacion'
+    if (requireUbicaciones && ubicaciones.length === 0) e['Ubicaciones'] = 'Cargue al menos una ubicacion'
     setErrors(e)
     if (Object.keys(e).length > 0) toast('error', 'Revise los campos requeridos')
     return Object.keys(e).length === 0
@@ -229,6 +274,7 @@ export default function IngresoHaciendaFormPage() {
 
   const buildPayload = () => ({
     FechaHoraIngreso: new Date(form.FechaHoraIngreso).toISOString(),
+    EspecieId: form.EspecieId,
     NumeroDte: form.NumeroDte,
     FechaEmisionDte: new Date(form.FechaEmisionDte).toISOString(),
     ClienteId: form.ClienteId,
@@ -241,11 +287,9 @@ export default function IngresoHaciendaFormPage() {
     Chofer: form.Chofer,
     PatenteCamion: form.PatenteCamion,
     PatenteJaula: form.PatenteJaula,
-    PesoBruto: num(form.PesoBruto),
-    Tara: num(form.Tara),
     Pesadas: pesadas
       .filter((p) => p.TipoEspecieId)
-      .map((p) => ({ TipoEspecieId: p.TipoEspecieId, PesoIngreso: num(p.PesoIngreso) })),
+      .map((p) => ({ TipoEspecieId: p.TipoEspecieId, PesoIngreso: num(p.PesoIngreso), IdPesada: p.IdPesada })),
     Ubicaciones: ubicaciones
       .filter((u) => u.TipoEspecieId && u.AlmacenId)
       .map((u) => ({
@@ -268,12 +312,12 @@ export default function IngresoHaciendaFormPage() {
 
   const handleSubmit = async (ev: FormEvent) => {
     ev.preventDefault()
-    if (!validate()) return
+    if (!validate(false)) return
     setLoading(true)
     try {
       await persist()
       toast('success', isEdit ? 'Ingreso actualizado' : 'Ingreso creado')
-      navigate('/operaciones/ingreso-hacienda')
+      navigate(backTo)
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al guardar')
     } finally {
@@ -282,13 +326,13 @@ export default function IngresoHaciendaFormPage() {
   }
 
   const handleEnviarAprobacion = async () => {
-    if (!validate()) return
+    if (!validate(true)) return
     setLoading(true)
     try {
       const savedId = await persist()
       await enviarAprobacionIngresoHacienda(savedId)
       toast('success', 'Ingreso enviado a aprobacion')
-      navigate('/operaciones/ingreso-hacienda')
+      navigate(backTo)
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al enviar a aprobacion')
     } finally {
@@ -306,6 +350,7 @@ export default function IngresoHaciendaFormPage() {
 
   const cardClass = 'rounded-lg border border-border bg-surface p-6 shadow-sm'
   const sectionTitle = 'mb-3 text-sm font-semibold uppercase tracking-wide text-text-light'
+  const dividerSection = 'mt-6 border-t border-border pt-6'
 
   return (
     <>
@@ -314,9 +359,9 @@ export default function IngresoHaciendaFormPage() {
       />
 
       <form onSubmit={handleSubmit} className="mx-auto max-w-4xl space-y-5">
-        {/* CUADRO 1 - Detalle de hacienda */}
+        {/* CUADRO 1 - Detalle Ingreso */}
         <div className={cardClass}>
-          <h2 className="mb-4 text-base font-semibold text-text">Detalle de hacienda</h2>
+          <h2 className="mb-4 text-base font-semibold text-text">Detalle Ingreso</h2>
 
           <p className={sectionTitle}>Datos de ingreso</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -329,9 +374,18 @@ export default function IngresoHaciendaFormPage() {
               disabled={readOnly}
             />
             <Input label="Establecimiento" value={establecimientoNombre} disabled />
+            <Select
+              label="Especie"
+              value={form.EspecieId}
+              onChange={(e) => handleEspecieChange(e.target.value)}
+              options={especies.map((esp) => ({ value: esp.id, label: esp.nombre }))}
+              placeholder="Seleccionar especie..."
+              error={errors['EspecieId']}
+              disabled={readOnly}
+            />
           </div>
 
-          <p className={`${sectionTitle} mt-6`}>Datos de origen</p>
+          <p className={`${sectionTitle} ${dividerSection}`}>Datos de origen</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input label="N° DT-e" value={form.NumeroDte} onChange={(e) => updateField('NumeroDte', e.target.value)} disabled={readOnly} />
             <Input label="Fecha emision DT-e" type="date" value={form.FechaEmisionDte} onChange={(e) => updateField('FechaEmisionDte', e.target.value)} disabled={readOnly} />
@@ -384,7 +438,7 @@ export default function IngresoHaciendaFormPage() {
             />
           </div>
 
-          <p className={`${sectionTitle} mt-6`}>Datos de transporte</p>
+          <p className={`${sectionTitle} ${dividerSection}`}>Datos de transporte</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input label="Transportista" value={form.Transportista} onChange={(e) => updateField('Transportista', e.target.value)} disabled={readOnly} />
             <Input label="Chofer" value={form.Chofer} onChange={(e) => updateField('Chofer', e.target.value)} disabled={readOnly} />
@@ -395,45 +449,55 @@ export default function IngresoHaciendaFormPage() {
 
         {/* CUADRO 2 - Registro de pesadas */}
         <div className={cardClass}>
-          <h2 className="mb-4 text-base font-semibold text-text">Registro de pesadas</h2>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Input label="Peso bruto (kg)" type="number" value={form.PesoBruto} onChange={(e) => updateField('PesoBruto', e.target.value)} disabled={readOnly} />
-            <Input label="Tara (kg)" type="number" value={form.Tara} onChange={(e) => updateField('Tara', e.target.value)} disabled={readOnly} />
-            <Input label="Peso neto (kg)" value={num(pesoNeto).toLocaleString('es-AR')} disabled />
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-text">Registro de pesadas</h2>
+            {!readOnly && <Button type="button" size="sm" variant="secondary" onClick={addPesada}>+ Agregar</Button>}
           </div>
 
-          <div className="mt-5 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className={sectionTitle}>Pesadas por tipo de especie</p>
-              {!readOnly && <Button type="button" size="sm" variant="secondary" onClick={addPesada}>+ Agregar</Button>}
-            </div>
-            {pesadas.length === 0 && <p className="text-sm text-text-light">Sin pesadas cargadas.</p>}
+          {pesadas.length === 0 && <p className="text-sm text-text-light">Sin pesadas cargadas.</p>}
+
+          <div className="space-y-2">
             {pesadas.map((p, i) => {
               const peso = num(p.PesoIngreso)
               const teorico = pesoTeoricoById.get(p.TipoEspecieId) ?? 0
               const estimado = teorico > 0 ? Math.round(peso / teorico) : 0
+              const bloqueada = pesadaBloqueada(p)
               return (
                 <div key={i} className="grid grid-cols-1 items-end gap-3 sm:grid-cols-12">
-                  <div className="sm:col-span-5">
+                  <div className="sm:col-span-4">
                     <Select
                       label={i === 0 ? 'Tipo especie' : undefined}
                       value={p.TipoEspecieId}
                       onChange={(e) => updatePesada(i, 'TipoEspecieId', e.target.value)}
                       options={tipoEspecieOptions}
                       placeholder="Seleccionar..."
-                      disabled={readOnly}
+                      disabled={readOnly || bloqueada}
                     />
                   </div>
-                  <div className="sm:col-span-3">
-                    <Input label={i === 0 ? 'Peso ingreso (kg)' : undefined} type="number" value={p.PesoIngreso} onChange={(e) => updatePesada(i, 'PesoIngreso', e.target.value)} disabled={readOnly} />
+                  <div className="sm:col-span-2">
+                    <Input label={i === 0 ? 'Peso ingreso' : undefined} type="number" value={p.PesoIngreso} onChange={(e) => updatePesada(i, 'PesoIngreso', e.target.value)} disabled={readOnly} />
                   </div>
-                  <div className="sm:col-span-3">
+                  <div className="sm:col-span-1">
+                    <Input label={i === 0 ? 'UM' : undefined} value="KG" disabled />
+                  </div>
+                  <div className="sm:col-span-2">
                     <Input label={i === 0 ? 'Cant. estimada (UN)' : undefined} value={String(estimado)} disabled />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Input label={i === 0 ? 'ID Pesada (ticket)' : undefined} value={p.IdPesada} onChange={(e) => updatePesada(i, 'IdPesada', e.target.value)} disabled={readOnly} />
                   </div>
                   {!readOnly && (
                     <div className="sm:col-span-1">
-                      <Button type="button" size="sm" variant="ghost" onClick={() => removePesada(i)}>✕</Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removePesada(i)}
+                        disabled={bloqueada}
+                        title={bloqueada ? 'Tiene ubicacion en corrales; quite primero la ubicacion' : undefined}
+                      >
+                        ✕
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -449,6 +513,7 @@ export default function IngresoHaciendaFormPage() {
             {!readOnly && <Button type="button" size="sm" variant="secondary" onClick={addUbicacion}>+ Agregar</Button>}
           </div>
           {errors['Ubicaciones'] && <p className="mb-2 text-xs text-danger">{errors['Ubicaciones']}</p>}
+          {tipoEspecieOptionsUbicacion.length === 0 && <p className="mb-2 text-xs text-text-light">Cargue tipos de especie en el registro de pesadas para poder ubicarlos.</p>}
           {ubicaciones.length === 0 && <p className="text-sm text-text-light">Sin ubicaciones cargadas.</p>}
 
           <div className="space-y-2">
@@ -459,7 +524,7 @@ export default function IngresoHaciendaFormPage() {
                     label={i === 0 ? 'Tipo especie' : undefined}
                     value={u.TipoEspecieId}
                     onChange={(e) => updateUbicacion(i, 'TipoEspecieId', e.target.value)}
-                    options={tipoEspecieOptions}
+                    options={tipoEspecieOptionsUbicacion}
                     placeholder="Seleccionar..."
                     disabled={readOnly}
                   />
@@ -501,7 +566,7 @@ export default function IngresoHaciendaFormPage() {
 
         {/* Acciones */}
         <div className="flex justify-end gap-3">
-          <Button variant="secondary" type="button" onClick={() => navigate('/operaciones/ingreso-hacienda')}>
+          <Button variant="secondary" type="button" onClick={() => navigate(backTo)}>
             {readOnly ? 'Volver' : 'Cancelar'}
           </Button>
           {!readOnly && (

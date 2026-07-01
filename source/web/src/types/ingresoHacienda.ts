@@ -20,6 +20,7 @@ export interface IngresoHaciendaPesada {
   tipoEspecieNombre: string
   pesoIngreso: number
   unidadMedida: string
+  idPesada: string
 }
 
 export interface IngresoHaciendaUbicacion {
@@ -47,6 +48,8 @@ export interface IngresoHacienda {
   numeroIngreso: number
   establecimientoId: string
   establecimientoNombre: string
+  especieId: string
+  especieNombre: string
   fechaHoraIngreso: string
   numeroDte: string
   fechaEmisionDte: string
@@ -66,8 +69,6 @@ export interface IngresoHacienda {
   chofer: string
   patenteCamion: string
   patenteJaula: string
-  pesoBruto: number
-  tara: number
   pesoNeto: number
   estadoIngresoId: string
   estadoIngresoNombre: string
@@ -81,6 +82,7 @@ export interface IngresoHacienda {
 export interface PesadaInput {
   TipoEspecieId: string
   PesoIngreso: number
+  IdPesada: string
 }
 
 export interface UbicacionInput {
@@ -92,6 +94,7 @@ export interface UbicacionInput {
 
 export interface CreateIngresoHaciendaRequest {
   EstablecimientoId: string
+  EspecieId: string
   FechaHoraIngreso: string
   NumeroDte: string
   FechaEmisionDte: string
@@ -105,8 +108,6 @@ export interface CreateIngresoHaciendaRequest {
   Chofer: string
   PatenteCamion: string
   PatenteJaula: string
-  PesoBruto: number
-  Tara: number
   Pesadas: PesadaInput[]
   Ubicaciones: UbicacionInput[]
 }

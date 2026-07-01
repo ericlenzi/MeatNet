@@ -36,7 +36,12 @@ const estadoOptions = [
 
 function formatFecha(value: string): string {
   if (!value) return ''
-  return new Date(value).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function formatHora(value: string): string {
+  if (!value) return ''
+  return new Date(value).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 export default function IngresosHaciendaListPage() {
@@ -94,7 +99,8 @@ export default function IngresosHaciendaListPage() {
 
   const columns: Column<IngresoHaciendaListItem>[] = [
     { key: 'numeroIngreso', header: 'N°', width: '80px', sortable: true },
-    { key: 'fechaHoraIngreso', header: 'Fecha Ingreso', width: '160px', render: (v) => formatFecha(String(v)) },
+    { key: 'fechaIngreso', header: 'Fecha', width: '110px', render: (_, row) => formatFecha(row.fechaHoraIngreso) },
+    { key: 'horaIngreso', header: 'Hora', width: '80px', render: (_, row) => formatHora(row.fechaHoraIngreso) },
     { key: 'numeroDte', header: 'DT-e', width: '130px' },
     { key: 'clienteNombre', header: 'Cliente', sortable: true },
     { key: 'totalCabezas', header: 'Cabezas', width: '100px', render: (v) => <span className="font-mono">{String(v)}</span> },
