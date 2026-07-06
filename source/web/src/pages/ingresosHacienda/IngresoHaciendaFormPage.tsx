@@ -13,15 +13,17 @@ import { getProvincias } from '@/services/provincias.service'
 import type { ProvinciaItem } from '@/services/provincias.service'
 import { getAlmacenes } from '@/services/almacenes.service'
 import type { AlmacenItem } from '@/services/almacenes.service'
+import { getEstablecimiento } from '@/services/establecimientos.service'
 import { getOrigenesHaciendas } from '@/services/origenesHaciendas.service'
 import { getUsosHaciendas } from '@/services/usosHaciendas.service'
 import { getTiposEspecies } from '@/services/tiposEspecies.service'
 import { useApp } from '@/contexts/AppContext'
 import { useToast } from '@/components/ui/Toast'
 import { EstadoIngreso, EstadoHacienda } from '@/types'
-import type { Cliente, OrigenHacienda, UsoHacienda, TipoEspecie } from '@/types'
+import type { Cliente, OrigenHacienda, UsoHacienda, TipoEspecie, EspecieItem } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import EspecieSelect from '@/components/ui/EspecieSelect'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
@@ -55,7 +57,7 @@ export default function IngresoHaciendaFormPage() {
   const location = useLocation()
   const backTo = (location.state as { from?: string } | null)?.from ?? '/operaciones/ingreso-hacienda'
   const { toast } = useToast()
-  const { currentEstablecimiento, especies, currentEspecie } = useApp()
+  const { currentEstablecimiento } = useApp()
   const isEdit = !!id
 
   const [fetching, setFetching] = useState(true)
@@ -70,6 +72,7 @@ export default function IngresoHaciendaFormPage() {
   const [usos, setUsos] = useState<UsoHacienda[]>([])
   const [tiposEspecies, setTiposEspecies] = useState<TipoEspecie[]>([])
   const [almacenes, setAlmacenes] = useState<AlmacenItem[]>([])
+  const [especies, setEspecies] = useState<EspecieItem[]>([])
 
   const [form, setForm] = useState({
     FechaHoraIngreso: toLocalInput(new Date()),
@@ -96,13 +99,14 @@ export default function IngresoHaciendaFormPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [clientesRes, prov, orig, uso, tiposRes, alm] = await Promise.all([
+        const [clientesRes, prov, orig, uso, tiposRes, alm, est] = await Promise.all([
           getClientes({ PageSize: 1000, Estado: true }),
           getProvincias(),
           getOrigenesHaciendas(),
           getUsosHaciendas(),
           getTiposEspecies({ PageSize: 1000, Estado: true }),
           getAlmacenes({ EstablecimientoId: currentEstablecimiento?.id, Estado: true }),
+          currentEstablecimiento?.id ? getEstablecimiento(currentEstablecimiento.id) : Promise.resolve(null),
         ])
         setClientes(clientesRes.data || [])
         setProvincias(prov)
@@ -110,6 +114,7 @@ export default function IngresoHaciendaFormPage() {
         setUsos(uso)
         setTiposEspecies(tiposRes.data || [])
         setAlmacenes(alm)
+        setEspecies(est?.especies || [])
 
         if (isEdit && id) {
           const e = await getIngresoHacienda(id)
@@ -153,14 +158,6 @@ export default function IngresoHaciendaFormPage() {
     }
     void load()
   }, [id, isEdit, currentEstablecimiento?.id, currentEstablecimiento?.nombre, toast])
-
-  // Ingreso nuevo: por defecto la especie activa del establecimiento (como en el Header)
-  useEffect(() => {
-    if (isEdit || fetching) return
-    if (!form.EspecieId && currentEspecie) {
-      setForm((p) => ({ ...p, EspecieId: currentEspecie.id }))
-    }
-  }, [isEdit, fetching, currentEspecie, form.EspecieId])
 
   const handleEspecieChange = (especieId: string) => {
     if (especieId === form.EspecieId) return
@@ -374,12 +371,10 @@ export default function IngresoHaciendaFormPage() {
               disabled={readOnly}
             />
             <Input label="Establecimiento" value={establecimientoNombre} disabled />
-            <Select
-              label="Especie"
+            <EspecieSelect
+              especies={especies}
               value={form.EspecieId}
-              onChange={(e) => handleEspecieChange(e.target.value)}
-              options={especies.map((esp) => ({ value: esp.id, label: esp.nombre }))}
-              placeholder="Seleccionar especie..."
+              onChange={handleEspecieChange}
               error={errors['EspecieId']}
               disabled={readOnly}
             />

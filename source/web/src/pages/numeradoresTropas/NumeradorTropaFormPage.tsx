@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/Toast'
 import type { Cliente, EspecieItem } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import EspecieSelect from '@/components/ui/EspecieSelect'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
@@ -191,14 +192,10 @@ export default function NumeradorTropaFormPage() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <Select
-                    label="Especie"
+                  <EspecieSelect
+                    especies={especiesDisponibles}
                     value={form.EspecieCodigo}
-                    onChange={(e) => setForm((prev) => ({ ...prev, EspecieCodigo: e.target.value }))}
-                    options={especiesDisponibles.map((esp) => ({
-                      value: esp.id,
-                      label: esp.nombre,
-                    }))}
+                    onChange={(especieId) => setForm((prev) => ({ ...prev, EspecieCodigo: especieId }))}
                     placeholder={form.ClienteEstablecimientoId ? 'Seleccionar especie...' : 'Primero seleccione un establecimiento'}
                     error={errors['EspecieCodigo']}
                     disabled={!form.ClienteEstablecimientoId}
