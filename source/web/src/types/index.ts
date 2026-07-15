@@ -26,3 +26,14 @@ export type {
   TropaDisponibleItem,
 } from './ingresoHacienda'
 export { EstadoIngreso, EstadoHacienda } from './ingresoHacienda'
+export type {
+  ListaMatanzaListItem,
+  ListaMatanza,
+  ListaMatanzaRenglon,
+  ListaMatanzaMovimiento,
+  DisponibilidadFaenaItem,
+  RenglonInput,
+  CreateListaMatanzaRequest,
+  UpdateListaMatanzaRequest,
+} from './listaMatanza'
+export { EstadoListaMatanza } from './listaMatanza'

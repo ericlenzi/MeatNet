@@ -25,5 +25,10 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
 
         public int CantidadUN { get; set; }
         public double PesoKG { get; set; }
+
+        // Comprometido por listas de matanza Confirmadas / En Ejecucion, y saldo disponible
+        public int Reservado { get; set; }
+        public int Disponible { get; set; }
+        public double DisponibleKG { get; set; }
     }
 }

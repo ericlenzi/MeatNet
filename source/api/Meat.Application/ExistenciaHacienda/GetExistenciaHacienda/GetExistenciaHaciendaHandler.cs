@@ -1,8 +1,10 @@
 using MediatR;
 using Meat.Application.IngresosHaciendas;
+using Meat.Application.ListasMatanzas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,6 +66,52 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                     PesoKG = g.Sum(x => x.u.Cantidad * x.u.PesoPromedio)
                 })
                 .ToListAsync(cancellationToken);
+
+            // Reservado por (Tropa, Corral): lo comprometido por listas de matanza
+            // Confirmadas / En Ejecucion. Esos animales ya no estan disponibles.
+            var reservadoRows = await (
+                from d in this.context.ListasMatanzasDetalles
+                join lm in this.context.ListasMatanzas on d.ListaMatanzaId equals lm.Id
+                join est in this.context.Establecimientos on lm.EstablecimientoId equals est.Id
+                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
+                where (lm.EstadoListaMatanzaId == EstadosListaMatanza.Confirmada
+                        || lm.EstadoListaMatanzaId == EstadosListaMatanza.EnEjecucion)
+                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                    && (request.EstablecimientoId == null || lm.EstablecimientoId == request.EstablecimientoId)
+                group d by new { d.TropaId, d.AlmacenId } into g
+                select new { g.Key.TropaId, g.Key.AlmacenId, Reservado = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
+                .ToListAsync(cancellationToken);
+
+            var reservadoPorTropaCorral = reservadoRows
+                .ToDictionary(r => (r.TropaId, r.AlmacenId), r => r.Reservado);
+
+            // Distribuir la reserva de cada (Tropa, Corral) entre sus filas (categorias),
+            // manteniendo los totales. Por defecto todo esta disponible.
+            foreach (var item in data)
+            {
+                var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
+                item.Reservado = 0;
+                item.Disponible = item.CantidadUN;
+                item.DisponibleKG = item.Disponible * pesoPromedio;
+            }
+
+            foreach (var grupo in data.GroupBy(x => (x.TropaId, x.AlmacenId)))
+            {
+                if (!reservadoPorTropaCorral.TryGetValue(grupo.Key, out var restante) || restante <= 0)
+                    continue;
+
+                foreach (var item in grupo)
+                {
+                    var take = Math.Min(item.CantidadUN, restante);
+                    var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
+                    item.Reservado = take;
+                    item.Disponible = item.CantidadUN - take;
+                    item.DisponibleKG = item.Disponible * pesoPromedio;
+                    restante -= take;
+                    if (restante <= 0)
+                        break;
+                }
+            }
 
             return new GetExistenciaHaciendaResponse { Data = data };
         }

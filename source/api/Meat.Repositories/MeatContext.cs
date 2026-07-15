@@ -41,6 +41,10 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.IngresosHaciendas.IngresoHaciendaPesada> IngresosHaciendasPesadas { get; set; }
         public virtual DbSet<Domain.IngresosHaciendas.IngresoHaciendaUbicacion> IngresosHaciendasUbicaciones { get; set; }
         public virtual DbSet<Domain.Tropas.Tropa> Tropas { get; set; }
+        public virtual DbSet<Domain.TiposEstadosListasMatanzas.TipoEstadoListaMatanza> TiposEstadosListasMatanzas { get; set; }
+        public virtual DbSet<Domain.ListasMatanzas.ListaMatanza> ListasMatanzas { get; set; }
+        public virtual DbSet<Domain.ListasMatanzas.ListaMatanzaDetalle> ListasMatanzasDetalles { get; set; }
+        public virtual DbSet<Domain.ListasMatanzas.ListaMatanzaMovimiento> ListasMatanzasMovimientos { get; set; }
 
         public MeatContext(DbContextOptions<MeatContext> options)
             : base(options)
@@ -145,6 +149,18 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Una LM activa (no cancelada) por Establecimiento + Fecha + Especie
+            modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
+                .HasIndex(lm => new { lm.EstablecimientoId, lm.Fecha, lm.EspecieId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL AND [EstadoListaMatanzaId] <> 'ANULADA'");
+
+            // Numero de lista correlativo por establecimiento
+            modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
+                .HasIndex(lm => new { lm.EstablecimientoId, lm.NumeroLista })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             #endregion Indices Unicos
 
             #region Relaciones - Ingreso de Hacienda
@@ -188,6 +204,30 @@ namespace Meat.Repositories
                 .HasOne(a => a.Establecimiento).WithMany().HasForeignKey(a => a.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
 
             #endregion Relaciones - Ingreso de Hacienda
+
+            #region Relaciones - Lista de Matanza
+
+            modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>(e =>
+            {
+                e.Property(x => x.Fecha).HasColumnType("date");
+                e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.EstadoListaMatanza).WithMany().HasForeignKey(x => x.EstadoListaMatanzaId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanzaDetalle>(e =>
+            {
+                e.HasOne(x => x.ListaMatanza).WithMany(lm => lm.Renglones).HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Almacen).WithMany().HasForeignKey(x => x.AlmacenId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanzaMovimiento>(e =>
+            {
+                e.HasOne(x => x.ListaMatanza).WithMany(lm => lm.Movimientos).HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            #endregion Relaciones - Lista de Matanza
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

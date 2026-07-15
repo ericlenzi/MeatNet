@@ -33,6 +33,9 @@ import IngresosHaciendaListPage from '@/pages/ingresosHacienda/IngresosHaciendaL
 import IngresoHaciendaFormPage from '@/pages/ingresosHacienda/IngresoHaciendaFormPage'
 import AprobacionHaciendaListPage from '@/pages/aprobacionHacienda/AprobacionHaciendaListPage'
 import ExistenciaHaciendaPage from '@/pages/existenciaHacienda/ExistenciaHaciendaPage'
+import PlanificacionFaenaListPage from '@/pages/planificacionFaena/PlanificacionFaenaListPage'
+import ListaMatanzaFormPage from '@/pages/planificacionFaena/ListaMatanzaFormPage'
+import ListaMatanzaDetailPage from '@/pages/planificacionFaena/ListaMatanzaDetailPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -51,7 +54,11 @@ function AppRoutes() {
                   <Route path="operaciones/ingreso-hacienda/:id/edit" element={<IngresoHaciendaFormPage />} />
                   <Route path="operaciones/aprobacion-ingreso" element={<AprobacionHaciendaListPage />} />
                   <Route path="operaciones/existencias-corrales" element={<ExistenciaHaciendaPage />} />
-                  <Route path="operaciones/planificacion-faena" element={<PlaceholderPage title="Planificacion de Faena" />} />
+                  <Route path="operaciones/planificacion-faena" element={<PlanificacionFaenaListPage />} />
+                  <Route path="operaciones/planificacion-faena/create" element={<ListaMatanzaFormPage />} />
+                  <Route path="operaciones/planificacion-faena/:id/edit" element={<ListaMatanzaFormPage />} />
+                  <Route path="operaciones/planificacion-faena/:id" element={<ListaMatanzaDetailPage />} />
+                  <Route path="operaciones/monitor-faena" element={<PlaceholderPage title="Monitor de Faena" />} />
                   <Route path="operaciones/evaluacion-faena" element={<PlaceholderPage title="Evaluacion de Faena" />} />
                   {/* Datos Maestros */}
                   <Route path="empresas" element={<EmpresasListPage />} />

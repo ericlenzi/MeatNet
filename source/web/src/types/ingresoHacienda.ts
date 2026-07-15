@@ -138,6 +138,9 @@ export interface ExistenciaCorralItem {
   numeroTropa: number
   cantidadUN: number
   pesoKG: number
+  reservado: number
+  disponible: number
+  disponibleKG: number
 }
 
 // --- Tropas disponibles ---
