@@ -4,6 +4,7 @@ using Meat.Domain.ListasMatanzas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,6 +31,22 @@ namespace Meat.Application.ListasMatanzas.IniciarListaMatanza
 
             if (entity.EstadoListaMatanzaId != EstadosListaMatanza.Confirmada)
                 throw new ValidationException("Solo se puede iniciar la ejecucion de una lista Confirmada.");
+
+            // R-18: no puede haber otra lista EN EJECUCION para el mismo Establecimiento +
+            // Especie (un solo ciclo de faena a la vez). Los Borradores/Confirmadas de
+            // otros dias no bloquean: permiten pre-planificar a futuro.
+            var otraEnEjecucion = await this.context.ListasMatanzas
+                .Where(lm => lm.Id != entity.Id
+                    && lm.EstablecimientoId == entity.EstablecimientoId
+                    && lm.EspecieId == entity.EspecieId
+                    && lm.EstadoListaMatanzaId == EstadosListaMatanza.EnEjecucion)
+                .OrderBy(lm => lm.Fecha)
+                .Select(lm => new { lm.NumeroLista })
+                .FirstOrDefaultAsync(cancellationToken);
+            if (otraEnEjecucion != null)
+                throw new ValidationException(
+                    $"No se puede iniciar la faena: la lista N° {otraEnEjecucion.NumeroLista} ya esta En Ejecucion " +
+                    "para este establecimiento y especie. Debe finalizarla antes de iniciar otra.");
 
             entity.EstadoListaMatanzaId = EstadosListaMatanza.EnEjecucion;
             entity.Version += 1;

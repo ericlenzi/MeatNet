@@ -245,6 +245,7 @@ modelBuilder.Entity<ListaMatanza>()
 | R-15 | La `CANCELACION` libera la reserva. La LM anulada queda visible (auditoría), no se borra. |
 | R-16 | Todo filtrado por empresa activa (vía Establecimiento) y por Establecimiento de contexto. |
 | R-17 | **Cierre de la lista** (acción *Finalizar*, `EN_EJECUCION → FINALIZADA`): por cada renglón con sobrante (`Cantidad − CantidadFaenada > 0`) registra un movimiento `LIBERACION` y, al pasar a `FINALIZADA`, ese sobrante deja de reservar (liberación por estado) y vuelve a estar **disponible** para futuras LM. El renglón conserva su `Cantidad` planificada (insumo del plan vs. real). El motivo del cierre es opcional. Todo el cierre es una única `Version`. |
+| R-18 | **Un solo ciclo de faena En Ejecución por (Establecimiento, Especie).** Solo se puede *Iniciar* (`CONFIRMADA → EN_EJECUCION`) si **ninguna otra** LM del mismo establecimiento y especie está en estado `EN_EJECUCION`, sin importar el día. A estos efectos, "abierta" = **`EN_EJECUCION` únicamente**: los `BORRADOR` y `CONFIRMADA` de otros días **no** bloquean, para permitir la **pre-planificación** a futuro. En la práctica: hay que *finalizar* la faena en curso antes de iniciar otra. Validado en el handler de iniciar; el frontend además deshabilita el botón y explica cuál lista está En Ejecución. |
 
 ## 10. Reserva de stock y disponibilidad
 
@@ -312,7 +313,7 @@ Controller `ListasMatanzasController` (patrón `MeatBaseController`, `[Authorize
 | POST | `/ListasMatanzas/{id}/emergencia` | Faena de emergencia en `EN_EJECUCION`: renglón anexado al final (audita `FAENA_EMERGENCIA`). |
 | POST | `/ListasMatanzas/{id}/confirmar` | `BORRADOR` → `CONFIRMADA` (reserva stock). |
 | POST | `/ListasMatanzas/{id}/desconfirmar` | `CONFIRMADA` → `BORRADOR` (libera reserva; solo sin faena registrada, R-13). |
-| POST | `/ListasMatanzas/{id}/iniciar` | `CONFIRMADA` → `EN_EJECUCION`. |
+| POST | `/ListasMatanzas/{id}/iniciar` | `CONFIRMADA` → `EN_EJECUCION`. Rechaza si ya hay otra LM `EN_EJECUCION` del mismo establecimiento+especie (R-18). |
 | POST | `/ListasMatanzas/{id}/finalizar` | **Cierre**: `EN_EJECUCION` → `FINALIZADA`; libera y audita (`LIBERACION`) el sobrante no faenado (R-17). Body opcional `{ Motivo }`. |
 | POST | `/ListasMatanzas/{id}/cancelar` | → `ANULADA` (libera reserva). La UI lo presenta como "Anular"; la ruta conserva el nombre `cancelar`. |
 | GET | `/ListasMatanzas/disponibilidad` | Tropas/corrales disponibles para planificar (§10). |

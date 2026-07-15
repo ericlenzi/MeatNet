@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import {
   getListaMatanza,
+  getListasMatanzas,
   getDisponibilidadFaena,
   agregarRenglonListaMatanza,
   editarRenglonListaMatanza,
@@ -74,6 +75,7 @@ export default function ListaMatanzaDetailPage() {
   const [rowEdits, setRowEdits] = useState<Record<string, RowEdit>>({})
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
+  const [iniciarBloqueado, setIniciarBloqueado] = useState<string | null>(null)
   const [showCancel, setShowCancel] = useState(false)
   const [showCierre, setShowCierre] = useState(false)
   const [motivoCierre, setMotivoCierre] = useState('')
@@ -86,6 +88,29 @@ export default function ListaMatanzaDetailPage() {
       const data = await getListaMatanza(id)
       setLm(data)
       setRowEdits({})
+
+      // R-18: para poder Iniciar, ninguna otra LM del mismo establecimiento+especie
+      // puede estar En Ejecucion (un solo ciclo de faena a la vez).
+      if (data.estadoListaMatanzaId === EstadoListaMatanza.Confirmada) {
+        try {
+          const res = await getListasMatanzas({
+            EstablecimientoId: data.establecimientoId,
+            EspecieId: data.especieId,
+            EstadoListaMatanzaId: EstadoListaMatanza.EnEjecucion,
+            PageSize: 200,
+          })
+          const otra = (res.data || []).find((x) => x.id !== data.id)
+          setIniciarBloqueado(
+            otra
+              ? `La lista N° ${otra.numeroLista} ya esta En Ejecucion para esta especie. Debe finalizarla antes de iniciar otra faena.`
+              : null,
+          )
+        } catch {
+          setIniciarBloqueado(null)
+        }
+      } else {
+        setIniciarBloqueado(null)
+      }
 
       // Con la lista Confirmada / En Ejecucion se puede seguir agregando tropas
       // (alta controlada / emergencia): cargar el disponible actual.
@@ -229,7 +254,13 @@ export default function ListaMatanzaDetailPage() {
             </Button>
           )}
           {esConfirmada && (
-            <Button variant="success" onClick={() => void runAction(() => iniciarListaMatanza(lm.id), 'Faena iniciada')} loading={acting}>
+            <Button
+              variant="success"
+              onClick={() => void runAction(() => iniciarListaMatanza(lm.id), 'Faena iniciada')}
+              loading={acting}
+              disabled={!!iniciarBloqueado}
+              title={iniciarBloqueado ?? undefined}
+            >
               Iniciar Faena
             </Button>
           )}
@@ -243,6 +274,12 @@ export default function ListaMatanzaDetailPage() {
           )}
         </div>
       </PageHeader>
+
+      {esConfirmada && iniciarBloqueado && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          {iniciarBloqueado}
+        </div>
+      )}
 
       {/* Cabecera */}
       <div className="mb-4 rounded-lg border border-border bg-surface p-6 shadow-sm">
