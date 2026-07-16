@@ -19,13 +19,14 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
 
         public async Task<GetDisponibilidadFaenaResponse> Handle(GetDisponibilidadFaenaRequest request, CancellationToken cancellationToken)
         {
-            // En Pie por (Tropa, Corral) con metadatos, filtrado por empresa/establecimiento/especie
+            // En Pie por (Tropa, Corral, TipoEspecie) con metadatos, filtrado por empresa/establecimiento/especie
             var enPieRows = await (
                 from u in this.context.IngresosHaciendasUbicaciones
                 join t in this.context.Tropas on u.TropaId equals (System.Guid?)t.Id
                 join i in this.context.IngresosHaciendas on u.IngresoHaciendaId equals i.Id
                 join a in this.context.Almacenes on u.AlmacenId equals a.Id
                 join c in this.context.Clientes on i.ClienteId equals c.Id
+                join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Id
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
                 join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 where i.EstadoIngresoId == EstadosIngreso.Aprobado
@@ -41,7 +42,9 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                     AlmacenId = a.Id,
                     AlmacenNombre = a.Nombre,
                     ClienteId = c.Id,
-                    ClienteNombre = c.Nombre
+                    ClienteNombre = c.Nombre,
+                    TipoEspecieId = te.Id,
+                    TipoEspecieNombre = te.Nombre
                 } into g
                 select new
                 {
@@ -51,6 +54,8 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                     g.Key.AlmacenNombre,
                     g.Key.ClienteId,
                     g.Key.ClienteNombre,
+                    g.Key.TipoEspecieId,
+                    g.Key.TipoEspecieNombre,
                     EnPie = g.Sum(x => x.u.Cantidad),
                     PesoTotal = g.Sum(x => x.u.Cantidad * x.u.PesoPromedio)
                 })
@@ -62,7 +67,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
             var data = enPieRows
                 .Select(r =>
                 {
-                    var res = reservado.TryGetValue((r.TropaId, r.AlmacenId), out var rr) ? rr : 0;
+                    var res = reservado.TryGetValue((r.TropaId, r.AlmacenId, r.TipoEspecieId), out var rr) ? rr : 0;
                     return new DisponibilidadFaenaItem
                     {
                         TropaId = r.TropaId,
@@ -71,6 +76,8 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                         AlmacenNombre = r.AlmacenNombre,
                         ClienteId = r.ClienteId,
                         ClienteNombre = r.ClienteNombre,
+                        TipoEspecieId = r.TipoEspecieId,
+                        TipoEspecieNombre = r.TipoEspecieNombre,
                         EnPie = r.EnPie,
                         Reservado = res,
                         Disponible = r.EnPie - res,
@@ -78,7 +85,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                     };
                 })
                 .Where(x => x.Disponible > 0)
-                .OrderBy(x => x.NumeroTropa).ThenBy(x => x.AlmacenNombre)
+                .OrderBy(x => x.NumeroTropa).ThenBy(x => x.AlmacenNombre).ThenBy(x => x.TipoEspecieNombre)
                 .ToList();
 
             return new GetDisponibilidadFaenaResponse { Data = data };

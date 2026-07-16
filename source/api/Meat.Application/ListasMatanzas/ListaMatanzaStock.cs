@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 namespace Meat.Application.ListasMatanzas
 {
     /// <summary>
-    /// Calculos de stock de faena por (Tropa, Corral) para la Planificacion:
+    /// Calculos de stock de faena por (Tropa, Corral, TipoEspecie) para la Planificacion:
     /// En Pie (lo que dejo el Ingreso aprobado), Reservado (lo comprometido por LMs
     /// Confirmadas/En Ejecucion) y Disponible = En Pie - Reservado.
     /// </summary>
     public static class ListaMatanzaStock
     {
-        /// <summary>Animales En Pie por (Tropa, Corral) de tropas Recepcionadas de la especie en el establecimiento.</summary>
-        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId), int>> GetEnPieAsync(
+        /// <summary>Animales En Pie por (Tropa, Corral, TipoEspecie) de tropas Recepcionadas de la especie en el establecimiento.</summary>
+        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetEnPieAsync(
             MeatContext context, Guid establecimientoId, string especieId, CancellationToken cancellationToken)
         {
             var rows = await (
@@ -29,15 +29,15 @@ namespace Meat.Application.ListasMatanzas
                     && u.EstadoHaciendaId == EstadosHacienda.EnPie
                     && i.EstablecimientoId == establecimientoId
                     && t.EspecieCodigo == especieId
-                group u by new { TropaId = t.Id, u.AlmacenId } into g
-                select new { g.Key.TropaId, g.Key.AlmacenId, Cantidad = g.Sum(x => x.Cantidad) })
+                group u by new { TropaId = t.Id, u.AlmacenId, u.TipoEspecieId } into g
+                select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Cantidad = g.Sum(x => x.Cantidad) })
                 .ToListAsync(cancellationToken);
 
-            return rows.ToDictionary(r => (r.TropaId, r.AlmacenId), r => r.Cantidad);
+            return rows.ToDictionary(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId), r => r.Cantidad);
         }
 
-        /// <summary>Animales reservados por (Tropa, Corral) por LMs Confirmadas / En Ejecucion (excluyendo opcionalmente una LM).</summary>
-        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId), int>> GetReservadoAsync(
+        /// <summary>Animales reservados por (Tropa, Corral, TipoEspecie) por LMs Confirmadas / En Ejecucion (excluyendo opcionalmente una LM).</summary>
+        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetReservadoAsync(
             MeatContext context, Guid establecimientoId, string especieId, Guid? excludeListaId, CancellationToken cancellationToken)
         {
             var rows = await (
@@ -48,11 +48,11 @@ namespace Meat.Application.ListasMatanzas
                     && lm.EstablecimientoId == establecimientoId
                     && lm.EspecieId == especieId
                     && (excludeListaId == null || lm.Id != excludeListaId)
-                group d by new { d.TropaId, d.AlmacenId } into g
-                select new { g.Key.TropaId, g.Key.AlmacenId, Cantidad = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
+                group d by new { d.TropaId, d.AlmacenId, d.TipoEspecieId } into g
+                select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Cantidad = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
                 .ToListAsync(cancellationToken);
 
-            return rows.ToDictionary(r => (r.TropaId, r.AlmacenId), r => r.Cantidad);
+            return rows.ToDictionary(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId), r => r.Cantidad);
         }
     }
 }

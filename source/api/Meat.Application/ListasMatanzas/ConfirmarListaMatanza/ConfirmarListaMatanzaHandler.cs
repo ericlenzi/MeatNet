@@ -43,7 +43,7 @@ namespace Meat.Application.ListasMatanzas.ConfirmarListaMatanza
             var reservado = await ListaMatanzaStock.GetReservadoAsync(
                 this.context, entity.EstablecimientoId, entity.EspecieId, entity.Id, cancellationToken);
 
-            foreach (var grupo in entity.Renglones.GroupBy(r => (r.TropaId, r.AlmacenId)))
+            foreach (var grupo in entity.Renglones.GroupBy(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId)))
             {
                 var enP = enPie.TryGetValue(grupo.Key, out var ep) ? ep : 0;
                 var res = reservado.TryGetValue(grupo.Key, out var rr) ? rr : 0;
@@ -51,7 +51,7 @@ namespace Meat.Application.ListasMatanzas.ConfirmarListaMatanza
                 var total = grupo.Sum(r => r.Cantidad);
                 if (total > disponible)
                     throw new ValidationException(
-                        $"No hay stock disponible suficiente para una tropa/corral: se planifican {total}, " +
+                        $"No hay stock disponible suficiente para una tropa/corral/categoria: se planifican {total}, " +
                         $"En Pie {enP}, reservado por otras listas {res}, disponible {disponible}.");
             }
 

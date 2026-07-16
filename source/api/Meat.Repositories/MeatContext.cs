@@ -233,6 +233,7 @@ namespace Meat.Repositories
                 e.HasOne(x => x.ListaMatanza).WithMany(lm => lm.Renglones).HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Almacen).WithMany().HasForeignKey(x => x.AlmacenId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict).IsRequired();
             });
 
             modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanzaMovimiento>(e =>

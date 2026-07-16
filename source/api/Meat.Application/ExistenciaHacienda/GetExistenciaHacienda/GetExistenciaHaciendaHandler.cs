@@ -67,8 +67,8 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 })
                 .ToListAsync(cancellationToken);
 
-            // Reservado por (Tropa, Corral): lo comprometido por listas de matanza
-            // Confirmadas / En Ejecucion. Esos animales ya no estan disponibles.
+            // Reservado por (Tropa, Corral, TipoEspecie): lo comprometido por listas de
+            // matanza Confirmadas / En Ejecucion. Esos animales ya no estan disponibles.
             var reservadoRows = await (
                 from d in this.context.ListasMatanzasDetalles
                 join lm in this.context.ListasMatanzas on d.ListaMatanzaId equals lm.Id
@@ -78,39 +78,24 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                         || lm.EstadoListaMatanzaId == EstadosListaMatanza.EnEjecucion)
                     && emp.CodigoEmpresa == request.CodigoEmpresa
                     && (request.EstablecimientoId == null || lm.EstablecimientoId == request.EstablecimientoId)
-                group d by new { d.TropaId, d.AlmacenId } into g
-                select new { g.Key.TropaId, g.Key.AlmacenId, Reservado = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
+                group d by new { d.TropaId, d.AlmacenId, d.TipoEspecieId } into g
+                select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Reservado = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
                 .ToListAsync(cancellationToken);
 
-            var reservadoPorTropaCorral = reservadoRows
-                .ToDictionary(r => (r.TropaId, r.AlmacenId), r => r.Reservado);
+            var reservadoPorCategoria = reservadoRows
+                .ToDictionary(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId), r => r.Reservado);
 
-            // Distribuir la reserva de cada (Tropa, Corral) entre sus filas (categorias),
-            // manteniendo los totales. Por defecto todo esta disponible.
+            // Cada fila de existencia es una (Tropa, Corral, TipoEspecie): el reservado se
+            // asigna directo por categoria (sin reparto heuristico).
             foreach (var item in data)
             {
                 var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
-                item.Reservado = 0;
-                item.Disponible = item.CantidadUN;
+                var res = reservadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId), out var rr)
+                    ? Math.Min(rr, item.CantidadUN)
+                    : 0;
+                item.Reservado = res;
+                item.Disponible = item.CantidadUN - res;
                 item.DisponibleKG = item.Disponible * pesoPromedio;
-            }
-
-            foreach (var grupo in data.GroupBy(x => (x.TropaId, x.AlmacenId)))
-            {
-                if (!reservadoPorTropaCorral.TryGetValue(grupo.Key, out var restante) || restante <= 0)
-                    continue;
-
-                foreach (var item in grupo)
-                {
-                    var take = Math.Min(item.CantidadUN, restante);
-                    var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
-                    item.Reservado = take;
-                    item.Disponible = item.CantidadUN - take;
-                    item.DisponibleKG = item.Disponible * pesoPromedio;
-                    restante -= take;
-                    if (restante <= 0)
-                        break;
-                }
             }
 
             return new GetExistenciaHaciendaResponse { Data = data };

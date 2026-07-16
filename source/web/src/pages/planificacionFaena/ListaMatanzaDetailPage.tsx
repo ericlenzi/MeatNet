@@ -222,7 +222,7 @@ export default function ListaMatanzaDetailPage() {
 
   const agregarTropa = async (d: DisponibilidadFaenaItem) => {
     if (d.disponible <= 0) return
-    const req = { TropaId: d.tropaId, AlmacenId: d.almacenId, Cantidad: d.disponible }
+    const req = { TropaId: d.tropaId, AlmacenId: d.almacenId, TipoEspecieId: d.tipoEspecieId, Cantidad: d.disponible }
     if (enEjecucion) {
       await runAction(() => faenaEmergenciaListaMatanza(lm.id, req), 'Faena de emergencia agregada')
     } else {
@@ -322,6 +322,7 @@ export default function ListaMatanzaDetailPage() {
                 <th className="py-2 pr-3 w-28">Secuencia</th>
                 <th className="py-2 pr-3">Tropa</th>
                 <th className="py-2 pr-3">Corral</th>
+                <th className="py-2 pr-3">Tipo Especie</th>
                 <th className="py-2 pr-3 w-32">Cantidad</th>
                 <th className="py-2 pr-3 text-right">Faenada</th>
                 {edicionControlada && <th className="py-2" />}
@@ -347,6 +348,7 @@ export default function ListaMatanzaDetailPage() {
                     </td>
                     <td className="py-1.5 pr-3 font-mono">{r.numeroTropa}</td>
                     <td className="py-1.5 pr-3">{r.almacenNombre}</td>
+                    <td className="py-1.5 pr-3">{r.tipoEspecieNombre}</td>
                     <td className="py-1.5 pr-3">
                       {puedeEditarCantidad(r) ? (
                         <input
@@ -402,16 +404,18 @@ export default function ListaMatanzaDetailPage() {
                   <th className="py-2 pr-3">Tropa</th>
                   <th className="py-2 pr-3">Corral</th>
                   <th className="py-2 pr-3">Cliente</th>
+                  <th className="py-2 pr-3">Tipo Especie</th>
                   <th className="py-2 pr-3 text-right">Disponible</th>
                   <th className="py-2" />
                 </tr>
               </thead>
               <tbody>
                 {disponibilidad.map((d) => (
-                  <tr key={`${d.tropaId}-${d.almacenId}`} className="border-b border-border/60">
+                  <tr key={`${d.tropaId}-${d.almacenId}-${d.tipoEspecieId}`} className="border-b border-border/60">
                     <td className="py-2 pr-3 font-mono">{d.numeroTropa}</td>
                     <td className="py-2 pr-3">{d.almacenNombre}</td>
                     <td className="py-2 pr-3">{d.clienteNombre}</td>
+                    <td className="py-2 pr-3">{d.tipoEspecieNombre}</td>
                     <td className="py-2 pr-3 text-right font-mono">{d.disponible}</td>
                     <td className="py-2 text-right">
                       <Button variant="secondary" size="sm" onClick={() => void agregarTropa(d)} disabled={d.disponible <= 0 || acting}>

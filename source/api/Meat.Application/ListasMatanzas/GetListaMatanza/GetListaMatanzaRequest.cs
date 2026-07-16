@@ -44,6 +44,8 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
         public long NumeroTropa { get; set; }
         public Guid AlmacenId { get; set; }
         public string AlmacenNombre { get; set; }
+        public string TipoEspecieId { get; set; }
+        public string TipoEspecieNombre { get; set; }
         public int Secuencia { get; set; }
         public int Cantidad { get; set; }
         public int CantidadFaenada { get; set; }

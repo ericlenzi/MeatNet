@@ -69,6 +69,7 @@ namespace Meat.Application.ListasMatanzas.UpdateListaMatanza
                     ListaMatanzaId = entity.Id,
                     TropaId = r.TropaId,
                     AlmacenId = r.AlmacenId,
+                    TipoEspecieId = r.TipoEspecieId,
                     Secuencia = r.Secuencia,
                     Cantidad = r.Cantidad,
                     CantidadFaenada = 0

@@ -22,6 +22,8 @@ export interface DisponibilidadFaenaItem {
   almacenNombre: string
   clienteId: string
   clienteNombre: string
+  tipoEspecieId: string
+  tipoEspecieNombre: string
   enPie: number
   reservado: number
   disponible: number
@@ -35,6 +37,8 @@ export interface ListaMatanzaRenglon {
   numeroTropa: number
   almacenId: string
   almacenNombre: string
+  tipoEspecieId: string
+  tipoEspecieNombre: string
   secuencia: number
   cantidad: number
   cantidadFaenada: number
@@ -77,6 +81,7 @@ export interface ListaMatanza {
 export interface RenglonInput {
   TropaId: string
   AlmacenId: string
+  TipoEspecieId: string
   Secuencia: number
   Cantidad: number
 }

@@ -24,6 +24,8 @@ interface RenglonRow {
   numeroTropa: number
   almacenId: string
   almacenNombre: string
+  tipoEspecieId: string
+  tipoEspecieNombre: string
   secuencia: number
   cantidad: number
 }
@@ -82,6 +84,8 @@ export default function ListaMatanzaFormPage() {
               numeroTropa: r.numeroTropa,
               almacenId: r.almacenId,
               almacenNombre: r.almacenNombre,
+              tipoEspecieId: r.tipoEspecieId,
+              tipoEspecieNombre: r.tipoEspecieNombre,
               secuencia: r.secuencia,
               cantidad: r.cantidad,
             })),
@@ -147,22 +151,22 @@ export default function ListaMatanzaFormPage() {
     }
   }, [isEdit, currentEstablecimiento?.id, especieId, fecha])
 
-  // Suma ya planificada por (tropa, corral)
-  const usadoPorTropaCorral = (tropaId: string, almacenId: string, exceptKey?: string): number =>
+  // Suma ya planificada por (tropa, corral, categoria)
+  const usadoPorClave = (tropaId: string, almacenId: string, tipoEspecieId: string, exceptKey?: string): number =>
     renglones
-      .filter((r) => r.tropaId === tropaId && r.almacenId === almacenId && r.key !== exceptKey)
+      .filter((r) => r.tropaId === tropaId && r.almacenId === almacenId && r.tipoEspecieId === tipoEspecieId && r.key !== exceptKey)
       .reduce((acc, r) => acc + (r.cantidad || 0), 0)
 
-  const disponibleDe = (tropaId: string, almacenId: string): number => {
-    const d = disponibilidad.find((x) => x.tropaId === tropaId && x.almacenId === almacenId)
+  const disponibleDe = (tropaId: string, almacenId: string, tipoEspecieId: string): number => {
+    const d = disponibilidad.find((x) => x.tropaId === tropaId && x.almacenId === almacenId && x.tipoEspecieId === tipoEspecieId)
     return d ? d.disponible : Number.POSITIVE_INFINITY
   }
 
   const agregarRenglon = (item: DisponibilidadFaenaItem) => {
-    const yaUsado = usadoPorTropaCorral(item.tropaId, item.almacenId)
+    const yaUsado = usadoPorClave(item.tropaId, item.almacenId, item.tipoEspecieId)
     const restante = item.disponible - yaUsado
     if (restante <= 0) {
-      toast('info', 'No queda disponible de esa tropa/corral')
+      toast('info', 'No queda disponible de esa tropa/corral/categoria')
       return
     }
     setRenglones((prev) => [
@@ -173,6 +177,8 @@ export default function ListaMatanzaFormPage() {
         numeroTropa: item.numeroTropa,
         almacenId: item.almacenId,
         almacenNombre: item.almacenNombre,
+        tipoEspecieId: item.tipoEspecieId,
+        tipoEspecieNombre: item.tipoEspecieNombre,
         secuencia: prev.length === 0 ? 10 : Math.max(...prev.map((r) => r.secuencia)) + 10,
         cantidad: restante,
       },
@@ -206,7 +212,7 @@ export default function ListaMatanzaFormPage() {
     setRenglones((prev) => {
       const map = new Map<string, RenglonRow>()
       for (const r of prev) {
-        const k = `${r.tropaId}|${r.almacenId}`
+        const k = `${r.tropaId}|${r.almacenId}|${r.tipoEspecieId}`
         const existing = map.get(k)
         if (existing) {
           existing.cantidad += r.cantidad
@@ -226,17 +232,18 @@ export default function ListaMatanzaFormPage() {
       return `Ya existe la lista N° ${duplicada.numeroLista} (${duplicada.estadoListaMatanzaNombre}) para esa fecha y especie.`
     if (renglones.length === 0) return 'Debe agregar al menos un renglon.'
     if (renglones.some((r) => r.cantidad <= 0)) return 'Todas las cantidades deben ser mayores a cero.'
-    const grupos = new Map<string, { tropaId: string; almacenId: string; numeroTropa: number; almacenNombre: string }>()
+    const grupos = new Map<string, { tropaId: string; almacenId: string; tipoEspecieId: string; numeroTropa: number; almacenNombre: string; tipoEspecieNombre: string }>()
     for (const r of renglones) {
-      grupos.set(`${r.tropaId}|${r.almacenId}`, {
-        tropaId: r.tropaId, almacenId: r.almacenId, numeroTropa: r.numeroTropa, almacenNombre: r.almacenNombre,
+      grupos.set(`${r.tropaId}|${r.almacenId}|${r.tipoEspecieId}`, {
+        tropaId: r.tropaId, almacenId: r.almacenId, tipoEspecieId: r.tipoEspecieId,
+        numeroTropa: r.numeroTropa, almacenNombre: r.almacenNombre, tipoEspecieNombre: r.tipoEspecieNombre,
       })
     }
     for (const g of grupos.values()) {
-      const total = usadoPorTropaCorral(g.tropaId, g.almacenId)
-      const disp = disponibleDe(g.tropaId, g.almacenId)
+      const total = usadoPorClave(g.tropaId, g.almacenId, g.tipoEspecieId)
+      const disp = disponibleDe(g.tropaId, g.almacenId, g.tipoEspecieId)
       if (total > disp) {
-        return `La tropa N° ${g.numeroTropa} en ${g.almacenNombre} supera el disponible (${disp}).`
+        return `La tropa N° ${g.numeroTropa} (${g.tipoEspecieNombre}) en ${g.almacenNombre} supera el disponible (${disp}).`
       }
     }
     return null
@@ -246,6 +253,7 @@ export default function ListaMatanzaFormPage() {
     renglones.map((r) => ({
       TropaId: r.tropaId,
       AlmacenId: r.almacenId,
+      TipoEspecieId: r.tipoEspecieId,
       Secuencia: r.secuencia,
       Cantidad: r.cantidad,
     }))
@@ -301,7 +309,7 @@ export default function ListaMatanzaFormPage() {
   }
 
   const disponiblesConRestante = disponibilidad
-    .map((d) => ({ ...d, restante: d.disponible - usadoPorTropaCorral(d.tropaId, d.almacenId) }))
+    .map((d) => ({ ...d, restante: d.disponible - usadoPorClave(d.tropaId, d.almacenId, d.tipoEspecieId) }))
 
   return (
     <>
@@ -355,6 +363,7 @@ export default function ListaMatanzaFormPage() {
                       <th className="py-2 pr-3">Tropa</th>
                       <th className="py-2 pr-3">Corral</th>
                       <th className="py-2 pr-3">Cliente</th>
+                      <th className="py-2 pr-3">Tipo Especie</th>
                       <th className="py-2 pr-3 text-right">En Pie</th>
                       <th className="py-2 pr-3 text-right">Reservado</th>
                       <th className="py-2 pr-3 text-right">Restante</th>
@@ -364,10 +373,11 @@ export default function ListaMatanzaFormPage() {
                   </thead>
                   <tbody>
                     {disponiblesConRestante.map((d) => (
-                      <tr key={`${d.tropaId}-${d.almacenId}`} className="border-b border-border/60">
+                      <tr key={`${d.tropaId}-${d.almacenId}-${d.tipoEspecieId}`} className="border-b border-border/60">
                         <td className="py-2 pr-3 font-mono">{d.numeroTropa}</td>
                         <td className="py-2 pr-3">{d.almacenNombre}</td>
                         <td className="py-2 pr-3">{d.clienteNombre}</td>
+                        <td className="py-2 pr-3">{d.tipoEspecieNombre}</td>
                         <td className="py-2 pr-3 text-right font-mono">{d.enPie}</td>
                         <td className="py-2 pr-3 text-right font-mono">{d.reservado}</td>
                         <td className="py-2 pr-3 text-right font-mono">{d.restante}</td>
@@ -404,6 +414,7 @@ export default function ListaMatanzaFormPage() {
                     <th className="py-2 pr-3 w-24">Secuencia</th>
                     <th className="py-2 pr-3">Tropa</th>
                     <th className="py-2 pr-3">Corral</th>
+                    <th className="py-2 pr-3">Tipo Especie</th>
                     <th className="py-2 pr-3 w-28">Cantidad</th>
                     <th className="py-2" />
                   </tr>
@@ -423,6 +434,7 @@ export default function ListaMatanzaFormPage() {
                       </td>
                       <td className="py-1.5 pr-3 font-mono">{r.numeroTropa}</td>
                       <td className="py-1.5 pr-3">{r.almacenNombre}</td>
+                      <td className="py-1.5 pr-3">{r.tipoEspecieNombre}</td>
                       <td className="py-1.5 pr-3">
                         <input
                           type="number"

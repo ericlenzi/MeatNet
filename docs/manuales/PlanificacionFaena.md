@@ -3,9 +3,9 @@
 ## 1. Objetivo y alcance
 
 Programar la faena diaria de un Establecimiento mediante la **Lista de Matanza (LM)**:
-seleccionar las tropas disponibles (animales En Pie en corrales), definir la **cantidad**
-a faenar por tropa/corral y la **secuencia** de sacrificio, manteniendo la **trazabilidad**
-y el **historial** de cambios de la programación.
+seleccionar las tropas disponibles (animales En Pie en corrales), definir la **categoría
+(TipoEspecie)** y la **cantidad** a faenar por tropa/corral/categoría y la **secuencia** de
+sacrificio, manteniendo la **trazabilidad** y el **historial** de cambios de la programación.
 
 **Dentro de alcance:** creación y edición de la LM (cabecera + detalle), reserva de stock
 al confirmar, historial/versionado de cambios, faena de emergencia, máquina de estados.
@@ -20,10 +20,11 @@ al confirmar, historial/versionado de cambios, faena de emergencia, máquina de 
 | Término | Definición |
 |---|---|
 | **LM / Lista de Matanza** | Programación diaria de faena de un Establecimiento para una Especie. |
-| **Renglón** | Línea de la LM: una tropa, en un corral, con cantidad y secuencia. |
+| **Renglón** | Línea de la LM: una tropa, en un corral, de una categoría (TipoEspecie), con cantidad y secuencia. |
+| **TipoEspecie / Categoría** | Subclasificación del animal En Pie (ej. PADRILLOS, CAPONES, CACHORRO). Una misma tropa/corral puede tener varias; se planifican por separado. |
 | **Secuencia** | Orden en que se faenan los renglones. **No** es clave ni identificador; es reordenable. |
-| **Dividir** | Partir un renglón en dos (misma tropa/corral, distinta secuencia y cantidad). |
-| **Fusionar** | Unir dos renglones de la misma tropa/corral en uno. |
+| **Dividir** | Partir un renglón en dos (misma tropa/corral/categoría, distinta secuencia y cantidad). |
+| **Fusionar** | Unir dos renglones de la misma tropa/corral/categoría en uno. |
 | **Reserva** | Stock En Pie apartado por una LM confirmada; no disponible para otra LM. |
 | **Faena de emergencia** | Renglón agregado con la LM ya en ejecución (se anexa al final de la secuencia). |
 | **Tropa** | Unidad de trazabilidad generada por el Ingreso; su cantidad En Pie es el tope a planificar. |
@@ -34,8 +35,8 @@ La LM se arma sobre el stock que produce el Ingreso de Hacienda:
 
 - Solo cuentan **Tropas en estado `RECEPCIONADA`**.
 - Solo cuenta hacienda **`EN_PIE`** (los `CAIDOS`/`MUERTOS` no se planifican).
-- El stock disponible por **(Tropa, Corral)** sale de `IngresoHaciendaUbicacion`
-  (`Cantidad`, `PesoPromedio`), filtrado por Ingreso `APROBADO`.
+- El stock disponible por **(Tropa, Corral, TipoEspecie)** sale de `IngresoHaciendaUbicacion`
+  (`Cantidad`, `PesoPromedio`, `TipoEspecieId`), filtrado por Ingreso `APROBADO`.
 - Todo se filtra por **empresa activa** (vía `Establecimiento.Empresa.CodigoEmpresa`)
   y por el **Establecimiento** de contexto.
 
@@ -45,8 +46,10 @@ La LM se arma sobre el stock que produce el Ingreso de Hacienda:
 
 1. **Granularidad de la LM:** una LM por **(Establecimiento, Fecha, Especie)**.
    La cabecera lleva `EspecieId`. La secuencia no cruza especies.
-2. **Granularidad del renglón:** **Tropa + Corral**. Permite ordenar la faena por
-   corral y valida disponibilidad a nivel (Tropa, Corral).
+2. **Granularidad del renglón:** **Tropa + Corral + TipoEspecie**. Permite ordenar la
+   faena por corral y **decidir la categoría** a faenar, validando disponibilidad a
+   nivel (Tropa, Corral, TipoEspecie). Una misma tropa/corral con varias categorías
+   genera un renglón por categoría.
 3. **Reserva de stock:** al **Confirmar**, la LM **reserva** el En Pie planificado.
    El Borrador NO reserva. La reserva es **derivada** (no se materializa un movimiento
    de stock): la disponibilidad se calcula descontando lo planificado por LMs
@@ -59,7 +62,7 @@ La LM se arma sobre el stock que produce el Ingreso de Hacienda:
 ```
 1. Ingreso aprobado -> tropas RECEPCIONADA con stock EN_PIE en corrales
 2. Crear LM [BORRADOR] para (Establecimiento, Fecha, Especie)
-3. Agregar renglones: seleccionar (Tropa, Corral), cantidad y secuencia
+3. Agregar renglones: seleccionar (Tropa, Corral, TipoEspecie), cantidad y secuencia
    - editar cantidad (<= disponible), reordenar, dividir, fusionar  (libre)
 4. Confirmar LM -> [CONFIRMADA] -> reserva el stock planificado
    - modificaciones controladas y AUDITADAS (historial/versiones)
@@ -159,14 +162,15 @@ PK: Guid Id
 - ListaMatanzaId (Guid, FK, cascade delete)
 - TropaId (Guid, FK)
 - AlmacenId (Guid, FK)              [corral de origen]
+- TipoEspecieId (string, FK, requerido) [categoria a faenar]
 - Secuencia (int)                   [orden de faena; reordenable; no es clave]
-- Cantidad (int)                    [animales a faenar de esta tropa/corral]
+- Cantidad (int)                    [animales a faenar de esta tropa/corral/categoria]
 - CantidadFaenada (int, default 0)  [lo actualiza el Monitor; congela el renglon]
 ```
 
-> **No** lleva índice único por `(ListaMatanzaId, TropaId, AlmacenId)`: una tropa/corral
-> puede aparecer en varios renglones (resultado de "dividir"). La integridad se cuida por
-> reglas de negocio (R-05, R-06), no por índice.
+> **No** lleva índice único por `(ListaMatanzaId, TropaId, AlmacenId, TipoEspecieId)`: una
+> tropa/corral/categoría puede aparecer en varios renglones (resultado de "dividir"). La
+> integridad se cuida por reglas de negocio (R-05, R-06), no por índice.
 
 ### 8.3 `ListaMatanzaMovimiento` (historial, append-only)
 
@@ -232,13 +236,13 @@ modelBuilder.Entity<ListaMatanza>()
 | R-02 | `NumeroLista` = MAX+1 por Establecimiento, calculado transaccionalmente al crear. No se reutiliza. |
 | R-03 | Solo se pueden seleccionar **Tropas `RECEPCIONADA`** con hacienda **`EN_PIE`** de la **Especie** de la LM, en corrales del **Establecimiento** de contexto. |
 | R-04 | `Cantidad` de un renglón siempre `> 0`. |
-| R-05 | Σ `Cantidad` de todos los renglones de una **(Tropa, Corral)** en la LM ≤ **disponible** de esa (Tropa, Corral). Ver §10. |
+| R-05 | Σ `Cantidad` de todos los renglones de una **(Tropa, Corral, TipoEspecie)** en la LM ≤ **disponible** de esa (Tropa, Corral, TipoEspecie). Ver §10. |
 | R-06 | **Dividir/Fusionar** operan a nivel de renglón; la entidad `Tropa` **nunca** se modifica. |
 | R-07 | La **Secuencia** solo ordena; se puede renumerar libremente. No identifica el renglón ni es clave de negocio. |
 | R-08 | En `BORRADOR` la edición es libre y **no** genera historial. |
 | R-09 | Al **Confirmar**: la LM valida disponibilidad (R-05) y **reserva** el stock planificado. Requiere ≥ 1 renglón. |
 | R-10 | Desde `CONFIRMADA`, **todo** cambio genera un `ListaMatanzaMovimiento` e incrementa `Version`. No se reemplazan datos sin registrar. |
-| R-11 | Un renglón con `CantidadFaenada > 0` no puede reducir su `Cantidad` por debajo de lo faenado, ni cambiar de tropa/corral. |
+| R-11 | Un renglón con `CantidadFaenada > 0` no puede reducir su `Cantidad` por debajo de lo faenado, ni cambiar de tropa/corral/categoría. |
 | R-12 | Un renglón con `CantidadFaenada = Cantidad` está **congelado** (sin cambios). |
 | R-13 | Volver de `CONFIRMADA` a `BORRADOR` (desconfirmar) libera la reserva; solo si ningún renglón tiene `CantidadFaenada > 0`. Registra movimiento `DESCONFIRMACION` e incrementa `Version` (la re-confirmación no resetea el contador). |
 | R-14 | En `EN_EJECUCION` solo se permite **faena de emergencia** (nuevo renglón anexado con secuencia al final). No se reordena ni edita lo ya faenado. No se cancela la LM. |
@@ -249,22 +253,22 @@ modelBuilder.Entity<ListaMatanza>()
 
 ## 10. Reserva de stock y disponibilidad
 
-La reserva es **derivada** (no se materializa un movimiento). Para una (Tropa, Corral):
+La reserva es **derivada** (no se materializa un movimiento). Para una (Tropa, Corral, TipoEspecie):
 
 ```
-EnPie(Tropa, Corral)   = SUM(IngresoHaciendaUbicacion.Cantidad)
-                         WHERE TropaId, AlmacenId, EstadoHacienda = EN_PIE,
+EnPie(Tropa, Corral, TipoEspecie)   = SUM(IngresoHaciendaUbicacion.Cantidad)
+                         WHERE TropaId, AlmacenId, TipoEspecieId, EstadoHacienda = EN_PIE,
                                Ingreso APROBADO
                          menos lo ya faenado historicamente (Monitor).
 
-Reservado(Tropa, Corral) = SUM(ListaMatanzaDetalle.Cantidad - CantidadFaenada)
+Reservado(Tropa, Corral, TipoEspecie) = SUM(ListaMatanzaDetalle.Cantidad - CantidadFaenada)
                            de renglones cuya LM este en { CONFIRMADA, EN_EJECUCION }.
 
-Disponible(Tropa, Corral) = EnPie(Tropa, Corral) - Reservado(Tropa, Corral)
+Disponible(...) = EnPie(...) - Reservado(...)   [por Tropa, Corral, TipoEspecie]
 ```
 
-- Al **planificar** (armar el Borrador), el selector de tropas ofrece `Disponible`.
-- Al **confirmar**, se revalida `Σ Cantidad (por Tropa,Corral) <= Disponible` (la propia
+- Al **planificar** (armar el Borrador), el selector de tropas ofrece `Disponible` por categoría.
+- Al **confirmar**, se revalida `Σ Cantidad (por Tropa,Corral,TipoEspecie) <= Disponible` (la propia
   LM en Borrador aún no reserva, así que se compara contra el disponible de terceros).
 - La **misma LM** no se descuenta a sí misma hasta que pasa a `CONFIRMADA`.
 
@@ -279,9 +283,11 @@ Disponible(Tropa, Corral) = EnPie(Tropa, Corral) - Reservado(Tropa, Corral)
 > automática al pasar a `FINALIZADA`; el movimiento `LIBERACION` la deja auditada.
 
 > **Impacto en Existencia de Hacienda.** La consulta `ExistenciaHacienda` descuenta el
-> `Reservado` por (Tropa, Corral) de las LM `CONFIRMADA`/`EN_EJECUCION` y expone
-> `Reservado`, `Disponible` (UN) y `DisponibleKG` además del `En Pie`. Así, apenas se
-> confirma una LM, esos animales dejan de figurar como disponibles en corrales.
+> `Reservado` **exacto por (Tropa, Corral, TipoEspecie)** de las LM `CONFIRMADA`/`EN_EJECUCION`
+> (cada fila de existencia ya es una categoría, así que la reserva se asigna directo, sin
+> reparto heurístico) y expone `Reservado`, `Disponible` (UN) y `DisponibleKG` además del
+> `En Pie`. Así, apenas se confirma una LM, esa categoría de esos animales deja de figurar
+> como disponible en corrales.
 
 ## 11. Historial y versionado
 

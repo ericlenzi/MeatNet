@@ -64,6 +64,7 @@ export async function deleteListaMatanza(id: string): Promise<void> {
 export interface AgregarRenglonRequest {
   TropaId: string
   AlmacenId: string
+  TipoEspecieId: string
   Cantidad: number
   Secuencia?: number
   Motivo?: string
@@ -98,6 +99,7 @@ export async function quitarRenglonListaMatanza(id: string, renglonId: string): 
 export interface FaenaEmergenciaRequest {
   TropaId: string
   AlmacenId: string
+  TipoEspecieId: string
   Cantidad: number
   Motivo?: string
 }

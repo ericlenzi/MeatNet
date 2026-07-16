@@ -73,10 +73,11 @@ namespace Meat.Application.ListasMatanzas.EditarRenglonListaMatanza
                 if (request.Cantidad > renglon.Cantidad)
                 {
                     var totalOtros = entity.Renglones
-                        .Where(r => r.Id != renglon.Id && r.TropaId == renglon.TropaId && r.AlmacenId == renglon.AlmacenId)
+                        .Where(r => r.Id != renglon.Id && r.TropaId == renglon.TropaId
+                            && r.AlmacenId == renglon.AlmacenId && r.TipoEspecieId == renglon.TipoEspecieId)
                         .Sum(r => r.Cantidad);
                     await ListaMatanzaValidacion.ValidateDisponibilidadAsync(
-                        this.context, entity, renglon.TropaId, renglon.AlmacenId,
+                        this.context, entity, renglon.TropaId, renglon.AlmacenId, renglon.TipoEspecieId,
                         totalOtros + request.Cantidad, cancellationToken);
                 }
 

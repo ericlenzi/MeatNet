@@ -24,6 +24,7 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
                 .Include(lm => lm.EstadoListaMatanza)
                 .Include(lm => lm.Renglones).ThenInclude(r => r.Tropa)
                 .Include(lm => lm.Renglones).ThenInclude(r => r.Almacen)
+                .Include(lm => lm.Renglones).ThenInclude(r => r.TipoEspecie)
                 .Include(lm => lm.Movimientos)
                 .FirstOrDefaultAsync(lm => lm.Id == request.Id
                     && lm.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
@@ -55,6 +56,8 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
                         NumeroTropa = r.Tropa != null ? r.Tropa.NumeroTropa : 0,
                         AlmacenId = r.AlmacenId,
                         AlmacenNombre = r.Almacen?.Nombre,
+                        TipoEspecieId = r.TipoEspecieId,
+                        TipoEspecieNombre = r.TipoEspecie?.Nombre,
                         Secuencia = r.Secuencia,
                         Cantidad = r.Cantidad,
                         CantidadFaenada = r.CantidadFaenada
