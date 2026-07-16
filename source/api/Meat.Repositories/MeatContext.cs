@@ -41,6 +41,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.IngresosHaciendas.IngresoHaciendaPesada> IngresosHaciendasPesadas { get; set; }
         public virtual DbSet<Domain.IngresosHaciendas.IngresoHaciendaUbicacion> IngresosHaciendasUbicaciones { get; set; }
         public virtual DbSet<Domain.Tropas.Tropa> Tropas { get; set; }
+        public virtual DbSet<Domain.Tropas.TropaMovimiento> TropasMovimientos { get; set; }
         public virtual DbSet<Domain.TiposEstadosListasMatanzas.TipoEstadoListaMatanza> TiposEstadosListasMatanzas { get; set; }
         public virtual DbSet<Domain.ListasMatanzas.ListaMatanza> ListasMatanzas { get; set; }
         public virtual DbSet<Domain.ListasMatanzas.ListaMatanzaDetalle> ListasMatanzasDetalles { get; set; }
@@ -149,6 +150,12 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Secuencia unica por tropa en el historial de trazabilidad
+            modelBuilder.Entity<Domain.Tropas.TropaMovimiento>()
+                .HasIndex(m => new { m.TropaId, m.Secuencia })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             // Una LM activa (no cancelada) por Establecimiento + Fecha + Especie
             modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
                 .HasIndex(lm => new { lm.EstablecimientoId, lm.Fecha, lm.EspecieId })
@@ -182,6 +189,12 @@ namespace Meat.Repositories
                 e.HasOne(x => x.IngresoHacienda).WithMany(i => i.Tropas).HasForeignKey(x => x.IngresoHaciendaId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieCodigo).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.EstadoTropa).WithMany().HasForeignKey(x => x.EstadoTropaId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.Tropas.TropaMovimiento>(e =>
+            {
+                e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.EstadoResultante).WithMany().HasForeignKey(x => x.EstadoResultanteId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHaciendaPesada>(e =>

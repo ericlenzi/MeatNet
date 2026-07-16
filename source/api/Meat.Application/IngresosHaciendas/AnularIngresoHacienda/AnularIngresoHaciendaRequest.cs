@@ -10,6 +10,9 @@ namespace Meat.Application.IngresosHaciendas.AnularIngresoHacienda
 
         [JsonIgnore]
         public string CodigoEmpresa { get; set; }
+
+        [JsonIgnore]
+        public Guid UsuarioId { get; set; }
     }
 
     public class AnularIngresoHaciendaResponse

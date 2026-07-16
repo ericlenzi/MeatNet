@@ -21,7 +21,11 @@
       "PowerShell(dotnet build \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api\\\\Meat.sln\" -nologo -v q 2>&1)",
       "PowerShell($p = \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\web\"; if \\(Test-Path \"$p\\\\node_modules\"\\) { Push-Location $p; npx tsc --noEmit; Write-Output \"exit=$LASTEXITCODE\"; Pop-Location } else { Write-Output \"no node_modules\" })",
       "PowerShell(dotnet --version)",
-      "PowerShell(dotnet ef --version)"
+      "PowerShell(dotnet ef --version)",
+      "PowerShell(dotnet build \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api\\\\Meat\\\\Meat.csproj\" -v quiet --nologo 2>&1)",
+      "PowerShell(dotnet build \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api\\\\Meat\\\\Meat.csproj\" --artifacts-path $out -v quiet --nologo 2>&1)",
+      "PowerShell($out = \"C:\\\\Users\\\\Usuario\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Eric-App-Claude-Projects-MeatNet\\\\c18deb98-ecac-418f-8013-5697bee644e4\\\\scratchpad\\\\artifacts2\")",
+      "PowerShell(Get-Process -Name Meat,dotnet,devenv -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, @{N='RAM\\(MB\\)';E={[int]\\($_.WorkingSet64/1MB\\)}}, StartTime | Format-Table -AutoSize)"
     ]
   }
 }

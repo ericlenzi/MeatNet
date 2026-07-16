@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "source/web",
       "port": 5173
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Meat/Meat.csproj", "--launch-profile", "http"],
+      "cwd": "source/api",
+      "port": 5822
     }
   ]
 }

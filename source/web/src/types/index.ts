@@ -37,3 +37,4 @@ export type {
   UpdateListaMatanzaRequest,
 } from './listaMatanza'
 export { EstadoListaMatanza } from './listaMatanza'
+export type { TrazabilidadTropa, TrazabilidadMovimiento } from './trazabilidadTropa'

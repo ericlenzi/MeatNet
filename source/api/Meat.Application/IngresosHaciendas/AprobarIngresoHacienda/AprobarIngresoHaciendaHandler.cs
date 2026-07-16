@@ -1,5 +1,6 @@
 using MediatR;
 using Meat.Application.Shared;
+using Meat.Application.Tropas;
 using Meat.Domain.NumeradoresTropas;
 using Meat.Domain.Tropas;
 using Meat.Repositories;
@@ -130,11 +131,41 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
                 tropa.FechaRecepcion = DateTime.Now;
                 this.context.Tropas.Add(tropa);
 
+                // Trazabilidad: primer evento del ciclo de vida de la tropa
+                await TropaMovimientos.RegistrarAsync(
+                    this.context,
+                    tropa.Id,
+                    TiposMovimientoTropa.Recepcion,
+                    EstadosTropa.Recepcionada,
+                    $"Tropa recepcionada por aprobacion del ingreso #{entity.NumeroIngreso}.",
+                    request.UsuarioId,
+                    "INGRESO",
+                    entity.Id,
+                    cancellationToken);
+
                 // Ligar las ubicaciones de esa especie a la tropa
                 foreach (var u in entity.Ubicaciones.Where(u =>
                     especiePorTipo.TryGetValue(u.TipoEspecieId ?? string.Empty, out var esp) && esp == especieCodigo))
                 {
                     u.TropaId = tropa.Id;
+                }
+
+                // Trazabilidad: ubicacion fisica de la tropa (un evento por corral / estado hacienda)
+                foreach (var grupoCorral in entity.Ubicaciones
+                    .Where(u => u.TropaId == tropa.Id)
+                    .GroupBy(u => new { u.AlmacenId, NombreCorral = u.Almacen != null ? u.Almacen.Nombre : null, u.EstadoHaciendaId }))
+                {
+                    var cantidad = grupoCorral.Sum(x => x.Cantidad);
+                    await TropaMovimientos.RegistrarAsync(
+                        this.context,
+                        tropa.Id,
+                        TiposMovimientoTropa.Ubicacion,
+                        EstadosTropa.Recepcionada,
+                        $"Ubicada en corral {grupoCorral.Key.NombreCorral} ({EstadoHaciendaLabel(grupoCorral.Key.EstadoHaciendaId)}): {cantidad} cabezas.",
+                        request.UsuarioId,
+                        "INGRESO",
+                        entity.Id,
+                        cancellationToken);
                 }
 
                 response.Tropas.Add(new TropaGenerada
@@ -153,6 +184,14 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
             await this.context.SaveChangesAsync(cancellationToken);
 
             return response;
+        }
+
+        private static string EstadoHaciendaLabel(string estadoHaciendaId)
+        {
+            if (estadoHaciendaId == EstadosHacienda.EnPie) return "En Pie";
+            if (estadoHaciendaId == EstadosHacienda.Caidos) return "Caidos";
+            if (estadoHaciendaId == EstadosHacienda.Muertos) return "Muertos";
+            return estadoHaciendaId;
         }
     }
 }

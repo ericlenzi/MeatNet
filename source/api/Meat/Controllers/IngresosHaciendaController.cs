@@ -95,7 +95,8 @@ namespace Meat.Controllers
             await this.Handle(new AnularIngresoHaciendaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                UsuarioId = base.CurrentUser.Id
             });
     }
 }

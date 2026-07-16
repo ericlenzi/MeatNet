@@ -1,5 +1,6 @@
 using MediatR;
 using Meat.Application.Shared;
+using Meat.Application.Tropas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -35,6 +36,18 @@ namespace Meat.Application.IngresosHaciendas.AnularIngresoHacienda
             foreach (var tropa in entity.Tropas)
             {
                 tropa.EstadoTropaId = EstadosTropa.Anulada;
+
+                // Trazabilidad: evento de anulacion de la tropa
+                await TropaMovimientos.RegistrarAsync(
+                    this.context,
+                    tropa.Id,
+                    TiposMovimientoTropa.Anulacion,
+                    EstadosTropa.Anulada,
+                    $"Tropa anulada por anulacion del ingreso #{entity.NumeroIngreso}.",
+                    request.UsuarioId,
+                    "INGRESO",
+                    entity.Id,
+                    cancellationToken);
             }
 
             entity.EstadoIngresoId = EstadosIngreso.Anulado;

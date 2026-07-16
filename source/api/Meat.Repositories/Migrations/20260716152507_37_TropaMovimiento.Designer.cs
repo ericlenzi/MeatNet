@@ -4,6 +4,7 @@ using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Meat.Repositories.Migrations
 {
     [DbContext(typeof(MeatContext))]
-    partial class MeatContextModelSnapshot : ModelSnapshot
+    [Migration("20260716152507_37_TropaMovimiento")]
+    partial class _37_TropaMovimiento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1100,7 +1103,7 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EstadoResultanteId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
@@ -1127,8 +1130,6 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EstadoResultanteId");
 
                     b.HasIndex("TropaId", "Secuencia")
                         .IsUnique()
@@ -1662,18 +1663,11 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Tropas.TropaMovimiento", b =>
                 {
-                    b.HasOne("Meat.Domain.TiposEstadosTropas.TipoEstadoTropa", "EstadoResultante")
-                        .WithMany()
-                        .HasForeignKey("EstadoResultanteId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Meat.Domain.Tropas.Tropa", "Tropa")
                         .WithMany()
                         .HasForeignKey("TropaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("EstadoResultante");
 
                     b.Navigation("Tropa");
                 });

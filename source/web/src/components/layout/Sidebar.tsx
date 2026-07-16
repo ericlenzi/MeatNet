@@ -52,6 +52,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   ),
+  search: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  ),
   desktopComputer: (
     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1l-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z" />
@@ -129,6 +134,7 @@ const navGroups: NavGroup[] = [
       { label: 'Ingreso de Hacienda', path: '/operaciones/ingreso-hacienda', icon: icons.truck },
       { label: 'Aprobación de Hacienda', path: '/operaciones/aprobacion-ingreso', icon: icons.clipboardCheck },
       { label: 'Existencia de Hacienda', path: '/operaciones/existencias-corrales', icon: icons.chartBar },
+      { label: 'Trazabilidad de Tropas', path: '/operaciones/trazabilidad-tropas', icon: icons.search },
       { label: 'Planificación de Faena', path: '/operaciones/planificacion-faena', icon: icons.calendar },
       { label: 'Monitor de Faena', path: '/operaciones/monitor-faena', icon: icons.desktopComputer },
       { label: 'Evaluación de Faena', path: '/operaciones/evaluacion-faena', icon: icons.documentReport },
