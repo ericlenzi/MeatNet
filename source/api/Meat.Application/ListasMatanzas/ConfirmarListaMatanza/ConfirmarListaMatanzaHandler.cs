@@ -37,6 +37,10 @@ namespace Meat.Application.ListasMatanzas.ConfirmarListaMatanza
             if (entity.Renglones == null || !entity.Renglones.Any())
                 throw new ValidationException("La lista de matanza no tiene renglones.");
 
+            // R-A3: todos los renglones deben tener destino (camara) para confirmar
+            if (entity.Renglones.Any(r => r.AlmacenDestinoId == null))
+                throw new ValidationException("Todos los renglones deben tener un destino de faena (camara) para confirmar la lista.");
+
             // R-09: revalidar disponibilidad reservando contra otras LM Confirmadas / En Ejecucion
             var enPie = await ListaMatanzaStock.GetEnPieAsync(
                 this.context, entity.EstablecimientoId, entity.EspecieId, cancellationToken);

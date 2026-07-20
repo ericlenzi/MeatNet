@@ -14,6 +14,7 @@ import {
   finalizarListaMatanza,
   cancelarListaMatanza,
 } from '@/services/listasMatanzas.service'
+import { getAlmacenes, FamiliaAlmacen } from '@/services/almacenes.service'
 import { useToast } from '@/components/ui/Toast'
 import { EstadoListaMatanza } from '@/types'
 import type { ListaMatanza, ListaMatanzaRenglon, DisponibilidadFaenaItem } from '@/types'
@@ -72,6 +73,9 @@ export default function ListaMatanzaDetailPage() {
 
   const [lm, setLm] = useState<ListaMatanza | null>(null)
   const [disponibilidad, setDisponibilidad] = useState<DisponibilidadFaenaItem[]>([])
+  const [camaraOptions, setCamaraOptions] = useState<{ value: string; label: string }[]>([])
+  // Destino (camara) elegido por fila de disponibles antes de agregar/emergencia
+  const [destinoAgregar, setDestinoAgregar] = useState<Record<string, string>>({})
   const [rowEdits, setRowEdits] = useState<Record<string, RowEdit>>({})
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
@@ -128,8 +132,20 @@ export default function ListaMatanzaDetailPage() {
         } catch {
           setDisponibilidad([])
         }
+        // Camaras de faena del establecimiento (destino requerido al agregar/emergencia)
+        try {
+          const camaras = await getAlmacenes({
+            EstablecimientoId: data.establecimientoId,
+            Estado: true,
+            Familia: FamiliaAlmacen.Camara,
+          })
+          setCamaraOptions(camaras.map((c) => ({ value: c.id, label: c.nombre })))
+        } catch {
+          setCamaraOptions([])
+        }
       } else {
         setDisponibilidad([])
+        setCamaraOptions([])
       }
     } catch {
       toast('error', 'Error al cargar la lista de matanza')
@@ -220,9 +236,22 @@ export default function ListaMatanzaDetailPage() {
     )
   }
 
+  const claveDisp = (d: DisponibilidadFaenaItem) => `${d.tropaId}-${d.almacenId}-${d.tipoEspecieId}`
+
   const agregarTropa = async (d: DisponibilidadFaenaItem) => {
     if (d.disponible <= 0) return
-    const req = { TropaId: d.tropaId, AlmacenId: d.almacenId, TipoEspecieId: d.tipoEspecieId, Cantidad: d.disponible }
+    const destinoId = destinoAgregar[claveDisp(d)]
+    if (!destinoId) {
+      toast('error', 'Seleccione el destino de faena (camara) antes de agregar.')
+      return
+    }
+    const req = {
+      TropaId: d.tropaId,
+      AlmacenId: d.almacenId,
+      AlmacenDestinoId: destinoId,
+      TipoEspecieId: d.tipoEspecieId,
+      Cantidad: d.disponible,
+    }
     if (enEjecucion) {
       await runAction(() => faenaEmergenciaListaMatanza(lm.id, req), 'Faena de emergencia agregada')
     } else {
@@ -265,6 +294,19 @@ export default function ListaMatanzaDetailPage() {
             </Button>
           )}
           {enEjecucion && (
+            <Button onClick={() => navigate(`/operaciones/ejecucion-faena/${lm.id}/tipificador`)}>
+              Tipificar
+            </Button>
+          )}
+          {enEjecucion && (
+            <Button
+              variant="secondary"
+              onClick={() => navigate(`/operaciones/ejecucion-faena/${lm.id}/monitor`)}
+            >
+              Monitor
+            </Button>
+          )}
+          {enEjecucion && (
             <Button variant="success" onClick={() => setShowCierre(true)} loading={acting}>
               Cerrar Lista
             </Button>
@@ -297,6 +339,10 @@ export default function ListaMatanzaDetailPage() {
             <p className="font-medium">{lm.especieNombre}</p>
           </div>
           <div>
+            <p className="text-text-light">Puesto de faena</p>
+            <p className="font-medium">{lm.puestoNombre ?? '—'}</p>
+          </div>
+          <div>
             <p className="text-text-light">Version</p>
             <p className="font-mono font-medium">{lm.version}</p>
           </div>
@@ -323,6 +369,7 @@ export default function ListaMatanzaDetailPage() {
                 <th className="py-2 pr-3">Tropa</th>
                 <th className="py-2 pr-3">Corral</th>
                 <th className="py-2 pr-3">Tipo Especie</th>
+                <th className="py-2 pr-3">Destino (camara)</th>
                 <th className="py-2 pr-3 w-32">Cantidad</th>
                 <th className="py-2 pr-3 text-right">Faenada</th>
                 {edicionControlada && <th className="py-2" />}
@@ -349,6 +396,7 @@ export default function ListaMatanzaDetailPage() {
                     <td className="py-1.5 pr-3 font-mono">{r.numeroTropa}</td>
                     <td className="py-1.5 pr-3">{r.almacenNombre}</td>
                     <td className="py-1.5 pr-3">{r.tipoEspecieNombre}</td>
+                    <td className="py-1.5 pr-3">{r.almacenDestinoNombre ?? <span className="text-text-light">—</span>}</td>
                     <td className="py-1.5 pr-3">
                       {puedeEditarCantidad(r) ? (
                         <input
@@ -405,6 +453,7 @@ export default function ListaMatanzaDetailPage() {
                   <th className="py-2 pr-3">Corral</th>
                   <th className="py-2 pr-3">Cliente</th>
                   <th className="py-2 pr-3">Tipo Especie</th>
+                  <th className="py-2 pr-3">Destino (camara)</th>
                   <th className="py-2 pr-3 text-right">Disponible</th>
                   <th className="py-2" />
                 </tr>
@@ -416,6 +465,18 @@ export default function ListaMatanzaDetailPage() {
                     <td className="py-2 pr-3">{d.almacenNombre}</td>
                     <td className="py-2 pr-3">{d.clienteNombre}</td>
                     <td className="py-2 pr-3">{d.tipoEspecieNombre}</td>
+                    <td className="py-2 pr-3">
+                      <select
+                        className="w-44 rounded-lg border border-border px-2 py-1 text-sm"
+                        value={destinoAgregar[claveDisp(d)] ?? ''}
+                        onChange={(e) => setDestinoAgregar((prev) => ({ ...prev, [claveDisp(d)]: e.target.value }))}
+                      >
+                        <option value="">Seleccionar...</option>
+                        {camaraOptions.map((c) => (
+                          <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="py-2 pr-3 text-right font-mono">{d.disponible}</td>
                     <td className="py-2 text-right">
                       <Button variant="secondary" size="sm" onClick={() => void agregarTropa(d)} disabled={d.disponible <= 0 || acting}>

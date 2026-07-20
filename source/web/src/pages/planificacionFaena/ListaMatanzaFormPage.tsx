@@ -9,6 +9,8 @@ import {
   confirmarListaMatanza,
 } from '@/services/listasMatanzas.service'
 import { getEspecies } from '@/services/especies.service'
+import { getAlmacenes, FamiliaAlmacen } from '@/services/almacenes.service'
+import { getPuestos } from '@/services/puestos.service'
 import { useApp } from '@/contexts/AppContext'
 import { useToast } from '@/components/ui/Toast'
 import { EstadoListaMatanza } from '@/types'
@@ -24,6 +26,7 @@ interface RenglonRow {
   numeroTropa: number
   almacenId: string
   almacenNombre: string
+  almacenDestinoId: string
   tipoEspecieId: string
   tipoEspecieNombre: string
   secuencia: number
@@ -46,10 +49,15 @@ export default function ListaMatanzaFormPage() {
   const isEdit = !!id
 
   const [especieId, setEspecieId] = useState('')
+  const [puestoId, setPuestoId] = useState('')
+  const [puestoOptions, setPuestoOptions] = useState<{ value: string; label: string }[]>([])
   const [fecha, setFecha] = useState(today())
   const [renglones, setRenglones] = useState<RenglonRow[]>([])
   const [disponibilidad, setDisponibilidad] = useState<DisponibilidadFaenaItem[]>([])
   const [especieOptions, setEspecieOptions] = useState<{ value: string; label: string }[]>([])
+  const [camaraOptions, setCamaraOptions] = useState<{ value: string; label: string }[]>([])
+  // R-A4: destino por defecto = ultimo destino seleccionado en esta sesion de edicion
+  const [ultimoDestino, setUltimoDestino] = useState('')
 
   const [estado, setEstado] = useState<string>(EstadoListaMatanza.Borrador)
   const [duplicada, setDuplicada] = useState<ListaMatanzaListItem | null>(null)
@@ -67,6 +75,20 @@ export default function ListaMatanzaFormPage() {
         const esp = await getEspecies({ Estado: true, PageSize: 1000 })
         setEspecieOptions((esp.data || []).map((e) => ({ value: e.codigo, label: e.nombre })))
 
+        // Camaras de faena del establecimiento (destino de los renglones)
+        if (currentEstablecimiento?.id) {
+          const camaras = await getAlmacenes({
+            EstablecimientoId: currentEstablecimiento.id,
+            Estado: true,
+            Familia: FamiliaAlmacen.Camara,
+          })
+          setCamaraOptions(camaras.map((c) => ({ value: c.id, label: c.nombre })))
+
+          // Puestos (palcos de faena) del establecimiento
+          const puestos = await getPuestos(currentEstablecimiento.id)
+          setPuestoOptions(puestos.map((p) => ({ value: p.id, label: p.nombre || p.codigoPuesto })))
+        }
+
         if (isEdit && id) {
           const lm = await getListaMatanza(id)
           if (lm.estadoListaMatanzaId !== EstadoListaMatanza.Borrador) {
@@ -76,6 +98,7 @@ export default function ListaMatanzaFormPage() {
           }
           setEstado(lm.estadoListaMatanzaId)
           setEspecieId(lm.especieId)
+          setPuestoId(lm.puestoId ?? '')
           setFecha(lm.fecha.slice(0, 10))
           setRenglones(
             lm.renglones.map((r) => ({
@@ -84,6 +107,7 @@ export default function ListaMatanzaFormPage() {
               numeroTropa: r.numeroTropa,
               almacenId: r.almacenId,
               almacenNombre: r.almacenNombre,
+              almacenDestinoId: r.almacenDestinoId ?? '',
               tipoEspecieId: r.tipoEspecieId,
               tipoEspecieNombre: r.tipoEspecieNombre,
               secuencia: r.secuencia,
@@ -98,7 +122,7 @@ export default function ListaMatanzaFormPage() {
       }
     }
     void load()
-  }, [id, isEdit, navigate, toast])
+  }, [id, isEdit, navigate, toast, currentEstablecimiento?.id])
 
   // Cargar disponibilidad al cambiar la especie
   const loadDisponibilidad = useCallback(async () => {
@@ -177,6 +201,7 @@ export default function ListaMatanzaFormPage() {
         numeroTropa: item.numeroTropa,
         almacenId: item.almacenId,
         almacenNombre: item.almacenNombre,
+        almacenDestinoId: ultimoDestino,   // R-A4: prellenar con el ultimo destino elegido
         tipoEspecieId: item.tipoEspecieId,
         tipoEspecieNombre: item.tipoEspecieNombre,
         secuencia: prev.length === 0 ? 10 : Math.max(...prev.map((r) => r.secuencia)) + 10,
@@ -187,6 +212,11 @@ export default function ListaMatanzaFormPage() {
 
   const updateRenglon = (key: string, patch: Partial<RenglonRow>) => {
     setRenglones((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+  }
+
+  const cambiarDestino = (key: string, destinoId: string) => {
+    updateRenglon(key, { almacenDestinoId: destinoId })
+    if (destinoId) setUltimoDestino(destinoId)   // R-A4
   }
 
   const quitarRenglon = (key: string) => {
@@ -253,6 +283,7 @@ export default function ListaMatanzaFormPage() {
     renglones.map((r) => ({
       TropaId: r.tropaId,
       AlmacenId: r.almacenId,
+      AlmacenDestinoId: r.almacenDestinoId || null,
       TipoEspecieId: r.tipoEspecieId,
       Secuencia: r.secuencia,
       Cantidad: r.cantidad,
@@ -267,13 +298,14 @@ export default function ListaMatanzaFormPage() {
     setSaving(true)
     try {
       if (isEdit && id) {
-        await updateListaMatanza(id, { EspecieId: especieId, Fecha: fecha, Renglones: buildRenglones() })
+        await updateListaMatanza(id, { EspecieId: especieId, PuestoId: puestoId || null, Fecha: fecha, Renglones: buildRenglones() })
         toast('success', 'Lista guardada')
         return id
       } else {
         const res = await createListaMatanza({
           EstablecimientoId: currentEstablecimiento?.id ?? '',
           EspecieId: especieId,
+          PuestoId: puestoId || null,
           Fecha: fecha,
           Renglones: buildRenglones(),
         })
@@ -290,6 +322,11 @@ export default function ListaMatanzaFormPage() {
   }
 
   const confirmar = async () => {
+    // R-A3: al confirmar, todos los renglones deben tener destino (camara)
+    if (renglones.some((r) => !r.almacenDestinoId)) {
+      toast('error', 'Todos los renglones deben tener un destino de faena (camara) para confirmar.')
+      return
+    }
     const savedId = await guardar()
     if (!savedId) return
     setConfirming(true)
@@ -318,7 +355,7 @@ export default function ListaMatanzaFormPage() {
       <div className="space-y-4">
         {/* Cabecera */}
         <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Input label="Establecimiento" value={currentEstablecimiento?.nombre ?? ''} disabled />
             <Select
               label="Especie"
@@ -327,6 +364,14 @@ export default function ListaMatanzaFormPage() {
               value={especieId}
               onChange={(e) => { setEspecieId(e.target.value); setRenglones([]) }}
               disabled={isEdit}
+            />
+            <Select
+              label="Puesto de faena"
+              options={puestoOptions}
+              placeholder="(Sin asignar)"
+              value={puestoId}
+              onChange={(e) => setPuestoId(e.target.value)}
+              disabled={!editable}
             />
             <Input label="Fecha de faena" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} disabled={isEdit} />
           </div>
@@ -415,6 +460,7 @@ export default function ListaMatanzaFormPage() {
                     <th className="py-2 pr-3">Tropa</th>
                     <th className="py-2 pr-3">Corral</th>
                     <th className="py-2 pr-3">Tipo Especie</th>
+                    <th className="py-2 pr-3">Destino (camara)</th>
                     <th className="py-2 pr-3 w-28">Cantidad</th>
                     <th className="py-2" />
                   </tr>
@@ -435,6 +481,19 @@ export default function ListaMatanzaFormPage() {
                       <td className="py-1.5 pr-3 font-mono">{r.numeroTropa}</td>
                       <td className="py-1.5 pr-3">{r.almacenNombre}</td>
                       <td className="py-1.5 pr-3">{r.tipoEspecieNombre}</td>
+                      <td className="py-1.5 pr-3">
+                        <select
+                          className="w-44 rounded-lg border border-border px-2 py-1 text-sm disabled:bg-gray-50"
+                          value={r.almacenDestinoId}
+                          disabled={!editable}
+                          onChange={(e) => cambiarDestino(r.key, e.target.value)}
+                        >
+                          <option value="">Seleccionar...</option>
+                          {camaraOptions.map((c) => (
+                            <option key={c.value} value={c.value}>{c.label}</option>
+                          ))}
+                        </select>
+                      </td>
                       <td className="py-1.5 pr-3">
                         <input
                           type="number"

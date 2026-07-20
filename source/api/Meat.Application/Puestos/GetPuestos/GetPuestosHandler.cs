@@ -21,7 +21,7 @@ namespace Meat.Application.Puestos.GetPuestos
         public async Task<GetPuestosResponse> Handle(GetPuestosRequest request, CancellationToken cancellationToken)
         {
             IQueryable<Puesto> queryable = this.context.Puestos
-                .Where(x => x.SucursalId == request.SucursalId)
+                .Where(x => x.EstablecimientoId == request.EstablecimientoId)
                 .OrderBy(x => x.CodigoPuesto)
                 .AsQueryable();
 

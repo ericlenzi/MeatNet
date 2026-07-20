@@ -16,7 +16,10 @@ namespace Meat.Application.ListasMatanzas
     /// </summary>
     public static class ListaMatanzaStock
     {
-        /// <summary>Animales En Pie por (Tropa, Corral, TipoEspecie) de tropas Recepcionadas de la especie en el establecimiento.</summary>
+        /// <summary>
+        /// Animales En Pie por (Tropa, Corral, TipoEspecie) de tropas Recepcionadas de la especie
+        /// en el establecimiento, ya descontado lo faenado historicamente (Romaneo → CantidadFaenada).
+        /// </summary>
         public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetEnPieAsync(
             MeatContext context, Guid establecimientoId, string especieId, CancellationToken cancellationToken)
         {
@@ -31,6 +34,31 @@ namespace Meat.Application.ListasMatanzas
                     && t.EspecieCodigo == especieId
                 group u by new { TropaId = t.Id, u.AlmacenId, u.TipoEspecieId } into g
                 select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Cantidad = g.Sum(x => x.Cantidad) })
+                .ToListAsync(cancellationToken);
+
+            var faenado = await GetFaenadoAsync(context, establecimientoId, especieId, cancellationToken);
+
+            return rows.ToDictionary(
+                r => (r.TropaId, r.AlmacenId, r.TipoEspecieId),
+                r => r.Cantidad - (faenado.TryGetValue((r.TropaId, r.AlmacenId, r.TipoEspecieId), out var f) ? f : 0));
+        }
+
+        /// <summary>
+        /// Animales ya faenados por (Tropa, Corral, TipoEspecie) = suma de CantidadFaenada de todos
+        /// los renglones de la especie en el establecimiento (cualquier estado de LM: la faena es
+        /// permanente). Es la "resta derivada" del consumo real de stock (Ejecucion de Faena).
+        /// </summary>
+        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetFaenadoAsync(
+            MeatContext context, Guid establecimientoId, string especieId, CancellationToken cancellationToken)
+        {
+            var rows = await (
+                from d in context.ListasMatanzasDetalles
+                join lm in context.ListasMatanzas on d.ListaMatanzaId equals lm.Id
+                where lm.EstablecimientoId == establecimientoId
+                    && lm.EspecieId == especieId
+                    && d.CantidadFaenada > 0
+                group d by new { d.TropaId, d.AlmacenId, d.TipoEspecieId } into g
+                select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Cantidad = g.Sum(x => x.CantidadFaenada) })
                 .ToListAsync(cancellationToken);
 
             return rows.ToDictionary(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId), r => r.Cantidad);

@@ -38,6 +38,16 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
             if (!especieHabilitada)
                 throw new ValidationException("La especie no esta habilitada para el establecimiento.");
 
+            // Puesto (palco de faena) opcional, debe pertenecer al establecimiento
+            if (request.PuestoId.HasValue)
+            {
+                var puestoValido = await this.context.Puestos
+                    .AnyAsync(p => p.Id == request.PuestoId.Value
+                        && p.EstablecimientoId == establecimiento.Id, cancellationToken);
+                if (!puestoValido)
+                    throw new ValidationException("El puesto indicado no pertenece al establecimiento.");
+            }
+
             // R-01: una LM activa (no cancelada) por Establecimiento + Fecha + Especie
             var fecha = request.Fecha.Date;
             var yaExiste = await this.context.ListasMatanzas
@@ -51,6 +61,9 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
             // Validar renglones (cantidad y tope En Pie por tropa/corral)
             await ListaMatanzaValidacion.ValidateRenglonesAsync(
                 this.context, establecimiento.Id, request.EspecieId, request.Renglones, cancellationToken);
+            // Validar destinos (camaras) informados; en Borrador el destino es opcional
+            await ListaMatanzaValidacion.ValidateDestinosAsync(
+                this.context, establecimiento.Id, request.Renglones, cancellationToken);
 
             // R-02: numero de lista correlativo por establecimiento (MAX + 1)
             var maxNumero = await this.context.ListasMatanzas
@@ -61,6 +74,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
             var entity = ListaMatanzaFactory.Create();
             entity.EstablecimientoId = establecimiento.Id;
             entity.EspecieId = request.EspecieId;
+            entity.PuestoId = request.PuestoId;
             entity.Fecha = fecha;
             entity.NumeroLista = maxNumero + 1;
             entity.EstadoListaMatanzaId = EstadosListaMatanza.Borrador;
@@ -72,6 +86,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
                     ListaMatanzaId = entity.Id,
                     TropaId = r.TropaId,
                     AlmacenId = r.AlmacenId,
+                    AlmacenDestinoId = r.AlmacenDestinoId,
                     TipoEspecieId = r.TipoEspecieId,
                     Secuencia = r.Secuencia,
                     Cantidad = r.Cantidad,

@@ -14,6 +14,7 @@ namespace Meat.Application.IngresosHaciendas
     {
         public const string Recepcionada = "RECEPCIONADA";
         public const string Anulada = "ANULADA";
+        public const string Faenada = "FAENADA";
     }
 
     /// <summary>Codigos del catalogo TiposEstadosHacienda.</summary>

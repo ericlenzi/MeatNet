@@ -53,10 +53,22 @@ namespace Meat.Application.ListasMatanzas.UpdateListaMatanza
             if (yaExiste)
                 throw new ValidationException("Ya existe una lista de matanza para ese establecimiento, fecha y especie.");
 
+            if (request.PuestoId.HasValue)
+            {
+                var puestoValido = await this.context.Puestos
+                    .AnyAsync(p => p.Id == request.PuestoId.Value
+                        && p.EstablecimientoId == entity.EstablecimientoId, cancellationToken);
+                if (!puestoValido)
+                    throw new ValidationException("El puesto indicado no pertenece al establecimiento.");
+            }
+
             await ListaMatanzaValidacion.ValidateRenglonesAsync(
                 this.context, entity.EstablecimientoId, request.EspecieId, request.Renglones, cancellationToken);
+            await ListaMatanzaValidacion.ValidateDestinosAsync(
+                this.context, entity.EstablecimientoId, request.Renglones, cancellationToken);
 
             entity.EspecieId = request.EspecieId;
+            entity.PuestoId = request.PuestoId;
             entity.Fecha = fecha;
             entity.FechaActualizacion = DateTime.Now;
 
@@ -69,6 +81,7 @@ namespace Meat.Application.ListasMatanzas.UpdateListaMatanza
                     ListaMatanzaId = entity.Id,
                     TropaId = r.TropaId,
                     AlmacenId = r.AlmacenId,
+                    AlmacenDestinoId = r.AlmacenDestinoId,
                     TipoEspecieId = r.TipoEspecieId,
                     Secuencia = r.Secuencia,
                     Cantidad = r.Cantidad,

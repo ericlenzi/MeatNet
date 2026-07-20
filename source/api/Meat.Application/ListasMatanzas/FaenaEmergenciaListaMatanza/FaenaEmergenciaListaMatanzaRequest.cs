@@ -15,6 +15,7 @@ namespace Meat.Application.ListasMatanzas.FaenaEmergenciaListaMatanza
 
         public Guid TropaId { get; set; }
         public Guid AlmacenId { get; set; }
+        public Guid? AlmacenDestinoId { get; set; }        // camara de faena (requerido: LM en ejecucion)
         public string TipoEspecieId { get; set; }
         public int Cantidad { get; set; }
         public string Motivo { get; set; }

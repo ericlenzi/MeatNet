@@ -10,7 +10,7 @@ namespace Meat.Application.Puestos.UpdatePuesto
 
         public string NumeroPuesto { get; set; }
 
-        public Guid SucursalId { get; set; }
+        public Guid EstablecimientoId { get; set; }
 
         public string Erp_Codigo { get; set; }
     }

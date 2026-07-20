@@ -26,6 +26,8 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
         public string EstablecimientoNombre { get; set; }
         public string EspecieId { get; set; }
         public string EspecieNombre { get; set; }
+        public Guid? PuestoId { get; set; }
+        public string PuestoCodigo { get; set; }
         public string EstadoListaMatanzaId { get; set; }
         public string EstadoListaMatanzaNombre { get; set; }
         public int Version { get; set; }

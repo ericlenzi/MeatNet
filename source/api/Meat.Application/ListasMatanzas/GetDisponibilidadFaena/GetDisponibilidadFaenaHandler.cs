@@ -64,10 +64,16 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
             var reservado = await ListaMatanzaStock.GetReservadoAsync(
                 this.context, request.EstablecimientoId, request.EspecieId, request.ExcludeListaId, cancellationToken);
 
+            // Consumo real de faena (Ejecucion): resta lo ya faenado del En Pie.
+            var faenado = await ListaMatanzaStock.GetFaenadoAsync(
+                this.context, request.EstablecimientoId, request.EspecieId, cancellationToken);
+
             var data = enPieRows
                 .Select(r =>
                 {
                     var res = reservado.TryGetValue((r.TropaId, r.AlmacenId, r.TipoEspecieId), out var rr) ? rr : 0;
+                    var fae = faenado.TryGetValue((r.TropaId, r.AlmacenId, r.TipoEspecieId), out var ff) ? ff : 0;
+                    var enPie = r.EnPie - fae;
                     return new DisponibilidadFaenaItem
                     {
                         TropaId = r.TropaId,
@@ -78,10 +84,10 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                         ClienteNombre = r.ClienteNombre,
                         TipoEspecieId = r.TipoEspecieId,
                         TipoEspecieNombre = r.TipoEspecieNombre,
-                        EnPie = r.EnPie,
+                        EnPie = enPie,
                         Reservado = res,
-                        Disponible = r.EnPie - res,
-                        PesoPromedio = r.EnPie > 0 ? r.PesoTotal / r.EnPie : 0
+                        Disponible = enPie - res,
+                        PesoPromedio = enPie > 0 ? r.PesoTotal / enPie : 0
                     };
                 })
                 .Where(x => x.Disponible > 0)

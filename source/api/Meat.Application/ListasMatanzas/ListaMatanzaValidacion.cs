@@ -1,6 +1,8 @@
+using Meat.Application.IngresosHaciendas;
 using Meat.Application.Shared;
 using Meat.Domain.ListasMatanzas;
 using Meat.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +70,53 @@ namespace Meat.Application.ListasMatanzas
                 throw new ValidationException(
                     $"No hay stock disponible suficiente para la tropa/corral/categoria: " +
                     $"En Pie {ep}, reservado por otras listas {res}, se solicitan {nuevoTotalLista}.");
+        }
+
+        /// <summary>
+        /// Valida que un almacen destino sea una CAMARA activa del establecimiento (R-A2).
+        /// </summary>
+        public static async Task ValidateDestinoAsync(
+            MeatContext context, Guid establecimientoId, Guid almacenDestinoId, CancellationToken cancellationToken)
+        {
+            var ok = await (
+                from a in context.Almacenes
+                join ta in context.TiposAlmacenes on a.TipoAlmacenId equals ta.Codigo
+                where a.Id == almacenDestinoId
+                    && a.EstablecimientoId == establecimientoId
+                    && a.Activo
+                    && ta.Familia == FamiliaAlmacen.Camara
+                select a.Id).AnyAsync(cancellationToken);
+            if (!ok)
+                throw new ValidationException("El destino de faena debe ser una camara activa del establecimiento.");
+        }
+
+        /// <summary>
+        /// Valida los destinos (camaras) informados en los renglones de una LM en Borrador.
+        /// El destino es opcional en Borrador; solo se validan los que vengan informados (R-A2).
+        /// </summary>
+        public static async Task ValidateDestinosAsync(
+            MeatContext context, Guid establecimientoId,
+            IEnumerable<ListaMatanzaDetalleInput> renglones, CancellationToken cancellationToken)
+        {
+            var ids = (renglones ?? Enumerable.Empty<ListaMatanzaDetalleInput>())
+                .Where(r => r.AlmacenDestinoId.HasValue)
+                .Select(r => r.AlmacenDestinoId.Value)
+                .Distinct()
+                .ToList();
+            if (!ids.Any())
+                return;
+
+            var validos = await (
+                from a in context.Almacenes
+                join ta in context.TiposAlmacenes on a.TipoAlmacenId equals ta.Codigo
+                where ids.Contains(a.Id)
+                    && a.EstablecimientoId == establecimientoId
+                    && a.Activo
+                    && ta.Familia == FamiliaAlmacen.Camara
+                select a.Id).ToListAsync(cancellationToken);
+
+            if (validos.Count != ids.Count)
+                throw new ValidationException("Un destino de faena seleccionado no es una camara activa del establecimiento.");
         }
     }
 }

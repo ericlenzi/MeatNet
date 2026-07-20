@@ -11,7 +11,7 @@ import { getClientes, getClienteEstablecimientos } from '@/services/clientes.ser
 import type { ClienteEstablecimientoItem } from '@/services/clientes.service'
 import { getProvincias } from '@/services/provincias.service'
 import type { ProvinciaItem } from '@/services/provincias.service'
-import { getAlmacenes } from '@/services/almacenes.service'
+import { getAlmacenes, FamiliaAlmacen } from '@/services/almacenes.service'
 import type { AlmacenItem } from '@/services/almacenes.service'
 import { getEstablecimiento } from '@/services/establecimientos.service'
 import { getOrigenesHaciendas } from '@/services/origenesHaciendas.service'
@@ -105,7 +105,7 @@ export default function IngresoHaciendaFormPage() {
           getOrigenesHaciendas(),
           getUsosHaciendas(),
           getTiposEspecies({ PageSize: 1000, Estado: true }),
-          getAlmacenes({ EstablecimientoId: currentEstablecimiento?.id, Estado: true }),
+          getAlmacenes({ EstablecimientoId: currentEstablecimiento?.id, Estado: true, Familia: FamiliaAlmacen.Corral }),
           currentEstablecimiento?.id ? getEstablecimiento(currentEstablecimiento.id) : Promise.resolve(null),
         ])
         setClientes(clientesRes.data || [])
@@ -207,7 +207,7 @@ export default function IngresoHaciendaFormPage() {
     } else if (estadoHaciendaId === EstadoHacienda.Muertos) {
       filtered = almacenes.filter((a) => a.tipoAlmacenId === CORRAL_MUERTOS)
     }
-    return filtered.map((a) => ({ value: a.id, label: `${a.codigoAlmacen} - ${a.nombre} (cap. ${a.cantidadAnimales})` }))
+    return filtered.map((a) => ({ value: a.id, label: `${a.codigoAlmacen} - ${a.nombre} (cap. ${a.capacidad})` }))
   }
 
   // Los tipos de especie a pesar se limitan a la Especie elegida en el ingreso

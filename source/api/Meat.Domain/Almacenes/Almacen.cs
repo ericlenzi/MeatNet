@@ -13,7 +13,8 @@ namespace Meat.Domain.Almacenes
         public Guid Id { get; set; }
         public string CodigoAlmacen { get; set; }
         public string Nombre { get; set; }
-        public int CantidadAnimales { get; set; }
+        /// <summary>Capacidad de la ubicacion. Unidad segun la familia (cabezas en corral, ganchos/reses en camara).</summary>
+        public int Capacidad { get; set; }
         public string TipoAlmacenId { get; set; }
         public TipoAlmacen TipoAlmacen { get; set; }
         public Guid EstablecimientoId { get; set; }

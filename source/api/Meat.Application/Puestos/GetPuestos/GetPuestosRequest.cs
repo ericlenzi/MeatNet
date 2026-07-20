@@ -6,6 +6,6 @@ namespace Meat.Application.Puestos.GetPuestos
 {
     public class GetPuestosRequest : RequestListBase, IRequest<GetPuestosResponse>
     {
-        public Guid SucursalId { get; set; }
+        public Guid EstablecimientoId { get; set; }
     }
 }

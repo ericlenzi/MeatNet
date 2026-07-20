@@ -7,7 +7,19 @@ namespace Meat.Application.IngresosHaciendas
     /// </summary>
     public static class TiposAlmacen
     {
+        public const string CorralComun = "CORRAL_COMUN";
         public const string CorralCaidos = "CORRAL_CAIDOS";
         public const string CorralMuertos = "CORRAL_MUERTOS";
+        public const string CamaraFaena = "CAMARA_FAENA";
+    }
+
+    /// <summary>
+    /// Familia del tipo de almacen: agrupa los tipos por proposito. Un CORRAL es de
+    /// recepcion (hacienda en pie); una CAMARA es destino de faena (media res).
+    /// </summary>
+    public static class FamiliaAlmacen
+    {
+        public const string Corral = "CORRAL";
+        public const string Camara = "CAMARA";
     }
 }

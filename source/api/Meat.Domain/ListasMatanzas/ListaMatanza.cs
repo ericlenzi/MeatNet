@@ -1,5 +1,6 @@
 using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
+using Meat.Domain.Puestos;
 using Meat.Domain.TiposEstadosListasMatanzas;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,10 @@ namespace Meat.Domain.ListasMatanzas
         // Especie de la lista (una por LM)
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
+
+        // Puesto ("palco de faena") donde se faenara esta lista (opcional)
+        public Guid? PuestoId { get; set; }
+        public virtual Puesto Puesto { get; set; }
 
         public DateTime Fecha { get; set; }                // dia de faena (solo fecha)
         public long NumeroLista { get; set; }              // correlativo por establecimiento

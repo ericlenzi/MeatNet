@@ -4,8 +4,9 @@ export interface AlmacenItem {
   id: string
   codigoAlmacen: string
   nombre: string
-  cantidadAnimales: number
+  capacidad: number
   tipoAlmacenId: string
+  tipoAlmacenFamilia: string
   establecimientoId: string
   activo: boolean
 }
@@ -14,9 +15,10 @@ export interface AlmacenDetail {
   id: string
   codigoAlmacen: string
   nombre: string
-  cantidadAnimales: number
+  capacidad: number
   tipoAlmacenId: string
   tipoAlmacenNombre: string
+  tipoAlmacenFamilia: string
   establecimientoId: string
   establecimientoNombre: string
   activo: boolean
@@ -26,7 +28,7 @@ export interface AlmacenDetail {
 export interface CreateAlmacenRequest {
   CodigoAlmacen: string
   Nombre: string
-  CantidadAnimales: number
+  Capacidad: number
   TipoAlmacenId: string
   ERP_Codigo?: string
   EstablecimientoId: string
@@ -34,7 +36,7 @@ export interface CreateAlmacenRequest {
 
 export interface UpdateAlmacenRequest {
   Nombre: string
-  CantidadAnimales: number
+  Capacidad: number
   TipoAlmacenId: string
   ERP_Codigo?: string
   Activo: boolean
@@ -43,7 +45,14 @@ export interface UpdateAlmacenRequest {
 export interface TipoAlmacenOption {
   codigo: string
   nombre: string
+  familia: string
 }
+
+/** Familias de tipo de almacen. */
+export const FamiliaAlmacen = {
+  Corral: 'CORRAL',
+  Camara: 'CAMARA',
+} as const
 
 interface AlmacenesResponse {
   data: AlmacenItem[]
@@ -52,6 +61,7 @@ interface AlmacenesResponse {
 interface GetAlmacenesParams {
   EstablecimientoId?: string
   Estado?: boolean
+  Familia?: string
 }
 
 export async function getAlmacenes(params?: GetAlmacenesParams): Promise<AlmacenItem[]> {

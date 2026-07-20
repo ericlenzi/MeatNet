@@ -11,6 +11,8 @@ namespace Meat.Domain.TiposAlmacenes
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string Codigo { get; set; }
         public string Nombre { get; set; }
+        /// <summary>Familia del tipo de almacen: CORRAL (recepcion, en pie) o CAMARA (faena, media res).</summary>
+        public string Familia { get; set; }
         public bool Activo { get; set; }
     }
 }

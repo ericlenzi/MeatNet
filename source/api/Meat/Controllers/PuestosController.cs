@@ -46,7 +46,7 @@ namespace Meat.Controllers
             new UpdatePuestoRequest()
             {
                 Id = id,
-                SucursalId = body.SucursalId,
+                EstablecimientoId = body.EstablecimientoId,
                 NumeroPuesto = body.NumeroPuesto,
                 Erp_Codigo = body.Erp_Codigo
             }

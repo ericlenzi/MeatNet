@@ -73,12 +73,12 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
                 var ocupacionActual = ocupacionPorCorral.TryGetValue(grupo.Key, out var oc) ? oc : 0;
                 var aIngresar = grupo.Sum(u => u.Cantidad);
 
-                if (almacen != null && ocupacionActual + aIngresar > almacen.CantidadAnimales)
+                if (almacen != null && ocupacionActual + aIngresar > almacen.Capacidad)
                 {
-                    var disponible = almacen.CantidadAnimales - ocupacionActual;
+                    var disponible = almacen.Capacidad - ocupacionActual;
                     throw new ValidationException(
                         $"El corral '{almacen.Nombre}' no tiene capacidad suficiente: " +
-                        $"capacidad {almacen.CantidadAnimales}, ocupado {ocupacionActual}, disponible {disponible}, se intenta ubicar {aIngresar}.");
+                        $"capacidad {almacen.Capacidad}, ocupado {ocupacionActual}, disponible {disponible}, se intenta ubicar {aIngresar}.");
                 }
             }
 

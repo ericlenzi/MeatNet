@@ -43,7 +43,7 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 {
                     x.a.Id,
                     AlmacenNombre = x.a.Nombre,
-                    x.a.CantidadAnimales,
+                    x.a.Capacidad,
                     TipoEspecieId = x.te.Id,
                     TipoEspecieNombre = x.te.Nombre,
                     ClienteId = x.c.Id,
@@ -55,7 +55,7 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 {
                     AlmacenId = g.Key.Id,
                     AlmacenNombre = g.Key.AlmacenNombre,
-                    CapacidadCorral = g.Key.CantidadAnimales,
+                    CapacidadCorral = g.Key.Capacidad,
                     TipoEspecieId = g.Key.TipoEspecieId,
                     TipoEspecieNombre = g.Key.TipoEspecieNombre,
                     ClienteId = g.Key.ClienteId,
@@ -85,11 +85,34 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
             var reservadoPorCategoria = reservadoRows
                 .ToDictionary(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId), r => r.Reservado);
 
-            // Cada fila de existencia es una (Tropa, Corral, TipoEspecie): el reservado se
-            // asigna directo por categoria (sin reparto heuristico).
+            // Faenado por (Tropa, Corral, TipoEspecie): consumo real de la Ejecucion de Faena.
+            // Baja el En Pie (cualquier estado de LM; la faena es permanente).
+            var faenadoRows = await (
+                from d in this.context.ListasMatanzasDetalles
+                join lm in this.context.ListasMatanzas on d.ListaMatanzaId equals lm.Id
+                join est in this.context.Establecimientos on lm.EstablecimientoId equals est.Id
+                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
+                where d.CantidadFaenada > 0
+                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                    && (request.EstablecimientoId == null || lm.EstablecimientoId == request.EstablecimientoId)
+                group d by new { d.TropaId, d.AlmacenId, d.TipoEspecieId } into g
+                select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Faenado = g.Sum(x => x.CantidadFaenada) })
+                .ToListAsync(cancellationToken);
+
+            var faenadoPorCategoria = faenadoRows
+                .ToDictionary(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId), r => r.Faenado);
+
+            // Cada fila de existencia es una (Tropa, Corral, TipoEspecie): faenado y reservado se
+            // asignan directo por categoria (sin reparto heuristico).
             foreach (var item in data)
             {
                 var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
+
+                // En Pie efectivo = recibido - faenado (consumo real).
+                var fae = faenadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId), out var ff) ? ff : 0;
+                item.CantidadUN = Math.Max(0, item.CantidadUN - fae);
+                item.PesoKG = item.CantidadUN * pesoPromedio;
+
                 var res = reservadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId), out var rr)
                     ? Math.Min(rr, item.CantidadUN)
                     : 0;

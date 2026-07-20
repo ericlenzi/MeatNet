@@ -21,7 +21,7 @@ namespace Meat.Application.TiposAlmacenes.GetTiposAlmacenes
             var data = await this.context.TiposAlmacenes
                 .Where(t => t.Activo)
                 .OrderBy(t => t.Nombre)
-                .Select(t => new TipoAlmacenItem { Codigo = t.Codigo, Nombre = t.Nombre })
+                .Select(t => new TipoAlmacenItem { Codigo = t.Codigo, Nombre = t.Nombre, Familia = t.Familia })
                 .ToListAsync(cancellationToken);
 
             return new GetTiposAlmacenesResponse { Data = data };

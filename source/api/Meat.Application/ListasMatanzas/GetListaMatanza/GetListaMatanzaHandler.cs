@@ -21,9 +21,11 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
             var entity = await this.context.ListasMatanzas
                 .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(lm => lm.Especie)
+                .Include(lm => lm.Puesto)
                 .Include(lm => lm.EstadoListaMatanza)
                 .Include(lm => lm.Renglones).ThenInclude(r => r.Tropa)
                 .Include(lm => lm.Renglones).ThenInclude(r => r.Almacen)
+                .Include(lm => lm.Renglones).ThenInclude(r => r.AlmacenDestino)
                 .Include(lm => lm.Renglones).ThenInclude(r => r.TipoEspecie)
                 .Include(lm => lm.Movimientos)
                 .FirstOrDefaultAsync(lm => lm.Id == request.Id
@@ -41,6 +43,9 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
                 EstablecimientoNombre = entity.Establecimiento?.Nombre,
                 EspecieId = entity.EspecieId,
                 EspecieNombre = entity.Especie?.Nombre,
+                PuestoId = entity.PuestoId,
+                PuestoCodigo = entity.Puesto != null ? entity.Puesto.CodigoPuesto : null,
+                PuestoNombre = entity.Puesto != null ? (entity.Puesto.Nombre ?? entity.Puesto.CodigoPuesto) : null,
                 EstadoListaMatanzaId = entity.EstadoListaMatanzaId,
                 EstadoListaMatanzaNombre = entity.EstadoListaMatanza?.Nombre,
                 Version = entity.Version,
@@ -56,6 +61,8 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
                         NumeroTropa = r.Tropa != null ? r.Tropa.NumeroTropa : 0,
                         AlmacenId = r.AlmacenId,
                         AlmacenNombre = r.Almacen?.Nombre,
+                        AlmacenDestinoId = r.AlmacenDestinoId,
+                        AlmacenDestinoNombre = r.AlmacenDestino?.Nombre,
                         TipoEspecieId = r.TipoEspecieId,
                         TipoEspecieNombre = r.TipoEspecie?.Nombre,
                         Secuencia = r.Secuencia,

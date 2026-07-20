@@ -7,6 +7,7 @@ namespace Meat.Application.ListasMatanzas
     {
         public Guid TropaId { get; set; }
         public Guid AlmacenId { get; set; }
+        public Guid? AlmacenDestinoId { get; set; }        // camara de faena (opcional en Borrador)
         public string TipoEspecieId { get; set; }
         public int Secuencia { get; set; }
         public int Cantidad { get; set; }

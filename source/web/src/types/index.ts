@@ -38,3 +38,24 @@ export type {
 } from './listaMatanza'
 export { EstadoListaMatanza } from './listaMatanza'
 export type { TrazabilidadTropa, TrazabilidadMovimiento } from './trazabilidadTropa'
+export type { UnidadFaena, CreateUnidadFaenaRequest, UpdateUnidadFaenaRequest } from './unidadFaena'
+export type { Numerador, CreateNumeradorRequest, UpdateNumeradorRequest } from './numerador'
+export type {
+  Tipificacion,
+  CreateTipificacionRequest,
+  UpdateTipificacionRequest,
+  CatalogoFaenaOption,
+  TipificacionOficialOption,
+} from './tipificacion'
+export type {
+  RenglonEjecucionItem,
+  RenglonesEjecucion,
+  TipificacionCandidata,
+  SugerenciaTipificacion,
+  RomaneoPiezaItem,
+  RomaneoJornadaItem,
+  RenglonMonitorItem,
+  MonitorFaena,
+  PiezaRomaneoInput,
+  CrearRomaneoRequest,
+} from './romaneo'

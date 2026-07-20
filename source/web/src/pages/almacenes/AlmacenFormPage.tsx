@@ -33,7 +33,7 @@ export default function AlmacenFormPage() {
   const [form, setForm] = useState({
     CodigoAlmacen: '',
     Nombre: '',
-    CantidadAnimales: '0',
+    Capacidad: '0',
     TipoAlmacenId: '',
     ERP_Codigo: '',
     Activo: true,
@@ -50,7 +50,7 @@ export default function AlmacenFormPage() {
           setForm({
             CodigoAlmacen: e.codigoAlmacen,
             Nombre: e.nombre,
-            CantidadAnimales: String(e.cantidadAnimales),
+            Capacidad: String(e.capacidad),
             TipoAlmacenId: e.tipoAlmacenId ?? '',
             ERP_Codigo: e.erP_Codigo ?? '',
             Activo: e.activo,
@@ -77,7 +77,7 @@ export default function AlmacenFormPage() {
     const e: Record<string, string> = {}
     if (!form.CodigoAlmacen.trim()) e['CodigoAlmacen'] = 'Requerido'
     if (!form.Nombre.trim()) e['Nombre'] = 'Requerido'
-    if (num(form.CantidadAnimales) < 0) e['CantidadAnimales'] = 'Debe ser mayor o igual a 0'
+    if (num(form.Capacidad) < 0) e['Capacidad'] = 'Debe ser mayor o igual a 0'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -90,24 +90,24 @@ export default function AlmacenFormPage() {
       if (isEdit && id) {
         await updateAlmacen(id, {
           Nombre: form.Nombre,
-          CantidadAnimales: num(form.CantidadAnimales),
+          Capacidad: num(form.Capacidad),
           TipoAlmacenId: form.TipoAlmacenId,
           ERP_Codigo: form.ERP_Codigo,
           Activo: form.Activo,
         })
-        toast('success', 'Corral actualizado')
+        toast('success', 'Almacen actualizado')
       } else {
         await createAlmacen({
           CodigoAlmacen: form.CodigoAlmacen,
           Nombre: form.Nombre,
-          CantidadAnimales: num(form.CantidadAnimales),
+          Capacidad: num(form.Capacidad),
           TipoAlmacenId: form.TipoAlmacenId,
           ERP_Codigo: form.ERP_Codigo,
           EstablecimientoId: currentEstablecimiento?.id ?? '',
         })
-        toast('success', 'Corral creado')
+        toast('success', 'Almacen creado')
       }
-      navigate('/corrales')
+      navigate('/almacenes')
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al guardar')
     } finally {
@@ -125,7 +125,7 @@ export default function AlmacenFormPage() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Editar Corral' : 'Nuevo Corral'} />
+      <PageHeader title={isEdit ? 'Editar Almacen' : 'Nuevo Almacen'} />
 
       <div className="mx-auto max-w-2xl">
         <form onSubmit={handleSubmit} className="rounded-lg border border-border bg-surface p-6 shadow-sm">
@@ -144,18 +144,18 @@ export default function AlmacenFormPage() {
               error={errors['Nombre']}
             />
             <Select
-              label="Tipo de corral"
+              label="Tipo de almacen"
               value={form.TipoAlmacenId}
               onChange={(e) => updateField('TipoAlmacenId', e.target.value)}
               options={tipos.map((t) => ({ value: t.codigo, label: t.nombre }))}
               placeholder="Seleccionar tipo..."
             />
             <Input
-              label="Capacidad (animales)"
+              label="Capacidad"
               type="number"
-              value={form.CantidadAnimales}
-              onChange={(e) => updateField('CantidadAnimales', e.target.value)}
-              error={errors['CantidadAnimales']}
+              value={form.Capacidad}
+              onChange={(e) => updateField('Capacidad', e.target.value)}
+              error={errors['Capacidad']}
             />
             <Input
               label="Codigo ERP"
@@ -180,11 +180,11 @@ export default function AlmacenFormPage() {
           )}
 
           <div className="mt-6 flex justify-end gap-3">
-            <Button variant="secondary" type="button" onClick={() => navigate('/corrales')}>
+            <Button variant="secondary" type="button" onClick={() => navigate('/almacenes')}>
               Cancelar
             </Button>
             <Button type="submit" loading={loading}>
-              {isEdit ? 'Guardar Cambios' : 'Crear Corral'}
+              {isEdit ? 'Guardar Cambios' : 'Crear Almacen'}
             </Button>
           </div>
         </form>

@@ -25,6 +25,12 @@ import ClientesListPage from '@/pages/clientes/ClientesListPage'
 import ClienteFormPage from '@/pages/clientes/ClienteFormPage'
 import TiposEspeciesListPage from '@/pages/tiposEspecies/TiposEspeciesListPage'
 import TipoEspecieFormPage from '@/pages/tiposEspecies/TipoEspecieFormPage'
+import UnidadesFaenasListPage from '@/pages/unidadesFaenas/UnidadesFaenasListPage'
+import UnidadFaenaFormPage from '@/pages/unidadesFaenas/UnidadFaenaFormPage'
+import TipificacionesListPage from '@/pages/tipificaciones/TipificacionesListPage'
+import TipificacionFormPage from '@/pages/tipificaciones/TipificacionFormPage'
+import NumeradoresListPage from '@/pages/numeradores/NumeradoresListPage'
+import NumeradorFormPage from '@/pages/numeradores/NumeradorFormPage'
 import NumeradoresTropasListPage from '@/pages/numeradoresTropas/NumeradoresTropasListPage'
 import NumeradorTropaFormPage from '@/pages/numeradoresTropas/NumeradorTropaFormPage'
 import AlmacenesListPage from '@/pages/almacenes/AlmacenesListPage'
@@ -37,6 +43,9 @@ import TrazabilidadTropasPage from '@/pages/trazabilidadTropas/TrazabilidadTropa
 import PlanificacionFaenaListPage from '@/pages/planificacionFaena/PlanificacionFaenaListPage'
 import ListaMatanzaFormPage from '@/pages/planificacionFaena/ListaMatanzaFormPage'
 import ListaMatanzaDetailPage from '@/pages/planificacionFaena/ListaMatanzaDetailPage'
+import TipificadorPage from '@/pages/ejecucionFaena/TipificadorPage'
+import MonitorFaenaPage from '@/pages/ejecucionFaena/MonitorFaenaPage'
+import EjecucionFaenaHubPage from '@/pages/ejecucionFaena/EjecucionFaenaHubPage'
 import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
@@ -60,7 +69,10 @@ function AppRoutes() {
                   <Route path="operaciones/planificacion-faena/:id/edit" element={<ListaMatanzaFormPage />} />
                   <Route path="operaciones/planificacion-faena/:id" element={<ListaMatanzaDetailPage />} />
                   <Route path="operaciones/trazabilidad-tropas" element={<TrazabilidadTropasPage />} />
-                  <Route path="operaciones/monitor-faena" element={<PlaceholderPage title="Monitor de Faena" />} />
+                  <Route path="operaciones/ejecucion-faena" element={<EjecucionFaenaHubPage target="tipificador" />} />
+                  <Route path="operaciones/ejecucion-faena/:listaMatanzaId/tipificador" element={<TipificadorPage />} />
+                  <Route path="operaciones/ejecucion-faena/:listaMatanzaId/monitor" element={<MonitorFaenaPage />} />
+                  <Route path="operaciones/monitor-faena" element={<EjecucionFaenaHubPage target="monitor" />} />
                   <Route path="operaciones/evaluacion-faena" element={<PlaceholderPage title="Evaluacion de Faena" />} />
                   {/* Datos Maestros */}
                   <Route path="empresas" element={<EmpresasListPage />} />
@@ -90,12 +102,21 @@ function AppRoutes() {
                   <Route path="numeradores-tropas" element={<NumeradoresTropasListPage />} />
                   <Route path="numeradores-tropas/create" element={<NumeradorTropaFormPage />} />
                   <Route path="numeradores-tropas/:id/edit" element={<NumeradorTropaFormPage />} />
-                  <Route path="corrales" element={<AlmacenesListPage />} />
-                  <Route path="corrales/create" element={<AlmacenFormPage />} />
-                  <Route path="corrales/:id/edit" element={<AlmacenFormPage />} />
+                  <Route path="almacenes" element={<AlmacenesListPage />} />
+                  <Route path="almacenes/create" element={<AlmacenFormPage />} />
+                  <Route path="almacenes/:id/edit" element={<AlmacenFormPage />} />
                   <Route path="tipos-especies" element={<TiposEspeciesListPage />} />
                   <Route path="tipos-especies/create" element={<TipoEspecieFormPage />} />
                   <Route path="tipos-especies/:id/edit" element={<TipoEspecieFormPage />} />
+                  <Route path="unidades-faenas" element={<UnidadesFaenasListPage />} />
+                  <Route path="unidades-faenas/create" element={<UnidadFaenaFormPage />} />
+                  <Route path="unidades-faenas/:id/edit" element={<UnidadFaenaFormPage />} />
+                  <Route path="tipificaciones" element={<TipificacionesListPage />} />
+                  <Route path="tipificaciones/create" element={<TipificacionFormPage />} />
+                  <Route path="tipificaciones/:codigo/edit" element={<TipificacionFormPage />} />
+                  <Route path="numeradores" element={<NumeradoresListPage />} />
+                  <Route path="numeradores/create" element={<NumeradorFormPage />} />
+                  <Route path="numeradores/:id/edit" element={<NumeradorFormPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />

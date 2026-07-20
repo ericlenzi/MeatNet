@@ -10,7 +10,8 @@ namespace Meat.Application.Tropas
         public const string Recepcion = "RECEPCION";
         public const string Ubicacion = "UBICACION";
         public const string Anulacion = "ANULACION";
+        public const string Faena = "FAENA";
         // La Planificacion se integra por merge desde ListaMatanzaMovimiento (no se
-        // duplica aqui). Futuros (Monitor/Evaluacion): Faena, Cierre, etc.
+        // duplica aqui). Futuros (Evaluacion): Cierre, etc.
     }
 }

@@ -47,6 +47,24 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.ListasMatanzas.ListaMatanzaDetalle> ListasMatanzasDetalles { get; set; }
         public virtual DbSet<Domain.ListasMatanzas.ListaMatanzaMovimiento> ListasMatanzasMovimientos { get; set; }
 
+        // Ejecucion de Faena - master data
+        public virtual DbSet<Domain.TiposPuestos.TipoPuesto> TiposPuestos { get; set; }
+        public virtual DbSet<Domain.TiposMediciones.TipoMedicion> TiposMediciones { get; set; }
+        public virtual DbSet<Domain.DestinosComerciales.DestinoComercial> DestinosComerciales { get; set; }
+        public virtual DbSet<Domain.TipificacionesOficiales.TipificacionOficial> TipificacionesOficiales { get; set; }
+        public virtual DbSet<Domain.TiposDenticiones.TipoDenticion> TiposDenticiones { get; set; }
+        public virtual DbSet<Domain.Denticiones.Denticion> Denticiones { get; set; }
+        public virtual DbSet<Domain.TiposContusiones.TipoContusion> TiposContusiones { get; set; }
+        public virtual DbSet<Domain.MotivosDecomisos.MotivoDecomiso> MotivosDecomisos { get; set; }
+        public virtual DbSet<Domain.Numeradores.Numerador> Numeradores { get; set; }
+        public virtual DbSet<Domain.UnidadesFaenas.UnidadFaena> UnidadesFaenas { get; set; }
+        public virtual DbSet<Domain.Tipificaciones.Tipificacion> Tipificaciones { get; set; }
+
+        // Ejecucion de Faena - romaneo (paso 3)
+        public virtual DbSet<Domain.Romaneos.Romaneo> Romaneos { get; set; }
+        public virtual DbSet<Domain.Romaneos.RomaneoPieza> RomaneosPiezas { get; set; }
+        public virtual DbSet<Domain.Romaneos.RomaneoPiezaMedicion> RomaneosPiezasMediciones { get; set; }
+
         public MeatContext(DbContextOptions<MeatContext> options)
             : base(options)
         {
@@ -168,6 +186,29 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Numerador unico por Establecimiento + Especie + Codigo
+            modelBuilder.Entity<Domain.Numeradores.Numerador>()
+                .HasIndex(n => new { n.EstablecimientoId, n.EspecieCodigo, n.Codigo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Numero de unidad de faena unico por Especie
+            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
+                .HasIndex(u => new { u.EspecieId, u.Numero })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Garron unico por jornada (LM), entre romaneos no anulados
+            modelBuilder.Entity<Domain.Romaneos.Romaneo>()
+                .HasIndex(r => new { r.ListaMatanzaId, r.NumeroGarron })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL AND [Anulado] = 0");
+
+            // Indice de apoyo para lecturas de la jornada por nro de romaneo
+            modelBuilder.Entity<Domain.Romaneos.Romaneo>()
+                .HasIndex(r => new { r.ListaMatanzaId, r.NumeroRomaneo })
+                .HasFilter("[FechaBaja] IS NULL");
+
             #endregion Indices Unicos
 
             #region Relaciones - Ingreso de Hacienda
@@ -233,6 +274,7 @@ namespace Meat.Repositories
                 e.HasOne(x => x.ListaMatanza).WithMany(lm => lm.Renglones).HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Almacen).WithMany().HasForeignKey(x => x.AlmacenId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.AlmacenDestino).WithMany().HasForeignKey(x => x.AlmacenDestinoId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict).IsRequired();
             });
 
@@ -241,7 +283,87 @@ namespace Meat.Repositories
                 e.HasOne(x => x.ListaMatanza).WithMany(lm => lm.Movimientos).HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Puesto asignado a la LM (opcional)
+            modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
+                .HasOne(x => x.Puesto).WithMany().HasForeignKey(x => x.PuestoId).OnDelete(DeleteBehavior.Restrict);
+
             #endregion Relaciones - Lista de Matanza
+
+            #region Relaciones - Puestos
+
+            modelBuilder.Entity<Domain.Puestos.Puesto>(e =>
+            {
+                e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoPuesto).WithMany().HasForeignKey(x => x.TipoPuestoId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            #endregion Relaciones - Puestos
+
+            #region Relaciones - Ejecucion de Faena (master data)
+
+            modelBuilder.Entity<Domain.TipificacionesOficiales.TipificacionOficial>()
+                .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Domain.TiposDenticiones.TipoDenticion>()
+                .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Domain.Denticiones.Denticion>(e =>
+            {
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoDenticion).WithMany().HasForeignKey(x => x.TipoDenticionId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.TiposContusiones.TipoContusion>()
+                .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Domain.MotivosDecomisos.MotivoDecomiso>()
+                .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Domain.Numeradores.Numerador>(e =>
+            {
+                e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieCodigo).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
+                .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Domain.Tipificaciones.Tipificacion>(e =>
+            {
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.UnidadFaena).WithMany().HasForeignKey(x => x.UnidadFaenaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.DestinoComercial).WithMany().HasForeignKey(x => x.DestinoComercialId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipificacionOficial).WithMany().HasForeignKey(x => x.TipificacionOficialId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.UnidadMedida).WithMany().HasForeignKey(x => x.UnidadMedidaId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            #endregion Relaciones - Ejecucion de Faena (master data)
+
+            #region Relaciones - Romaneo (Ejecucion de Faena)
+
+            modelBuilder.Entity<Domain.Romaneos.Romaneo>(e =>
+            {
+                e.HasOne(x => x.ListaMatanza).WithMany().HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.ListaMatanzaDetalle).WithMany().HasForeignKey(x => x.ListaMatanzaDetalleId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.UnidadFaena).WithMany().HasForeignKey(x => x.UnidadFaenaId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.Romaneos.RomaneoPieza>(e =>
+            {
+                e.HasOne(x => x.Romaneo).WithMany(r => r.Piezas).HasForeignKey(x => x.RomaneoId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Tipificacion).WithMany().HasForeignKey(x => x.TipificacionId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.Romaneos.RomaneoPiezaMedicion>(e =>
+            {
+                e.HasOne(x => x.RomaneoPieza).WithMany(p => p.Mediciones).HasForeignKey(x => x.RomaneoPiezaId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.TipoMedicion).WithMany().HasForeignKey(x => x.TipoMedicionId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            #endregion Relaciones - Romaneo (Ejecucion de Faena)
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

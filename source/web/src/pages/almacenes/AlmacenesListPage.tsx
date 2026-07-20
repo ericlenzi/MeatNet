@@ -34,7 +34,7 @@ export default function AlmacenesListPage() {
       setData(items)
       setTipos(ts)
     } catch {
-      toast('error', 'Error al cargar corrales')
+      toast('error', 'Error al cargar almacenes')
     } finally {
       setIsLoading(false)
     }
@@ -49,7 +49,7 @@ export default function AlmacenesListPage() {
     setIsDeleting(true)
     try {
       await deleteAlmacen(deleteTarget.id)
-      toast('success', 'Corral eliminado')
+      toast('success', 'Almacen eliminado')
       setDeleteTarget(null)
       void fetchData()
     } catch (err) {
@@ -63,7 +63,7 @@ export default function AlmacenesListPage() {
     { key: 'codigoAlmacen', header: 'Codigo', width: '140px', sortable: true },
     { key: 'nombre', header: 'Nombre', sortable: true },
     { key: 'tipoAlmacenId', header: 'Tipo', width: '180px', render: (v) => tipoNombre(String(v)) },
-    { key: 'cantidadAnimales', header: 'Capacidad', width: '120px', render: (v) => <span className="font-mono">{String(v)}</span> },
+    { key: 'capacidad', header: 'Capacidad', width: '120px', render: (v) => <span className="font-mono">{String(v)}</span> },
     {
       key: 'activo',
       header: 'Estado',
@@ -78,7 +78,7 @@ export default function AlmacenesListPage() {
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/corrales/${row.id}/edit`) }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/almacenes/${row.id}/edit`) }}
             className="rounded p-1.5 text-text-light hover:bg-primary-50 hover:text-primary-600 transition-colors"
             title="Editar"
           >
@@ -102,8 +102,8 @@ export default function AlmacenesListPage() {
 
   return (
     <>
-      <PageHeader title="Corrales">
-        <Button onClick={() => navigate('/corrales/create')}>Nuevo Corral</Button>
+      <PageHeader title="Almacenes">
+        <Button onClick={() => navigate('/almacenes/create')}>Nuevo Almacen</Button>
       </PageHeader>
 
       <DataTable
@@ -123,8 +123,8 @@ export default function AlmacenesListPage() {
         isOpen={!!deleteTarget}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
-        title="Eliminar corral"
-        message={`¿Esta seguro que desea eliminar el corral ${deleteTarget?.codigoAlmacen} - ${deleteTarget?.nombre}?`}
+        title="Eliminar almacen"
+        message={`¿Esta seguro que desea eliminar el almacen ${deleteTarget?.codigoAlmacen} - ${deleteTarget?.nombre}?`}
         isLoading={isDeleting}
       />
     </>

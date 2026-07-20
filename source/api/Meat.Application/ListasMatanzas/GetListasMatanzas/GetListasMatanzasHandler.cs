@@ -57,6 +57,8 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
                     EstablecimientoNombre = lm.Establecimiento.Nombre,
                     EspecieId = lm.EspecieId,
                     EspecieNombre = lm.Especie.Nombre,
+                    PuestoId = lm.PuestoId,
+                    PuestoCodigo = lm.Puesto != null ? lm.Puesto.CodigoPuesto : null,
                     EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                     EstadoListaMatanzaNombre = lm.EstadoListaMatanza.Nombre,
                     Version = lm.Version,

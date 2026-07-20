@@ -28,7 +28,7 @@ namespace Meat.Application.Almacenes.UpdateAlmacen
                 throw new ValidationException("El corral no existe.");
 
             entity.Nombre = request.Nombre;
-            entity.CantidadAnimales = request.CantidadAnimales;
+            entity.Capacidad = request.Capacidad;
             entity.TipoAlmacenId = request.TipoAlmacenId;
             entity.ERP_Codigo = request.ERP_Codigo;
             entity.Activo = request.Activo;

@@ -37,7 +37,7 @@ namespace Meat.Application.Almacenes.CreateAlmacen
                 Id = Guid.NewGuid(),
                 CodigoAlmacen = request.CodigoAlmacen,
                 Nombre = request.Nombre,
-                CantidadAnimales = request.CantidadAnimales,
+                Capacidad = request.Capacidad,
                 TipoAlmacenId = request.TipoAlmacenId,
                 ERP_Codigo = request.ERP_Codigo,
                 EstablecimientoId = request.EstablecimientoId,

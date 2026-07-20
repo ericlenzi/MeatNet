@@ -14,6 +14,7 @@ namespace Meat.Application.ListasMatanzas.UpdateListaMatanza
         public string CodigoEmpresa { get; set; }
 
         public string EspecieId { get; set; }
+        public Guid? PuestoId { get; set; }
         public DateTime Fecha { get; set; }
 
         public List<ListaMatanzaDetalleInput> Renglones { get; set; } = new List<ListaMatanzaDetalleInput>();

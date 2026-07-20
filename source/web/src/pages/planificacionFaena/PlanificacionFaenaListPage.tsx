@@ -91,6 +91,7 @@ export default function PlanificacionFaenaListPage() {
     { key: 'numeroLista', header: 'N°', width: '80px', sortable: true },
     { key: 'fecha', header: 'Fecha', width: '120px', render: (_, row) => formatFecha(row.fecha) },
     { key: 'especieNombre', header: 'Especie', width: '130px' },
+    { key: 'puestoCodigo', header: 'Puesto', width: '110px', render: (v) => (v ? String(v) : '—') },
     { key: 'totalRenglones', header: 'Renglones', width: '110px', render: (v) => <span className="font-mono">{String(v)}</span> },
     { key: 'totalCabezas', header: 'Cabezas', width: '100px', render: (v) => <span className="font-mono">{String(v)}</span> },
     { key: 'version', header: 'Ver.', width: '70px', render: (v) => <span className="font-mono">{String(v)}</span> },

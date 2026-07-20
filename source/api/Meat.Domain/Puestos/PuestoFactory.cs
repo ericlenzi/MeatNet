@@ -12,12 +12,12 @@ namespace Meat.Domain.Puestos
             };
         }
 
-        public static Puesto Create(Guid sucursalId, string erp_Codigo)
+        public static Puesto Create(Guid establecimientoId, string erp_Codigo)
         {
             return new Puesto()
             {
                 Id = Guid.NewGuid(),
-                SucursalId = sucursalId,
+                EstablecimientoId = establecimientoId,
                 Erp_Codigo = erp_Codigo,
                 FechaActualizacion = DateTime.Now
             };

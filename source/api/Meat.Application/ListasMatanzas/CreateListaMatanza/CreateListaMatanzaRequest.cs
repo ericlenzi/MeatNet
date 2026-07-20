@@ -12,6 +12,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
 
         public Guid EstablecimientoId { get; set; }
         public string EspecieId { get; set; }
+        public Guid? PuestoId { get; set; }
         public DateTime Fecha { get; set; }
 
         public List<ListaMatanzaDetalleInput> Renglones { get; set; } = new List<ListaMatanzaDetalleInput>();

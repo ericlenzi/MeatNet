@@ -7,6 +7,8 @@ export interface ListaMatanzaListItem {
   establecimientoNombre: string
   especieId: string
   especieNombre: string
+  puestoId: string | null
+  puestoCodigo: string | null
   estadoListaMatanzaId: string
   estadoListaMatanzaNombre: string
   version: number
@@ -37,6 +39,8 @@ export interface ListaMatanzaRenglon {
   numeroTropa: number
   almacenId: string
   almacenNombre: string
+  almacenDestinoId: string | null
+  almacenDestinoNombre: string | null
   tipoEspecieId: string
   tipoEspecieNombre: string
   secuencia: number
@@ -67,6 +71,9 @@ export interface ListaMatanza {
   establecimientoNombre: string
   especieId: string
   especieNombre: string
+  puestoId: string | null
+  puestoCodigo: string | null
+  puestoNombre: string | null
   estadoListaMatanzaId: string
   estadoListaMatanzaNombre: string
   version: number
@@ -81,6 +88,7 @@ export interface ListaMatanza {
 export interface RenglonInput {
   TropaId: string
   AlmacenId: string
+  AlmacenDestinoId: string | null
   TipoEspecieId: string
   Secuencia: number
   Cantidad: number
@@ -89,6 +97,7 @@ export interface RenglonInput {
 export interface CreateListaMatanzaRequest {
   EstablecimientoId: string
   EspecieId: string
+  PuestoId?: string | null
   Fecha: string
   Renglones: RenglonInput[]
 }
