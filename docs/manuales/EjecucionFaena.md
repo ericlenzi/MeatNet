@@ -117,11 +117,12 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
 ## 6. Reglas de negocio
 
 - **R-E1 (especies MVP).** Solo se romanea LM de especie `V` o `P`. Otras especies quedan fuera.
-- **R-E2 (piezas por UF).** El número de piezas por animal se deriva de la UF:
-  `piezas = 4 / UnidadFaena.CantidadCuartos` (una res entera = 4 cuartos) → **RES (4 cuartos) = 1
-  pieza sin letra; MEDIA RES (2 cuartos) = 2 piezas con letras `A`/`B`; CUARTO (1) = 4**. La letra
-  la asigna el servidor. Validar que se carguen todas. (No se usa `UnidadComplementaria`: en la data
-  real viene en 0.)
+- **R-E2 (piezas por UF).** El número de piezas por animal lo da **`UnidadFaena.PiezasPorAnimal`**
+  → **RES = 1 pieza sin letra; MEDIA RES = 2 piezas con letras `A`/`B`; CUARTO = 4**. La letra la
+  asigna el servidor. Validar que se carguen todas. El CRUD de UnidadFaena valida `PiezasPorAnimal >= 1`.
+- **R-E12 (UF por defecto).** La UF que el Tipificador propone por especie es la marcada
+  **`UnidadFaena.PorDefecto`** (una sola por especie, índice único filtrado; el CRUD destilda las
+  demás al marcar una). Si ninguna está marcada, cae a la primera de la especie.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**

@@ -41,7 +41,8 @@ namespace Meat.Controllers
                 Numero = body.Numero,
                 Nombre = body.Nombre,
                 CantidadCuartos = body.CantidadCuartos,
-                UnidadComplementaria = body.UnidadComplementaria,
+                PiezasPorAnimal = body.PiezasPorAnimal,
+                PorDefecto = body.PorDefecto,
                 CodigoMaterial = body.CodigoMaterial,
                 ERP_Codigo = body.ERP_Codigo,
                 Activo = body.Activo

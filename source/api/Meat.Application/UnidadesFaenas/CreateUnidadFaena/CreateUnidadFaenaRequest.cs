@@ -12,7 +12,8 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
         [Required]
         public string Nombre { get; set; }
         public int CantidadCuartos { get; set; }
-        public int UnidadComplementaria { get; set; }
+        public int PiezasPorAnimal { get; set; }
+        public bool PorDefecto { get; set; }
         public string CodigoMaterial { get; set; }
         public string ERP_Codigo { get; set; }
     }

@@ -73,7 +73,13 @@ export default function UnidadesFaenasListPage() {
     { key: 'numero', header: 'N°', width: '70px' },
     { key: 'nombre', header: 'Nombre' },
     { key: 'cantidadCuartos', header: 'Cuartos', width: '90px' },
-    { key: 'unidadComplementaria', header: 'Complementaria', width: '130px' },
+    { key: 'piezasPorAnimal', header: 'Piezas/animal', width: '120px' },
+    {
+      key: 'porDefecto',
+      header: 'Por defecto',
+      width: '110px',
+      render: (value) => (value ? <Badge variant="info">Por defecto</Badge> : null),
+    },
     {
       key: 'activo',
       header: 'Estado',

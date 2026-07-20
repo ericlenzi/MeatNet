@@ -64,7 +64,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             if (uf.EspecieId != lm.EspecieId)
                 throw new ValidationException("La unidad de faena no corresponde a la especie de la lista.");
 
-            var piezasEsperadas = RomaneoConstantes.PiezasPorAnimal(uf.CantidadCuartos);
+            var piezasEsperadas = Math.Max(1, uf.PiezasPorAnimal);
             var piezas = request.Piezas ?? new List<PiezaRomaneoInput>();
             if (piezas.Count != piezasEsperadas)
                 throw new ValidationException($"Se esperaban {piezasEsperadas} pieza(s) para la unidad de faena '{uf.Nombre}' y se recibieron {piezas.Count}.");

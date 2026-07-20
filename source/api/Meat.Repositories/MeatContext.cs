@@ -198,6 +198,12 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Una sola unidad de faena por defecto por Especie
+            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
+                .HasIndex(u => u.EspecieId)
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+
             // Garron unico por jornada (LM), entre romaneos no anulados
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.ListaMatanzaId, r.NumeroGarron })

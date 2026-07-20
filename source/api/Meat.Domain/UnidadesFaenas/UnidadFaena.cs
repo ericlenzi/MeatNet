@@ -8,7 +8,9 @@ namespace Meat.Domain.UnidadesFaenas
     /// <summary>
     /// Unidad de Faena por Especie (RES, MEDIA RES, CUARTO TRASERO, etc.).
     /// CantidadCuartos indica cuantos cuartos representa (ej. 1 RES = 4 cuartos; puede ser 0 para decomisos).
-    /// UnidadComplementaria referencia la unidad que la completa (ej. MEDIA RES se complementa consigo misma).
+    /// PiezasPorAnimal = cuantas piezas de esta unidad forman un animal entero (RES=1, MEDIA RES=2,
+    /// CUARTO=4). Es lo que define cuantas piezas se capturan por romaneo.
+    /// PorDefecto marca la unidad predeterminada de la especie (una sola por especie).
     /// </summary>
     public class UnidadFaena
     {
@@ -23,8 +25,11 @@ namespace Meat.Domain.UnidadesFaenas
         public string Nombre { get; set; }
         public int CantidadCuartos { get; set; }
 
-        // Cantidad de unidades complementarias para completar los cuartos (ej. MEDIA RES = 2).
-        public int UnidadComplementaria { get; set; }
+        // Piezas de esta unidad que forman un animal entero (RES=1, MEDIA RES=2, CUARTO=4).
+        public int PiezasPorAnimal { get; set; }
+
+        // Unidad predeterminada de la especie (una sola por especie).
+        public bool PorDefecto { get; set; }
 
         public string CodigoMaterial { get; set; }
         public string ERP_Codigo { get; set; }

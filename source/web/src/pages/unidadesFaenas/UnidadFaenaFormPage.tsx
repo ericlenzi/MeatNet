@@ -32,7 +32,8 @@ export default function UnidadFaenaFormPage() {
     Numero: '1',
     Nombre: '',
     CantidadCuartos: '0',
-    UnidadComplementaria: '0',
+    PiezasPorAnimal: '1',
+    PorDefecto: false,
     CodigoMaterial: '',
     ERP_Codigo: '',
     Activo: true,
@@ -51,7 +52,8 @@ export default function UnidadFaenaFormPage() {
             Numero: String(e.numero),
             Nombre: e.nombre ?? '',
             CantidadCuartos: String(e.cantidadCuartos),
-            UnidadComplementaria: String(e.unidadComplementaria),
+            PiezasPorAnimal: String(e.piezasPorAnimal),
+            PorDefecto: e.porDefecto,
             CodigoMaterial: e.codigoMaterial ?? '',
             ERP_Codigo: e.erP_Codigo ?? '',
             Activo: e.activo,
@@ -77,6 +79,7 @@ export default function UnidadFaenaFormPage() {
     if (!form.Nombre.trim()) e['Nombre'] = 'Requerido'
     if (num(form.Numero) < 1) e['Numero'] = 'Debe ser mayor o igual a 1'
     if (num(form.CantidadCuartos) < 0) e['CantidadCuartos'] = 'Debe ser mayor o igual a 0'
+    if (num(form.PiezasPorAnimal) < 1) e['PiezasPorAnimal'] = 'Debe ser mayor o igual a 1'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -91,7 +94,8 @@ export default function UnidadFaenaFormPage() {
         Numero: num(form.Numero),
         Nombre: form.Nombre,
         CantidadCuartos: num(form.CantidadCuartos),
-        UnidadComplementaria: num(form.UnidadComplementaria),
+        PiezasPorAnimal: num(form.PiezasPorAnimal),
+        PorDefecto: form.PorDefecto,
         CodigoMaterial: form.CodigoMaterial,
         ERP_Codigo: form.ERP_Codigo,
       }
@@ -154,10 +158,11 @@ export default function UnidadFaenaFormPage() {
               error={errors['CantidadCuartos']}
             />
             <Input
-              label="Unidad complementaria"
+              label="Piezas por animal"
               type="number"
-              value={form.UnidadComplementaria}
-              onChange={(e) => updateField('UnidadComplementaria', e.target.value)}
+              value={form.PiezasPorAnimal}
+              onChange={(e) => updateField('PiezasPorAnimal', e.target.value)}
+              error={errors['PiezasPorAnimal']}
             />
             <Input
               label="Codigo material"
@@ -169,6 +174,21 @@ export default function UnidadFaenaFormPage() {
               value={form.ERP_Codigo}
               onChange={(e) => updateField('ERP_Codigo', e.target.value)}
             />
+          </div>
+
+          <div className="mt-4">
+            <label className="flex items-center gap-2 text-sm text-text">
+              <input
+                type="checkbox"
+                checked={form.PorDefecto}
+                onChange={(e) => updateField('PorDefecto', e.target.checked)}
+                className="h-4 w-4 rounded border-border text-primary-600 focus:ring-primary-500"
+              />
+              Unidad por defecto de la especie
+            </label>
+            <p className="ml-6 mt-0.5 text-xs text-text-light">
+              El Tipificador la propone por defecto. Solo una por especie.
+            </p>
           </div>
 
           {isEdit && (

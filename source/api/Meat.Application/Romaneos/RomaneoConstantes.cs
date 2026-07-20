@@ -21,12 +21,5 @@ namespace Meat.Application.Romaneos
 
         // Letras de las piezas (medias reses) para vacunos.
         public static readonly string[] Letras = { "A", "B", "C", "D" };
-
-        // Cuartos de una res entera. Nº de piezas por animal = CuartosPorAnimal / UnidadFaena.CantidadCuartos
-        // (RES=4 -> 1 pieza; MEDIA RES=2 -> 2 piezas A/B; CUARTO=1 -> 4 piezas).
-        public const int CuartosPorAnimal = 4;
-
-        public static int PiezasPorAnimal(int cantidadCuartos) =>
-            cantidadCuartos > 0 ? System.Math.Max(1, (int)System.Math.Round((double)CuartosPorAnimal / cantidadCuartos)) : 1;
     }
 }

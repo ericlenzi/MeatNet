@@ -25,7 +25,6 @@ import Badge from '@/components/ui/Badge'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const LETRAS = ['A', 'B', 'C', 'D']
-const CUARTOS_POR_ANIMAL = 4
 
 interface StickyTip {
   codigo: string
@@ -39,8 +38,8 @@ interface PiezaState {
 }
 
 function piezasEsperadas(uf: UnidadFaena | undefined): number {
-  if (!uf || uf.cantidadCuartos <= 0) return 1
-  return Math.max(1, Math.round(CUARTOS_POR_ANIMAL / uf.cantidadCuartos))
+  if (!uf) return 1
+  return Math.max(1, uf.piezasPorAnimal)
 }
 
 export default function TipificadorPage() {
@@ -100,11 +99,8 @@ export default function TipificadorPage() {
 
       setUnidadFaenaId((prev) => {
         if (prev && ufs.some((u) => u.id === prev)) return prev
-        // Default por especie: V => media res (2 cuartos = 2 piezas); P => res (4 cuartos = 1 pieza)
-        const preferido =
-          rengl.especieId === 'V'
-            ? ufs.find((u) => u.cantidadCuartos === 2)
-            : ufs.find((u) => u.cantidadCuartos === CUARTOS_POR_ANIMAL)
+        // Default: la unidad marcada PorDefecto para la especie; si no hay, la primera.
+        const preferido = ufs.find((u) => u.porDefecto)
         return (preferido ?? ufs[0])?.id ?? ''
       })
     } catch (err) {

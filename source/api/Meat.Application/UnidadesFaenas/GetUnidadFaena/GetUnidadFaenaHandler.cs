@@ -31,7 +31,8 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadFaena
                     Numero = u.Numero,
                     Nombre = u.Nombre,
                     CantidadCuartos = u.CantidadCuartos,
-                    UnidadComplementaria = u.UnidadComplementaria,
+                    PiezasPorAnimal = u.PiezasPorAnimal,
+                    PorDefecto = u.PorDefecto,
                     CodigoMaterial = u.CodigoMaterial,
                     ERP_Codigo = u.ERP_Codigo,
                     Activo = u.Activo
