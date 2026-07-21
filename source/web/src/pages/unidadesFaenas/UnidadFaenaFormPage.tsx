@@ -28,8 +28,8 @@ export default function UnidadFaenaFormPage() {
   const [especies, setEspecies] = useState<Especie[]>([])
 
   const [form, setForm] = useState({
+    Codigo: '',
     EspecieId: '',
-    Numero: '1',
     Nombre: '',
     CantidadCuartos: '0',
     PiezasPorAnimal: '1',
@@ -48,8 +48,8 @@ export default function UnidadFaenaFormPage() {
         if (isEdit && id) {
           const e = await getUnidadFaena(id)
           setForm({
+            Codigo: e.codigo ?? '',
             EspecieId: e.especieId ?? '',
-            Numero: String(e.numero),
             Nombre: e.nombre ?? '',
             CantidadCuartos: String(e.cantidadCuartos),
             PiezasPorAnimal: String(e.piezasPorAnimal),
@@ -75,9 +75,9 @@ export default function UnidadFaenaFormPage() {
 
   const validate = (): boolean => {
     const e: Record<string, string> = {}
+    if (!isEdit && !form.Codigo.trim()) e['Codigo'] = 'Requerido'
     if (!form.EspecieId) e['EspecieId'] = 'Requerido'
     if (!form.Nombre.trim()) e['Nombre'] = 'Requerido'
-    if (num(form.Numero) < 1) e['Numero'] = 'Debe ser mayor o igual a 1'
     if (num(form.CantidadCuartos) < 0) e['CantidadCuartos'] = 'Debe ser mayor o igual a 0'
     if (num(form.PiezasPorAnimal) < 1) e['PiezasPorAnimal'] = 'Debe ser mayor o igual a 1'
     setErrors(e)
@@ -91,7 +91,6 @@ export default function UnidadFaenaFormPage() {
     try {
       const payload = {
         EspecieId: form.EspecieId,
-        Numero: num(form.Numero),
         Nombre: form.Nombre,
         CantidadCuartos: num(form.CantidadCuartos),
         PiezasPorAnimal: num(form.PiezasPorAnimal),
@@ -103,7 +102,7 @@ export default function UnidadFaenaFormPage() {
         await updateUnidadFaena(id, { ...payload, Activo: form.Activo })
         toast('success', 'Unidad de faena actualizada')
       } else {
-        await createUnidadFaena(payload)
+        await createUnidadFaena({ ...payload, Codigo: form.Codigo.trim() })
         toast('success', 'Unidad de faena creada')
       }
       navigate('/unidades-faenas')
@@ -138,11 +137,11 @@ export default function UnidadFaenaFormPage() {
               error={errors['EspecieId']}
             />
             <Input
-              label="Numero"
-              type="number"
-              value={form.Numero}
-              onChange={(e) => updateField('Numero', e.target.value)}
-              error={errors['Numero']}
+              label="Codigo"
+              value={form.Codigo}
+              onChange={(e) => updateField('Codigo', e.target.value)}
+              error={errors['Codigo']}
+              disabled={isEdit}
             />
             <Input
               label="Nombre"

@@ -14,7 +14,7 @@ namespace Meat.Application.Tipificaciones.Shared
             MeatContext context,
             string especieId,
             string tipoEspecieId,
-            Guid unidadFaenaId,
+            string unidadFaenaId,
             string destinoComercialId,
             string tipificacionOficialId,
             string unidadMedidaId,
@@ -29,7 +29,8 @@ namespace Meat.Application.Tipificaciones.Shared
                 && !await context.TiposEspecies.AnyAsync(t => t.Id == tipoEspecieId && t.EspecieId == especieId, cancellationToken))
                 throw new ValidationException("La categoria (tipo de especie) no es valida para la especie.");
 
-            if (!await context.UnidadesFaenas.AnyAsync(u => u.Id == unidadFaenaId, cancellationToken))
+            if (string.IsNullOrEmpty(unidadFaenaId)
+                || !await context.UnidadesFaenas.AnyAsync(u => u.Codigo == unidadFaenaId, cancellationToken))
                 throw new ValidationException("La unidad de faena indicada no existe.");
 
             if (!string.IsNullOrEmpty(destinoComercialId)

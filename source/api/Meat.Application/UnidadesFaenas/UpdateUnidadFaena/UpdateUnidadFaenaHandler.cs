@@ -21,18 +21,13 @@ namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
         public async Task<UpdateUnidadFaenaResponse> Handle(UpdateUnidadFaenaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.UnidadesFaenas
-                .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Codigo == request.Codigo, cancellationToken);
             if (entity == null)
                 throw new ValidationException("La unidad de faena no existe.");
 
             var especieExiste = await this.context.Especies.AnyAsync(e => e.Codigo == request.EspecieId, cancellationToken);
             if (!especieExiste)
                 throw new ValidationException("La especie indicada no existe.");
-
-            var numeroEnUso = await this.context.UnidadesFaenas
-                .AnyAsync(u => u.Id != request.Id && u.EspecieId == request.EspecieId && u.Numero == request.Numero, cancellationToken);
-            if (numeroEnUso)
-                throw new ValidationException("Ya existe una unidad de faena con ese numero para la especie.");
 
             if (request.PiezasPorAnimal < 1)
                 throw new ValidationException("Las piezas por animal deben ser al menos 1.");
@@ -41,13 +36,12 @@ namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
             if (request.PorDefecto)
             {
                 var otras = await this.context.UnidadesFaenas
-                    .Where(u => u.Id != request.Id && u.EspecieId == request.EspecieId && u.PorDefecto)
+                    .Where(u => u.Codigo != request.Codigo && u.EspecieId == request.EspecieId && u.PorDefecto)
                     .ToListAsync(cancellationToken);
                 foreach (var o in otras) o.PorDefecto = false;
             }
 
             entity.EspecieId = request.EspecieId;
-            entity.Numero = request.Numero;
             entity.Nombre = request.Nombre;
             entity.CantidadCuartos = request.CantidadCuartos;
             entity.PiezasPorAnimal = request.PiezasPorAnimal;

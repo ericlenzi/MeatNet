@@ -7,7 +7,6 @@ namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
     {
         [Required]
         public string EspecieId { get; set; }
-        public int Numero { get; set; }
         [Required]
         public string Nombre { get; set; }
         public int CantidadCuartos { get; set; }

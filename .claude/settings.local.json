@@ -26,7 +26,13 @@
       "PowerShell(dotnet build \"C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api\\\\Meat\\\\Meat.csproj\" --artifacts-path $out -v quiet --nologo 2>&1)",
       "PowerShell($out = \"C:\\\\Users\\\\Usuario\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Eric-App-Claude-Projects-MeatNet\\\\c18deb98-ecac-418f-8013-5697bee644e4\\\\scratchpad\\\\artifacts2\")",
       "PowerShell(Get-Process -Name Meat,dotnet,devenv -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, @{N='RAM\\(MB\\)';E={[int]\\($_.WorkingSet64/1MB\\)}}, StartTime | Format-Table -AutoSize)",
-      "Bash(xargs grep -ln \"InsertData\")"
+      "Bash(xargs grep -ln \"InsertData\")",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -h -1 -W -Q \"SET NOCOUNT ON; SELECT 'UF='+CAST\\(COUNT\\(*\\) AS varchar\\) FROM UnidadesFaenas; SELECT 'ROM='+CAST\\(COUNT\\(*\\) AS varchar\\) FROM Romaneos; SELECT 'TIP='+CAST\\(COUNT\\(*\\) AS varchar\\) FROM Tipificaciones;\")",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT EspecieId, Numero, Nombre, CodigoMaterial, ERP_Codigo, PiezasPorAnimal, PorDefecto FROM UnidadesFaenas ORDER BY EspecieId, Numero;\")",
+      "Bash(sqlcmd -S '.\\\\sqlexpress' -d MeatNet -E -C -W -Q 'SET NOCOUNT ON; *)",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT '['+Codigo+']' Codigo, Nombre, PorDefecto, Activo FROM UnidadesFaenas WHERE EspecieId='P' ORDER BY Codigo;\")",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT TOP 5 UserName, CodigoEmpresa FROM Usuarios;\")",
+      "Bash(netstat -ano)"
     ]
   }
 }

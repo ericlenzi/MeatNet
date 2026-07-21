@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import {
   getRenglonesEjecucion,
@@ -35,7 +35,14 @@ interface StickyTip {
 interface PiezaState {
   peso: string
   tipificacionId: string
+  almacenDestinoId: string
 }
+
+const nuevaPieza = (almacenDestinoId = ''): PiezaState => ({
+  peso: '',
+  tipificacionId: '',
+  almacenDestinoId,
+})
 
 function piezasEsperadas(uf: UnidadFaena | undefined): number {
   if (!uf) return 1
@@ -56,7 +63,7 @@ export default function TipificadorPage() {
   const [unidadFaenaId, setUnidadFaenaId] = useState('')
   const [destinoId, setDestinoId] = useState('')
   const [garron, setGarron] = useState<number>(1)
-  const [piezas, setPiezas] = useState<PiezaState[]>([{ peso: '', tipificacionId: '' }])
+  const [piezas, setPiezas] = useState<PiezaState[]>([nuevaPieza()])
 
   const [candidatas, setCandidatas] = useState<TipificacionCandidata[]>([])
   const [sticky, setSticky] = useState<StickyTip | null>(null)
@@ -70,10 +77,15 @@ export default function TipificadorPage() {
     [data, renglonId],
   )
   const ufSel = useMemo(
-    () => unidadesFaenas.find((u) => u.id === unidadFaenaId),
+    () => unidadesFaenas.find((u) => u.codigo === unidadFaenaId),
     [unidadesFaenas, unidadFaenaId],
   )
   const nroPiezas = piezasEsperadas(ufSel)
+
+  // Camara por defecto de cada pieza = la del animal programado (cámara del renglón/LM).
+  const defaultCamara = renglonSel?.almacenDestinoId ?? ''
+  const defaultCamaraRef = useRef(defaultCamara)
+  defaultCamaraRef.current = defaultCamara
 
   // Carga inicial: renglones, unidades de faena de la especie, destinos, jornada
   const cargar = useCallback(async () => {
@@ -97,11 +109,17 @@ export default function TipificadorPage() {
       setDestinos(dest)
       setJornada(jorn)
 
+      // Default del destino comercial: el marcado Favorito (si no hay, "Todos").
+      setDestinoId((prev) => {
+        if (prev && dest.some((d) => d.codigo === prev)) return prev
+        return dest.find((d) => d.favorito)?.codigo ?? ''
+      })
+
       setUnidadFaenaId((prev) => {
-        if (prev && ufs.some((u) => u.id === prev)) return prev
+        if (prev && ufs.some((u) => u.codigo === prev)) return prev
         // Default: la unidad marcada PorDefecto para la especie; si no hay, la primera.
         const preferido = ufs.find((u) => u.porDefecto)
-        return (preferido ?? ufs[0])?.id ?? ''
+        return (preferido ?? ufs[0])?.codigo ?? ''
       })
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al cargar el tipificador')
@@ -114,12 +132,19 @@ export default function TipificadorPage() {
     void cargar()
   }, [cargar])
 
-  // Ajustar la cantidad de piezas al cambiar la unidad de faena
+  // Camara destino de cada pieza: por defecto la del renglon (animal programado). Se re-aplica a
+  // TODAS las piezas al cambiar de renglon; el operador puede overridear pieza por pieza (persiste
+  // hasta el proximo cambio de renglon).
   useEffect(() => {
-    setPiezas((prev) => {
-      const next = Array.from({ length: nroPiezas }, (_, i) => prev[i] ?? { peso: '', tipificacionId: '' })
-      return next
-    })
+    setPiezas((prev) => prev.map((p) => ({ ...p, almacenDestinoId: defaultCamara })))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renglonId, data])
+
+  // Ajustar la cantidad de piezas al cambiar la unidad de faena (las nuevas heredan la camara default)
+  useEffect(() => {
+    setPiezas((prev) =>
+      Array.from({ length: nroPiezas }, (_, i) => prev[i] ?? nuevaPieza(defaultCamaraRef.current)),
+    )
   }, [nroPiezas])
 
   // Refrescar candidatas al cambiar renglon (categoria) / UF / destino
@@ -164,7 +189,17 @@ export default function TipificadorPage() {
       const next = [...prev]
       const peso = Number(value)
       const tipificacionId = peso > 0 ? proponerTipificacion(peso) : current.tipificacionId
-      next[idx] = { peso: value, tipificacionId }
+      next[idx] = { ...current, peso: value, tipificacionId }
+      return next
+    })
+  }
+
+  const onCamaraChange = (idx: number, almacenDestinoId: string) => {
+    setPiezas((prev) => {
+      const current = prev[idx]
+      if (!current) return prev
+      const next = [...prev]
+      next[idx] = { ...current, almacenDestinoId }
       return next
     })
   }
@@ -183,7 +218,7 @@ export default function TipificadorPage() {
 
   const resetCaptura = (proximoGarron: number) => {
     setGarron(proximoGarron)
-    setPiezas(Array.from({ length: nroPiezas }, () => ({ peso: '', tipificacionId: '' })))
+    setPiezas(Array.from({ length: nroPiezas }, () => nuevaPieza(defaultCamaraRef.current)))
   }
 
   const guardar = async () => {
@@ -203,6 +238,10 @@ export default function TipificadorPage() {
       toast('error', 'Cada pieza requiere una tipificacion.')
       return
     }
+    if (piezas.some((p) => !p.almacenDestinoId)) {
+      toast('error', 'Cada pieza requiere una camara de destino.')
+      return
+    }
     setSaving(true)
     try {
       const res = await crearRomaneo({
@@ -210,7 +249,11 @@ export default function TipificadorPage() {
         ListaMatanzaDetalleId: renglonSel.renglonId,
         UnidadFaenaId: unidadFaenaId,
         NumeroGarron: garron,
-        Piezas: piezas.map((p) => ({ TipificacionId: p.tipificacionId, Peso: Number(p.peso) })),
+        Piezas: piezas.map((p) => ({
+          AlmacenDestinoId: p.almacenDestinoId,
+          TipificacionId: p.tipificacionId,
+          Peso: Number(p.peso),
+        })),
       })
       toast('success', `Romaneo N° ${res.numeroRomaneo} (garron ${res.numeroGarron}) registrado`)
       await cargar()
@@ -282,7 +325,7 @@ export default function TipificadorPage() {
               onChange={(e) => setUnidadFaenaId(e.target.value)}
             >
               {unidadesFaenas.map((u) => (
-                <option key={u.id} value={u.id}>{u.nombre}</option>
+                <option key={u.codigo} value={u.codigo}>{u.nombre}</option>
               ))}
             </select>
           </div>
@@ -327,7 +370,7 @@ export default function TipificadorPage() {
                     {nroPiezas > 1 ? LETRAS[idx] : '—'}
                   </div>
                 </div>
-                <div className="sm:col-span-3">
+                <div className="sm:col-span-2">
                   <label className="mb-1 block text-xs text-text-light">Peso (kg)</label>
                   <input
                     type="number"
@@ -338,7 +381,20 @@ export default function TipificadorPage() {
                     onChange={(e) => onPesoChange(idx, e.target.value)}
                   />
                 </div>
-                <div className="sm:col-span-8">
+                <div className="sm:col-span-4">
+                  <label className="mb-1 block text-xs text-text-light">Camara destino</label>
+                  <select
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                    value={p.almacenDestinoId}
+                    onChange={(e) => onCamaraChange(idx, e.target.value)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {data.camaras.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="sm:col-span-5">
                   <label className="mb-1 block text-xs text-text-light">Tipificacion</label>
                   <select
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm"
@@ -381,7 +437,7 @@ export default function TipificadorPage() {
                   <th className="py-2 pr-3">Tropa</th>
                   <th className="py-2 pr-3">Categoria</th>
                   <th className="py-2 pr-3">Unidad</th>
-                  <th className="py-2 pr-3">Piezas</th>
+                  <th className="py-2 pr-3">Piezas (peso · camara)</th>
                   <th className="py-2 pr-3 text-right">Kg</th>
                   <th className="py-2" />
                 </tr>
@@ -399,7 +455,10 @@ export default function TipificadorPage() {
                     <td className="py-2 pr-3">{r.unidadFaenaNombre}</td>
                     <td className="py-2 pr-3">
                       {r.piezas
-                        .map((p) => `${p.letra ? p.letra + ': ' : ''}${p.peso}kg`)
+                        .map(
+                          (p) =>
+                            `${p.letra ? p.letra + ': ' : ''}${p.peso}kg → ${p.almacenDestinoNombre ?? '—'}`,
+                        )
                         .join('  ·  ')}
                     </td>
                     <td className="py-2 pr-3 text-right font-mono">{r.pesoTotal.toFixed(2)}</td>

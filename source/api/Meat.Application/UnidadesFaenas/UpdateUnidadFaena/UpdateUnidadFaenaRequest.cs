@@ -1,5 +1,4 @@
 using MediatR;
-using System;
 using System.Text.Json.Serialization;
 
 namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
@@ -7,10 +6,9 @@ namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
     public class UpdateUnidadFaenaRequest : IRequest<UpdateUnidadFaenaResponse>
     {
         [JsonIgnore]
-        public Guid Id { get; set; }
+        public string Codigo { get; set; }
 
         public string EspecieId { get; set; }
-        public int Numero { get; set; }
         public string Nombre { get; set; }
         public int CantidadCuartos { get; set; }
         public int PiezasPorAnimal { get; set; }

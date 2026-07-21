@@ -57,7 +57,7 @@ export default function UnidadesFaenasListPage() {
     if (!deleteTarget) return
     setIsDeleting(true)
     try {
-      await deleteUnidadFaena(deleteTarget.id)
+      await deleteUnidadFaena(deleteTarget.codigo)
       toast('success', 'Unidad de faena eliminada')
       setDeleteTarget(null)
       void fetchData()
@@ -69,8 +69,8 @@ export default function UnidadesFaenasListPage() {
   }
 
   const columns: Column<UnidadFaena>[] = [
+    { key: 'codigo', header: 'Codigo', width: '90px' },
     { key: 'especieNombre', header: 'Especie', width: '150px' },
-    { key: 'numero', header: 'N°', width: '70px' },
     { key: 'nombre', header: 'Nombre' },
     { key: 'cantidadCuartos', header: 'Cuartos', width: '90px' },
     { key: 'piezasPorAnimal', header: 'Piezas/animal', width: '120px' },
@@ -95,7 +95,7 @@ export default function UnidadesFaenasListPage() {
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/unidades-faenas/${row.id}/edit`) }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/unidades-faenas/${row.codigo}/edit`) }}
             className="rounded p-1.5 text-text-light hover:bg-primary-50 hover:text-primary-600 transition-colors"
             title="Editar"
           >

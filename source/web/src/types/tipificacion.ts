@@ -48,6 +48,7 @@ export interface UpdateTipificacionRequest {
 export interface CatalogoFaenaOption {
   codigo: string
   nombre: string
+  favorito?: boolean
 }
 
 export interface TipificacionOficialOption {

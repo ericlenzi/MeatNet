@@ -25,6 +25,13 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
         public Guid? RenglonSugeridoId { get; set; }         // menor secuencia con pendiente > 0
 
         public IEnumerable<RenglonEjecucionItem> Renglones { get; set; } = new List<RenglonEjecucionItem>();
+        public IEnumerable<CamaraOption> Camaras { get; set; } = new List<CamaraOption>();  // camaras activas del establecimiento (selector de destino)
+    }
+
+    public class CamaraOption
+    {
+        public Guid Id { get; set; }
+        public string Nombre { get; set; }
     }
 
     public class RenglonEjecucionItem
@@ -34,6 +41,8 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
         public long NumeroTropa { get; set; }
         public Guid AlmacenId { get; set; }
         public string AlmacenNombre { get; set; }
+        public Guid? AlmacenDestinoId { get; set; }         // camara destino planificada en la LM (default del puesto)
+        public string AlmacenDestinoNombre { get; set; }
         public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Secuencia { get; set; }

@@ -21,7 +21,7 @@ namespace Meat.Application.DestinosComerciales.GetDestinosComerciales
             var data = await this.context.DestinosComerciales
                 .Where(d => d.Activo)
                 .OrderBy(d => d.Nombre)
-                .Select(d => new DestinoComercialItem { Codigo = d.Codigo, Nombre = d.Nombre })
+                .Select(d => new DestinoComercialItem { Codigo = d.Codigo, Nombre = d.Nombre, Favorito = d.Favorito })
                 .ToListAsync(cancellationToken);
 
             return new GetDestinosComercialesResponse { Data = data };

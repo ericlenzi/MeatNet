@@ -10,7 +10,7 @@ namespace Meat.Application.Tipificaciones.GetTipificacion
         public string EspecieNombre { get; set; }
         public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
-        public Guid UnidadFaenaId { get; set; }
+        public string UnidadFaenaId { get; set; }
         public string UnidadFaenaNombre { get; set; }
         public string DestinoComercialId { get; set; }
         public string DestinoComercialNombre { get; set; }

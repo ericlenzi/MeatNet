@@ -192,17 +192,17 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
-            // Numero de unidad de faena unico por Especie
-            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
-                .HasIndex(u => new { u.EspecieId, u.Numero })
-                .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
-
             // Una sola unidad de faena por defecto por Especie
             modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
                 .HasIndex(u => u.EspecieId)
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+
+            // Un solo destino comercial favorito (default del Tipificador)
+            modelBuilder.Entity<Domain.DestinosComerciales.DestinoComercial>()
+                .HasIndex(d => d.Favorito)
+                .IsUnique()
+                .HasFilter("[Favorito] = 1");
 
             // Garron unico por jornada (LM), entre romaneos no anulados
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
@@ -360,6 +360,7 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.Romaneos.RomaneoPieza>(e =>
             {
                 e.HasOne(x => x.Romaneo).WithMany(r => r.Piezas).HasForeignKey(x => x.RomaneoId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.AlmacenDestino).WithMany().HasForeignKey(x => x.AlmacenDestinoId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Tipificacion).WithMany().HasForeignKey(x => x.TipificacionId).OnDelete(DeleteBehavior.Restrict);
             });
 

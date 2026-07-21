@@ -1,4 +1,5 @@
 using MediatR;
+using Meat.Application.IngresosHaciendas; // FamiliaAlmacen
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,8 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                 join t in this.context.Tropas on d.TropaId equals t.Id
                 join a in this.context.Almacenes on d.AlmacenId equals a.Id
                 join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join adj in this.context.Almacenes on d.AlmacenDestinoId equals adj.Id into ad
+                from destino in ad.DefaultIfEmpty()
                 where d.ListaMatanzaId == lm.Id
                 orderby d.Secuencia
                 select new RenglonEjecucionItem
@@ -45,6 +48,8 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                     NumeroTropa = t.NumeroTropa,
                     AlmacenId = a.Id,
                     AlmacenNombre = a.Nombre,
+                    AlmacenDestinoId = d.AlmacenDestinoId,
+                    AlmacenDestinoNombre = destino != null ? destino.Nombre : null,
                     TipoEspecieId = te.Id,
                     TipoEspecieNombre = te.Nombre,
                     Secuencia = d.Secuencia,
@@ -52,6 +57,17 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                     CantidadFaenada = d.CantidadFaenada,
                     Pendiente = d.Cantidad - d.CantidadFaenada
                 })
+                .ToListAsync(cancellationToken);
+
+            // Camaras activas del establecimiento de la LM: opciones del selector de destino del puesto.
+            var camaras = await (
+                from a in this.context.Almacenes
+                join ta in this.context.TiposAlmacenes on a.TipoAlmacenId equals ta.Codigo
+                where a.EstablecimientoId == lm.EstablecimientoId
+                    && ta.Familia == FamiliaAlmacen.Camara
+                    && a.Activo
+                orderby a.Nombre
+                select new CamaraOption { Id = a.Id, Nombre = a.Nombre })
                 .ToListAsync(cancellationToken);
 
             var ultimoGarron = await this.context.Romaneos
@@ -70,7 +86,8 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                 EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                 ProximoGarron = ultimoGarron + 1,
                 RenglonSugeridoId = sugerido?.RenglonId,
-                Renglones = renglones
+                Renglones = renglones,
+                Camaras = camaras
             };
         }
     }

@@ -28,13 +28,12 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadesFaenas
                     && (string.IsNullOrEmpty(request.Filter)
                         || u.Nombre.Contains(request.Filter)
                         || u.CodigoMaterial.Contains(request.Filter))
-                orderby u.EspecieId, u.Numero
+                orderby u.EspecieId, u.Codigo
                 select new UnidadFaenaItem
                 {
-                    Id = u.Id,
+                    Codigo = u.Codigo,
                     EspecieId = u.EspecieId,
                     EspecieNombre = e != null ? e.Nombre : null,
-                    Numero = u.Numero,
                     Nombre = u.Nombre,
                     CantidadCuartos = u.CantidadCuartos,
                     PiezasPorAnimal = u.PiezasPorAnimal,

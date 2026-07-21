@@ -1,5 +1,5 @@
 using MediatR;
-using Meat.Application.IngresosHaciendas;
+using Meat.Application.IngresosHaciendas; // TiposAlmacen / FamiliaAlmacen
 using Meat.Application.ListasMatanzas;
 using Meat.Application.Shared;
 using Meat.Application.Tropas;
@@ -58,7 +58,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
             // 5) Unidad de faena de la especie -> numero de piezas esperado
             var uf = await this.context.UnidadesFaenas
-                .FirstOrDefaultAsync(u => u.Id == request.UnidadFaenaId, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Codigo == request.UnidadFaenaId, cancellationToken);
             if (uf == null)
                 throw new ValidationException("La unidad de faena indicada no existe.");
             if (uf.EspecieId != lm.EspecieId)
@@ -72,6 +72,23 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 throw new ValidationException("El peso de cada pieza debe ser mayor a cero.");
             if (piezas.Any(p => string.IsNullOrEmpty(p.TipificacionId)))
                 throw new ValidationException("Cada pieza debe tener una tipificacion.");
+
+            // 5b) Camara destino por pieza (default del renglon, editable en el puesto): obligatoria
+            //     y valida (camara activa del establecimiento de la LM). Cada media res puede ir a
+            //     una camara distinta; se valida el conjunto de camaras usado.
+            if (piezas.Any(p => p.AlmacenDestinoId == Guid.Empty))
+                throw new ValidationException("Cada pieza debe tener una camara de destino.");
+            var camarasUsadas = piezas.Select(p => p.AlmacenDestinoId).Distinct().ToList();
+            var camarasValidas = await (
+                from a in this.context.Almacenes
+                join ta in this.context.TiposAlmacenes on a.TipoAlmacenId equals ta.Codigo
+                where camarasUsadas.Contains(a.Id)
+                    && a.EstablecimientoId == lm.EstablecimientoId
+                    && ta.Familia == FamiliaAlmacen.Camara
+                    && a.Activo
+                select a.Id).ToListAsync(cancellationToken);
+            if (camarasValidas.Count != camarasUsadas.Count)
+                throw new ValidationException("Una camara de destino no es una camara activa de este establecimiento.");
 
             // 6) Garron: unico por jornada entre romaneos no anulados
             if (request.NumeroGarron <= 0)
@@ -120,7 +137,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             romaneo.ListaMatanzaDetalleId = renglon.Id;
             romaneo.TropaId = renglon.TropaId;
             romaneo.EspecieId = lm.EspecieId;
-            romaneo.UnidadFaenaId = uf.Id;
+            romaneo.UnidadFaenaId = uf.Codigo;
             romaneo.NumeroGarron = request.NumeroGarron;
             romaneo.NumeroRomaneo = numerador.UltimoNumero;
             romaneo.UsuarioId = request.UsuarioId;
@@ -130,6 +147,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 var pieza = RomaneoFactory.CreatePieza();
                 pieza.RomaneoId = romaneo.Id;
                 pieza.Letra = piezasEsperadas > 1 ? RomaneoConstantes.Letras[idx] : null;
+                pieza.AlmacenDestinoId = p.AlmacenDestinoId;
                 pieza.TipificacionId = p.TipificacionId;
                 pieza.Peso = p.Peso;
 

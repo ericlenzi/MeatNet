@@ -25,7 +25,7 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                 join est in this.context.Establecimientos on lm.EstablecimientoId equals est.Id
                 join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 join t in this.context.Tropas on r.TropaId equals t.Id
-                join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Id
+                join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Codigo
                 join d in this.context.ListasMatanzasDetalles on r.ListaMatanzaDetalleId equals d.Id
                 join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
                 where r.ListaMatanzaId == request.ListaMatanzaId
@@ -48,6 +48,7 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                         {
                             Letra = p.Letra,
                             Peso = p.Peso,
+                            AlmacenDestinoNombre = p.AlmacenDestino != null ? p.AlmacenDestino.Nombre : null,
                             TipificacionId = p.TipificacionId,
                             TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null
                         }).ToList()

@@ -22,23 +22,22 @@ namespace Meat.Controllers
         public async Task<IActionResult> GetAsync([FromQuery] GetUnidadesFaenasRequest request) =>
             await this.Handle(request);
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] Guid id) =>
-            await this.Handle(new GetUnidadFaenaRequest { Id = id });
+        [HttpGet("{codigo}")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] string codigo) =>
+            await this.Handle(new GetUnidadFaenaRequest { Codigo = codigo });
 
         [HttpPost]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateUnidadFaenaRequest request) =>
             await this.Handle(request);
 
-        [HttpPut("{id}")]
+        [HttpPut("{codigo}")]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
-        public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateUnidadFaenaRequestFromBody body) =>
+        public async Task<IActionResult> UpdateAsync([FromRoute] string codigo, [FromBody] UpdateUnidadFaenaRequestFromBody body) =>
             await this.Handle(new UpdateUnidadFaenaRequest
             {
-                Id = id,
+                Codigo = codigo,
                 EspecieId = body.EspecieId,
-                Numero = body.Numero,
                 Nombre = body.Nombre,
                 CantidadCuartos = body.CantidadCuartos,
                 PiezasPorAnimal = body.PiezasPorAnimal,
@@ -48,9 +47,9 @@ namespace Meat.Controllers
                 Activo = body.Activo
             });
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{codigo}")]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] Guid id) =>
-            await this.Handle(new DeleteUnidadFaenaRequest { Id = id });
+        public async Task<IActionResult> DeleteAsync([FromRoute] string codigo) =>
+            await this.Handle(new DeleteUnidadFaenaRequest { Codigo = codigo });
     }
 }

@@ -230,7 +230,7 @@ export default function TipificacionFormPage() {
               label="Unidad de faena"
               value={form.UnidadFaenaId}
               onChange={(e) => updateField('UnidadFaenaId', e.target.value)}
-              options={unidadesFaenas.map((u) => ({ value: u.id, label: u.nombre }))}
+              options={unidadesFaenas.map((u) => ({ value: u.codigo, label: u.nombre }))}
               placeholder="Seleccionar unidad..."
               error={errors['UnidadFaenaId']}
             />

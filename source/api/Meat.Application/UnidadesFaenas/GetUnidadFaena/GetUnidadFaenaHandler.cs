@@ -22,13 +22,12 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadFaena
                 from u in this.context.UnidadesFaenas
                 join e in this.context.Especies on u.EspecieId equals e.Codigo into ej
                 from e in ej.DefaultIfEmpty()
-                where u.Id == request.Id
+                where u.Codigo == request.Codigo
                 select new GetUnidadFaenaResponse
                 {
-                    Id = u.Id,
+                    Codigo = u.Codigo,
                     EspecieId = u.EspecieId,
                     EspecieNombre = e != null ? e.Nombre : null,
-                    Numero = u.Numero,
                     Nombre = u.Nombre,
                     CantidadCuartos = u.CantidadCuartos,
                     PiezasPorAnimal = u.PiezasPorAnimal,

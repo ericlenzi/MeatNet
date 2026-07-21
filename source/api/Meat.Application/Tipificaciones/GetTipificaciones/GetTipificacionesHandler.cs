@@ -25,7 +25,7 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
                 from e in ej.DefaultIfEmpty()
                 join te in this.context.TiposEspecies on t.TipoEspecieId equals te.Id into tej
                 from te in tej.DefaultIfEmpty()
-                join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Id into ufj
+                join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Codigo into ufj
                 from uf in ufj.DefaultIfEmpty()
                 join dc in this.context.DestinosComerciales on t.DestinoComercialId equals dc.Codigo into dcj
                 from dc in dcj.DefaultIfEmpty()

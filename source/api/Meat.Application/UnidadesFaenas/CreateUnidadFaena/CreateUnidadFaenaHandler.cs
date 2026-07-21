@@ -3,6 +3,7 @@ using Meat.Application.Shared;
 using Meat.Domain.UnidadesFaenas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,14 +21,18 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
 
         public async Task<CreateUnidadFaenaResponse> Handle(CreateUnidadFaenaRequest request, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(request.Codigo))
+                throw new ValidationException("El codigo es requerido.");
+            var codigo = request.Codigo.Trim();
+
             var especieExiste = await this.context.Especies.AnyAsync(e => e.Codigo == request.EspecieId, cancellationToken);
             if (!especieExiste)
                 throw new ValidationException("La especie indicada no existe.");
 
-            var numeroEnUso = await this.context.UnidadesFaenas
-                .AnyAsync(u => u.EspecieId == request.EspecieId && u.Numero == request.Numero, cancellationToken);
-            if (numeroEnUso)
-                throw new ValidationException("Ya existe una unidad de faena con ese numero para la especie.");
+            var codigoEnUso = await this.context.UnidadesFaenas
+                .AnyAsync(u => u.Codigo == codigo, cancellationToken);
+            if (codigoEnUso)
+                throw new ValidationException("Ya existe una unidad de faena con ese codigo.");
 
             if (request.PiezasPorAnimal < 1)
                 throw new ValidationException("Las piezas por animal deben ser al menos 1.");
@@ -41,21 +46,24 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
                 foreach (var o in otras) o.PorDefecto = false;
             }
 
-            var entity = UnidadFaenaFactory.Create();
-            entity.EspecieId = request.EspecieId;
-            entity.Numero = request.Numero;
-            entity.Nombre = request.Nombre;
-            entity.CantidadCuartos = request.CantidadCuartos;
-            entity.PiezasPorAnimal = request.PiezasPorAnimal;
-            entity.PorDefecto = request.PorDefecto;
-            entity.CodigoMaterial = request.CodigoMaterial;
-            entity.ERP_Codigo = request.ERP_Codigo;
-            entity.Activo = true;
+            var entity = new UnidadFaena
+            {
+                Codigo = codigo,
+                EspecieId = request.EspecieId,
+                Nombre = request.Nombre,
+                CantidadCuartos = request.CantidadCuartos,
+                PiezasPorAnimal = request.PiezasPorAnimal,
+                PorDefecto = request.PorDefecto,
+                CodigoMaterial = request.CodigoMaterial,
+                ERP_Codigo = request.ERP_Codigo,
+                Activo = true,
+                FechaActualizacion = DateTime.Now
+            };
 
             this.context.UnidadesFaenas.Add(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CreateUnidadFaenaResponse { Id = entity.Id };
+            return new CreateUnidadFaenaResponse { Codigo = entity.Codigo };
         }
     }
 }

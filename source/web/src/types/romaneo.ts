@@ -5,12 +5,19 @@ export interface RenglonEjecucionItem {
   numeroTropa: number
   almacenId: string
   almacenNombre: string
+  almacenDestinoId: string | null
+  almacenDestinoNombre: string | null
   tipoEspecieId: string
   tipoEspecieNombre: string
   secuencia: number
   cantidad: number
   cantidadFaenada: number
   pendiente: number
+}
+
+export interface CamaraOption {
+  id: string
+  nombre: string
 }
 
 export interface RenglonesEjecucion {
@@ -22,6 +29,7 @@ export interface RenglonesEjecucion {
   proximoGarron: number
   renglonSugeridoId: string | null
   renglones: RenglonEjecucionItem[]
+  camaras: CamaraOption[]
 }
 
 // --- Sugerencia de tipificacion ---
@@ -44,6 +52,7 @@ export interface SugerenciaTipificacion {
 export interface RomaneoPiezaItem {
   letra: string | null
   peso: number
+  almacenDestinoNombre: string | null
   tipificacionId: string
   tipificacionDescripcion: string | null
 }
@@ -88,6 +97,7 @@ export interface MonitorFaena {
 
 // --- Requests (PascalCase: matchean el backend) ---
 export interface PiezaRomaneoInput {
+  AlmacenDestinoId: string
   TipificacionId: string
   Peso: number
 }

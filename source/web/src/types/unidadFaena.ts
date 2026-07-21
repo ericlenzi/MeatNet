@@ -1,8 +1,7 @@
 export interface UnidadFaena {
-  id: string
+  codigo: string
   especieId: string
   especieNombre: string
-  numero: number
   nombre: string
   cantidadCuartos: number
   piezasPorAnimal: number
@@ -13,8 +12,8 @@ export interface UnidadFaena {
 }
 
 export interface CreateUnidadFaenaRequest {
+  Codigo: string
   EspecieId: string
-  Numero: number
   Nombre: string
   CantidadCuartos: number
   PiezasPorAnimal: number
@@ -25,7 +24,6 @@ export interface CreateUnidadFaenaRequest {
 
 export interface UpdateUnidadFaenaRequest {
   EspecieId: string
-  Numero: number
   Nombre: string
   CantidadCuartos: number
   PiezasPorAnimal: number

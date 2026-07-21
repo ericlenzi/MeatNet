@@ -19,27 +19,27 @@ export async function getUnidadesFaenas(
   return response.data
 }
 
-export async function getUnidadFaena(id: string): Promise<UnidadFaena> {
-  const response = await api.get<UnidadFaena>(`/UnidadesFaenas/${id}`)
+export async function getUnidadFaena(codigo: string): Promise<UnidadFaena> {
+  const response = await api.get<UnidadFaena>(`/UnidadesFaenas/${codigo}`)
   return response.data
 }
 
 export async function createUnidadFaena(
   data: CreateUnidadFaenaRequest,
-): Promise<{ id: string }> {
-  const response = await api.post<{ id: string }>('/UnidadesFaenas', data)
+): Promise<{ codigo: string }> {
+  const response = await api.post<{ codigo: string }>('/UnidadesFaenas', data)
   return response.data
 }
 
 export async function updateUnidadFaena(
-  id: string,
+  codigo: string,
   data: UpdateUnidadFaenaRequest,
 ): Promise<void> {
-  await api.put(`/UnidadesFaenas/${id}`, data)
+  await api.put(`/UnidadesFaenas/${codigo}`, data)
 }
 
-export async function deleteUnidadFaena(id: string): Promise<void> {
-  await api.delete(`/UnidadesFaenas/${id}`)
+export async function deleteUnidadFaena(codigo: string): Promise<void> {
+  await api.delete(`/UnidadesFaenas/${codigo}`)
 }
 
 /** Opciones para poblar combos (trae todas las activas, opcionalmente de una especie). */

@@ -15,7 +15,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
         public string Descripcion { get; set; }
         public string EspecieId { get; set; }
         public string TipoEspecieId { get; set; }
-        public Guid UnidadFaenaId { get; set; }
+        public string UnidadFaenaId { get; set; }
         public string DestinoComercialId { get; set; }
         public string TipificacionOficialId { get; set; }
         public double PesoDesde { get; set; }

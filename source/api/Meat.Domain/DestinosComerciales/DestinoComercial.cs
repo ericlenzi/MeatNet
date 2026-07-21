@@ -13,5 +13,9 @@ namespace Meat.Domain.DestinosComerciales
         public string Codigo { get; set; }
         public string Nombre { get; set; }
         public bool Activo { get; set; }
+
+        /// <summary>Destino favorito: a lo sumo uno en true (indice unico filtrado). Es el
+        /// que el Tipificador propone Por Defecto.</summary>
+        public bool Favorito { get; set; }
     }
 }

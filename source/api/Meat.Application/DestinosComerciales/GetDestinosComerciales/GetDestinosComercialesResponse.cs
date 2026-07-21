@@ -11,5 +11,6 @@ namespace Meat.Application.DestinosComerciales.GetDestinosComerciales
     {
         public string Codigo { get; set; }
         public string Nombre { get; set; }
+        public bool Favorito { get; set; }
     }
 }

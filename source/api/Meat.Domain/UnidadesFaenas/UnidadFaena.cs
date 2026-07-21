@@ -16,12 +16,11 @@ namespace Meat.Domain.UnidadesFaenas
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public Guid Id { get; set; }
+        public string Codigo { get; set; }
 
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        public int Numero { get; set; }
         public string Nombre { get; set; }
         public int CantidadCuartos { get; set; }
 

@@ -14,7 +14,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
         public Guid ListaMatanzaId { get; set; }
         public Guid ListaMatanzaDetalleId { get; set; }     // renglon elegido (hibrido)
-        public Guid UnidadFaenaId { get; set; }
+        public string UnidadFaenaId { get; set; }           // FK a UnidadFaena.Codigo
         public int NumeroGarron { get; set; }
 
         public List<PiezaRomaneoInput> Piezas { get; set; } = new List<PiezaRomaneoInput>();
@@ -23,6 +23,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
     public class PiezaRomaneoInput
     {
         // La letra la asigna el servidor (A/B/... para vacuno; null para porcino).
+        public Guid AlmacenDestinoId { get; set; }          // camara destino de la pieza (default del renglon; obligatoria)
         public string TipificacionId { get; set; }
         public double Peso { get; set; }
     }

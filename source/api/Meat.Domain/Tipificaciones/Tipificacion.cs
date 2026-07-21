@@ -31,7 +31,7 @@ namespace Meat.Domain.Tipificaciones
         public string TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
-        public Guid UnidadFaenaId { get; set; }
+        public string UnidadFaenaId { get; set; }              // FK a UnidadFaena.Codigo
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         public string DestinoComercialId { get; set; }

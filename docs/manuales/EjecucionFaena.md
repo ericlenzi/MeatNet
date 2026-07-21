@@ -75,7 +75,9 @@ LM EN_EJECUCION  ──►  abrir Tipificador
     │
     ▼
 [1] El sistema sugiere el renglón activo (menor Secuencia con pendiente > 0).
-    El operador puede elegir otro renglón (híbrido).
+    El operador puede elegir otro renglón (híbrido). La cámara de destino de cada
+    pieza se autocompleta con la del renglón (LM) y es editable/obligatoria por
+    pieza (R-E13).
     │
     ▼
 [2] El sistema PROPONE el Nº de Garrón (último de la jornada + 1) y la Unidad de Faena
@@ -143,10 +145,21 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   siga dentro de su rango**; si cae **fuera**, se re-propone automáticamente por el filtro anterior.
   El operador siempre puede cambiarla manualmente (y esa pasa a ser la sticky). Al confirmar,
   `Puntos += 1` en cada tipificación usada.
-- **R-E11 (destino comercial).** Es un **selector** del Tipificador con **default sticky por
-  jornada/tropa** que **filtra** las tipificaciones candidatas (útil cuando toda una tropa va a un
-  mismo destino, ej. exportación vs. consumo). Al cambiar de tropa/renglón, el operador puede
-  ajustarlo. No se persiste como columna aparte: queda **embebido** en la `Tipificacion` elegida.
+- **R-E13 (cámara destino — por pieza).** El Tipificador captura la **cámara de destino por cada
+  media res / pieza** (`RomaneoPieza.AlmacenDestinoId`), de modo que las 2 medias reses de un
+  vacuno pueden ir a **cámaras distintas**. **Default = la cámara del animal programado**, i.e. la
+  planificada en el renglón de la LM (`ListaMatanzaDetalle.AlmacenDestinoId`); el operador puede
+  **overridear pieza por pieza**. Es **obligatoria** en cada pieza: el servidor valida que cada
+  cámara usada sea una cámara (`Familia = CAMARA`) **activa del establecimiento** de la LM. El
+  default se re-aplica a todas las piezas al cambiar de renglón; el override manual persiste hasta
+  ese cambio. Esta cámara es la que la **Liberación** (Paso 4) usará para materializar la existencia
+  de cada `RomaneoPieza`.
+- **R-E11 (destino comercial).** Es un **selector** del Tipificador que **filtra** las
+  tipificaciones candidatas (útil cuando toda una tropa va a un mismo destino, ej. exportación vs.
+  consumo). **Default = el destino marcado `DestinoComercial.Favorito`** (a lo sumo uno, garantizado
+  por índice único filtrado `[Favorito] = 1`); si ninguno es favorito, arranca en "Todos". Al
+  cambiar de tropa/renglón el operador puede ajustarlo. No se persiste como columna aparte: queda
+  **embebido** en la `Tipificacion` elegida.
 - **R-E8 (consumo de stock).** Ver §7.
 - **R-E9 (anulación).** Solo el creador/roles habilitados; revierte `CantidadFaenada`, restaura el
   En Pie y registra la reversa en la trazabilidad. No se borra la fila (queda `Anulado = true`).
@@ -201,7 +214,7 @@ PK: Guid Id
 - ListaMatanzaDetalleId (Guid, FK)     [renglón elegido: Tropa+Corral+TipoEspecie]
 - TropaId (Guid, FK)                   [denormalizado del renglón; trazabilidad directa]
 - EspecieId (string, FK)
-- UnidadFaenaId (Guid, FK)             [RES / MEDIA RES; define nº de piezas]
+- UnidadFaenaId (string, FK)           [FK a UnidadFaena.Codigo; RES / MEDIA RES; define nº de piezas]
 - NumeroGarron (int)                   [físico; único por LM]
 - NumeroRomaneo (long)                 [correlativo Numerador ROMANEO por Estab+Especie]
 - Fecha (DateTime), UsuarioId (Guid?)
@@ -214,6 +227,7 @@ Navegación: Piezas (ICollection<RomaneoPieza>)
 PK: Guid Id
 - RomaneoId (Guid, FK, cascade delete)
 - Letra (string?, "A"/"B"; null porcino)
+- AlmacenDestinoId (Guid, FK)          [cámara destino de la pieza; default del renglón, editable y obligatoria (R-E13)]
 - TipificacionId (string, FK a Tipificacion.Codigo)
 - Peso (double)                        [caché de la medición PESO; canónico p/ tipificación y KG]
 Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
@@ -254,11 +268,11 @@ Controller `RomaneosController` (patrón `MeatBaseController`, `[Authorize]`, `C
 
 | Verbo | Ruta | Descripción |
 |---|---|---|
-| GET | `/Romaneos/renglones?listaMatanzaId=` | Renglones de la LM con Cantidad/Faenada/pendiente, el renglón sugerido (menor secuencia con pendiente) y el **próximo garrón sugerido** (último de la jornada + 1). Modo híbrido. |
+| GET | `/Romaneos/renglones?listaMatanzaId=` | Renglones de la LM con Cantidad/Faenada/pendiente, la **cámara destino planificada** por renglón (default del puesto), el renglón sugerido (menor secuencia con pendiente), el **próximo garrón sugerido** (último de la jornada + 1) y las **cámaras** activas del establecimiento (opciones del selector). Modo híbrido. |
 | GET | `/Romaneos/sugerir-tipificacion?especieId=&tipoEspecieId=&unidadFaenaId=&destinoComercialId=&peso=` | Devuelve la `Tipificacion` propuesta (match por rango de peso, orden Puntos) y la lista de candidatas para el combo. |
 | GET | `/Romaneos/jornada?listaMatanzaId=` | Romaneos de la jornada (grilla del Tipificador). |
 | GET | `/Romaneos/monitor?listaMatanzaId=` | Totales en vivo: faenado/planificado global y por tropa/categoría, KG, ritmo. |
-| POST | `/Romaneos` | Crea un romaneo (piezas + mediciones); aplica el consumo de stock (§7) y trazabilidad (§8). |
+| POST | `/Romaneos` | Crea un romaneo; cada pieza lleva **peso + tipificación + cámara destino** (R-E13) + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). |
 | POST | `/Romaneos/{id}/anular` | Anula el romaneo; revierte el consumo. |
 
 ## 11. Frontend (pantallas)

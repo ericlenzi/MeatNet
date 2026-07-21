@@ -1,3 +1,4 @@
+using Meat.Domain.Almacenes;
 using Meat.Domain.Tipificaciones;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,9 @@ namespace Meat.Domain.Romaneos
         public virtual Romaneo Romaneo { get; set; }
 
         public string Letra { get; set; }                      // "A" / "B"; null para porcino
+
+        public Guid AlmacenDestinoId { get; set; }             // camara destino de esta pieza: default del renglon (LM), editable y obligatoria
+        public virtual Almacen AlmacenDestino { get; set; }
 
         public string TipificacionId { get; set; }
         public virtual Tipificacion Tipificacion { get; set; }
