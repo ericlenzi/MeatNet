@@ -291,5 +291,16 @@ El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por r
 
 ## 13. Fuera de alcance
 - Fase 2b (dentición, contusiones, decomisos, más mediciones, otras especies).
-- Evaluación de Faena (Paso 4): rindes, tipificación consolidada, plan vs. real.
 - Integración con balanza / captura automática en puesto.
+
+### Próximo paso: Evaluación de Faena (Ciclo I – Paso 4)
+Se hace **después de cerrar la Ejecución de Faena**. Alcance acordado (a documentar en su propio
+manual `docs/manuales/EvaluacionFaena.md` cuando se encare):
+1. **Revisar** los romaneos generados en la jornada.
+2. **Editarlos** si hiciera falta; al **liberar** quedan **definitivos** (no admiten más cambios).
+3. **Imprimir** los romaneos.
+4. **Liberar** → **genera el stock en cámaras**. Es acá donde se **materializa la existencia de
+   cámara** (cada `RomaneoPieza` liberada = una media res/res en su cámara destino
+   `ListaMatanzaDetalle.AlmacenDestinoId`), insumo del Ciclo II (Despostada). **El romaneo (Paso 3)
+   solo consume el stock En Pie; NO crea stock de cámara — eso nace en la Liberación.**
+- Complementa: rindes, tipificación consolidada y plan vs. real (visión analítica original del Paso 4).
