@@ -180,9 +180,10 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL AND [EstadoListaMatanzaId] <> 'ANULADA'");
 
-            // Numero de lista correlativo por establecimiento
+            // Numero de lista correlativo por (Establecimiento, Especie): mismo alcance que el
+            // Numerador LISTAMATANZA que lo genera.
             modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
-                .HasIndex(lm => new { lm.EstablecimientoId, lm.NumeroLista })
+                .HasIndex(lm => new { lm.EstablecimientoId, lm.EspecieId, lm.NumeroLista })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 

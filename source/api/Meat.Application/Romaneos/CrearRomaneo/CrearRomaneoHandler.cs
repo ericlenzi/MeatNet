@@ -1,6 +1,7 @@
 using MediatR;
 using Meat.Application.IngresosHaciendas; // TiposAlmacen / FamiliaAlmacen
 using Meat.Application.ListasMatanzas;
+using Meat.Application.Numeradores;
 using Meat.Application.Shared;
 using Meat.Application.Tropas;
 using Meat.Domain.Numeradores;
@@ -121,7 +122,9 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             // La reserva y el alta van en la misma transaccion: si algo falla despues, el correlativo
             // se revierte y no queda hueco.
             await using var tx = await this.context.Database.BeginTransactionAsync(cancellationToken);
-            var numeroRomaneo = await ReservarNumeroRomaneoAsync(lm, cancellationToken);
+            var numeroRomaneo = await Correlativos.ReservarAsync(
+                this.context, lm.EstablecimientoId, lm.EspecieId,
+                TiposNumerador.Romaneo, "Romaneo", cancellationToken);
 
             // 9) Armado del romaneo (grafo: Romaneo -> Piezas -> Mediciones)
             var romaneo = RomaneoFactory.Create();
@@ -180,59 +183,6 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 NumeroRomaneo = romaneo.NumeroRomaneo,
                 NumeroGarron = romaneo.NumeroGarron
             };
-        }
-
-        /// <summary>
-        /// Reserva el proximo NumeroRomaneo con un UPDATE atomico. El UPDATE toma el lock exclusivo
-        /// de la fila del numerador y lo retiene hasta el commit, asi dos romaneos concurrentes no
-        /// pueden obtener el mismo numero (el read-modify-write en memoria si lo permitia).
-        /// </summary>
-        private async Task<long> ReservarNumeroRomaneoAsync(
-            Domain.ListasMatanzas.ListaMatanza lm, CancellationToken cancellationToken)
-        {
-            const string incrementar = @"
-UPDATE Numeradores
-SET UltimoNumero = UltimoNumero + 1, FechaActualizacion = SYSDATETIME()
-WHERE EstablecimientoId = {0} AND EspecieCodigo = {1} AND TipoNumerador = {2} AND FechaBaja IS NULL";
-
-            var parametros = new object[]
-            {
-                lm.EstablecimientoId, lm.EspecieId, RomaneoConstantes.TipoNumeradorRomaneo
-            };
-
-            var filas = await this.context.Database.ExecuteSqlRawAsync(incrementar, parametros, cancellationToken);
-            if (filas == 0)
-            {
-                // Primer romaneo de este establecimiento/especie: se crea el numerador. El INSERT
-                // condicional mas el indice unico de Numeradores evitan duplicarlo si dos requests
-                // llegan a la vez.
-                await this.context.Database.ExecuteSqlRawAsync(@"
-INSERT INTO Numeradores (Id, EstablecimientoId, EspecieCodigo, Codigo, Descripcion, TipoNumerador, UltimoNumero, Activo, FechaActualizacion)
-SELECT {0}, {1}, {2}, {3}, {4}, {3}, 0, 1, SYSDATETIME()
-WHERE NOT EXISTS (
-    SELECT 1 FROM Numeradores
-    WHERE EstablecimientoId = {1} AND EspecieCodigo = {2} AND TipoNumerador = {3} AND FechaBaja IS NULL)",
-                    new object[]
-                    {
-                        Guid.NewGuid(), lm.EstablecimientoId, lm.EspecieId,
-                        RomaneoConstantes.TipoNumeradorRomaneo, "Romaneo"
-                    },
-                    cancellationToken);
-
-                filas = await this.context.Database.ExecuteSqlRawAsync(incrementar, parametros, cancellationToken);
-                if (filas == 0)
-                    throw new ValidationException("No se pudo reservar el numero de romaneo.");
-            }
-
-            // Dentro de la transaccion el UPDATE retiene el lock, asi que esta lectura devuelve el
-            // numero que reservo este request: nadie pudo incrementarlo en el medio.
-            return await this.context.Numeradores
-                .AsNoTracking()
-                .Where(n => n.EstablecimientoId == lm.EstablecimientoId
-                    && n.EspecieCodigo == lm.EspecieId
-                    && n.TipoNumerador == RomaneoConstantes.TipoNumeradorRomaneo)
-                .Select(n => (long)n.UltimoNumero)
-                .FirstAsync(cancellationToken);
         }
 
         /// <summary>

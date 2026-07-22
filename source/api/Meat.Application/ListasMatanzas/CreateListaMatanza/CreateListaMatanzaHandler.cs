@@ -1,4 +1,5 @@
 using MediatR;
+using Meat.Application.Numeradores;
 using Meat.Application.Shared;
 using Meat.Domain.ListasMatanzas;
 using Meat.Repositories;
@@ -65,18 +66,20 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
             await ListaMatanzaValidacion.ValidateDestinosAsync(
                 this.context, establecimiento.Id, request.Renglones, cancellationToken);
 
-            // R-02: numero de lista correlativo por establecimiento (MAX + 1)
-            var maxNumero = await this.context.ListasMatanzas
-                .Where(lm => lm.EstablecimientoId == establecimiento.Id)
-                .Select(lm => (long?)lm.NumeroLista)
-                .MaxAsync(cancellationToken) ?? 0;
+            // R-02: numero de lista correlativo por (Establecimiento, Especie), reservado de forma
+            // atomica sobre Numeradores. El MAX+1 anterior tenia carrera: dos altas simultaneas leian
+            // el mismo maximo. La reserva y el alta van en la misma transaccion.
+            await using var tx = await this.context.Database.BeginTransactionAsync(cancellationToken);
+            var numeroLista = await Correlativos.ReservarAsync(
+                this.context, establecimiento.Id, request.EspecieId,
+                TiposNumerador.ListaMatanza, "Lista de Matanza", cancellationToken);
 
             var entity = ListaMatanzaFactory.Create();
             entity.EstablecimientoId = establecimiento.Id;
             entity.EspecieId = request.EspecieId;
             entity.PuestoId = request.PuestoId;
             entity.Fecha = fecha;
-            entity.NumeroLista = maxNumero + 1;
+            entity.NumeroLista = numeroLista;
             entity.EstadoListaMatanzaId = EstadosListaMatanza.Borrador;
 
             entity.Renglones = request.Renglones
@@ -96,6 +99,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
 
             this.context.ListasMatanzas.Add(entity);
             await this.context.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
 
             return new CreateListaMatanzaResponse
             {

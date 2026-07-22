@@ -16,9 +16,6 @@ namespace Meat.Application.Romaneos
         // Codigo del TipoMedicion que representa el peso (catalogo TiposMediciones).
         public const string MedicionPeso = "PESO";
 
-        // TipoNumerador (y Codigo) del Numerador que lleva la secuencia de romaneos.
-        public const string TipoNumeradorRomaneo = "ROMANEO";
-
         // Letras de las piezas (medias reses) para vacunos.
         public static readonly string[] Letras = { "A", "B", "C", "D" };
     }
