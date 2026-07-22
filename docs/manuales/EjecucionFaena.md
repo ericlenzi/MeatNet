@@ -28,7 +28,8 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 
 | Término | Definición |
 |---|---|
-| **Romaneo** | Registro de la faena de **un animal**: 1 garrón, sus piezas pesadas y tipificadas. Unidad que consume stock. |
+| **Romaneo** | Registro de la faena de **un animal**: 1 garrón, sus piezas pesadas y tipificadas. Unidad que consume stock. ⚠️ **Ojo con el término:** en la industria "el romaneo" suele ser la **planilla** de la faena de una tropa. Acá `Romaneo` nombra al **renglón** de esa planilla (una res), no a la planilla. Ver "Romaneo de la tropa". |
+| **Romaneo de la tropa** | La planilla en el sentido de la industria: las reses faenadas de una tropa. **No es una entidad**, es una **vista derivada** — se obtiene agrupando los `Romaneo` por renglón de la LM (`ListaMatanzaDetalleId`), y el Monitor la expone como el **rango** de nº de romaneo del renglón (ej. "tropa 202602005 → reses 120 a 145"). Si en el futuro la planilla necesitara identidad propia (número, cierre/firma, impresión, envío a SENASA), recién ahí haría falta una entidad cabecera. |
 | **Pieza / Romaneo Pieza** | Cada unidad física pesada del animal. **PORCINO:** 1 (RES). **VACUNO:** 2 (MEDIA RES, letras A y B). |
 | **Garrón** | Número físico de gancho del que cuelga la pieza. En vacuno, las 2 medias reses del animal comparten el nº de garrón (se distinguen por letra A/B). |
 | **Unidad de Faena (UF)** | `UnidadFaena` (RES / MEDIA RES / …). Define **cuántas piezas** tiene el romaneo por especie. |
