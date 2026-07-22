@@ -321,7 +321,7 @@ export default function TipificadorPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
-            onClick={() => navigate(`/operaciones/ejecucion-faena/${data.listaMatanzaId}/monitor`)}
+            onClick={() => navigate(`/operaciones/monitor-faena/${data.listaMatanzaId}`)}
           >
             Monitor
           </Button>
@@ -501,9 +501,9 @@ export default function TipificadorPage() {
 
       {/* Grilla de la jornada */}
       <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-        <h3 className="mb-3 text-sm font-semibold text-text">Romaneos de la jornada ({jornada.length})</h3>
+        <h3 className="mb-3 text-sm font-semibold text-text">Reses faenadas de la jornada ({jornada.length})</h3>
         {jornada.length === 0 ? (
-          <p className="text-sm text-text-light">Todavia no se registraron romaneos.</p>
+          <p className="text-sm text-text-light">Todavia no se registraron reses.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

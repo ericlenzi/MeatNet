@@ -301,7 +301,7 @@ export default function ListaMatanzaDetailPage() {
           {enEjecucion && (
             <Button
               variant="secondary"
-              onClick={() => navigate(`/operaciones/ejecucion-faena/${lm.id}/monitor`)}
+              onClick={() => navigate(`/operaciones/monitor-faena/${lm.id}`)}
             >
               Monitor
             </Button>

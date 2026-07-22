@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { getMonitorFaena } from '@/services/romaneos.service'
 import { useToast } from '@/components/ui/Toast'
-import type { MonitorFaena } from '@/types'
+import type { MonitorFaena, RenglonMonitorItem } from '@/types'
 import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 
@@ -16,6 +16,12 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
       {hint && <p className="text-xs text-text-light">{hint}</p>}
     </div>
   )
+}
+
+/** Rango de numeros de romaneo registrados en el renglon ("120 - 135", "120" o "—"). */
+function rangoRomaneos(r: RenglonMonitorItem) {
+  if (r.romaneoDesde == null || r.romaneoHasta == null) return '—'
+  return r.romaneoDesde === r.romaneoHasta ? `${r.romaneoDesde}` : `${r.romaneoDesde} - ${r.romaneoHasta}`
 }
 
 function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
@@ -86,25 +92,29 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
                 <th className="py-2 pr-3 w-16">Sec.</th>
                 <th className="py-2 pr-3">Tropa</th>
                 <th className="py-2 pr-3">Corral</th>
+                <th className="py-2 pr-3">Camara destino</th>
                 <th className="py-2 pr-3">Categoria</th>
                 <th className="py-2 pr-3 text-right">Plan.</th>
                 <th className="py-2 pr-3 text-right">Faenado</th>
                 <th className="py-2 pr-3 text-right">Pend.</th>
+                <th className="py-2 pr-3">N° Romaneo (desde–hasta)</th>
                 <th className="py-2 pr-3 w-40">Avance</th>
               </tr>
             </thead>
             <tbody>
-              {m.porRenglon.map((r, i) => {
+              {m.porRenglon.map((r) => {
                 const pct = r.cantidad > 0 ? Math.round((r.cantidadFaenada / r.cantidad) * 100) : 0
                 return (
-                  <tr key={i} className="border-b border-border/60">
+                  <tr key={r.listaMatanzaDetalleId} className="border-b border-border/60">
                     <td className="py-2 pr-3 font-mono">{r.secuencia}</td>
                     <td className="py-2 pr-3 font-mono">{r.numeroTropa}</td>
                     <td className="py-2 pr-3">{r.almacenNombre}</td>
+                    <td className="py-2 pr-3">{r.almacenDestinoNombre ?? <span className="text-text-light">—</span>}</td>
                     <td className="py-2 pr-3">{r.tipoEspecieNombre}</td>
                     <td className="py-2 pr-3 text-right font-mono">{r.cantidad}</td>
                     <td className="py-2 pr-3 text-right font-mono">{r.cantidadFaenada}</td>
                     <td className="py-2 pr-3 text-right font-mono">{r.pendiente}</td>
+                    <td className="py-2 pr-3 font-mono text-xs">{rangoRomaneos(r)}</td>
                     <td className="py-2 pr-3">
                       <div className="flex items-center gap-2">
                         <div className="h-2 flex-1 overflow-hidden rounded-full bg-background">

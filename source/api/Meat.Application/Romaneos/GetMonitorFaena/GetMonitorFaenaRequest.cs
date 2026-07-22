@@ -32,12 +32,16 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
 
     public class RenglonMonitorItem
     {
+        public Guid ListaMatanzaDetalleId { get; set; }
         public int Secuencia { get; set; }
         public long NumeroTropa { get; set; }
         public string AlmacenNombre { get; set; }
+        public string AlmacenDestinoNombre { get; set; }    // camara destino planificada del renglon
         public string TipoEspecieNombre { get; set; }
         public int Cantidad { get; set; }
         public int CantidadFaenada { get; set; }
         public int Pendiente { get; set; }
+        public long? RomaneoDesde { get; set; }             // 1er nro de romaneo no anulado del renglon
+        public long? RomaneoHasta { get; set; }             // ultimo nro de romaneo no anulado del renglon
     }
 }

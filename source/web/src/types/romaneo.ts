@@ -73,13 +73,17 @@ export interface RomaneoJornadaItem {
 
 // --- Monitor de faena (read-only) ---
 export interface RenglonMonitorItem {
+  listaMatanzaDetalleId: string
   secuencia: number
   numeroTropa: number
   almacenNombre: string
+  almacenDestinoNombre: string | null
   tipoEspecieNombre: string
   cantidad: number
   cantidadFaenada: number
   pendiente: number
+  romaneoDesde: number | null
+  romaneoHasta: number | null
 }
 
 export interface MonitorFaena {

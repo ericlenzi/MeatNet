@@ -14,6 +14,12 @@ const TITULO: Record<Target, string> = {
   monitor: 'Monitor de Faena',
 }
 
+/** Cada destino cuelga de su propia ruta de menu para que el item activo del sidebar sea el correcto. */
+const rutaDestino = (target: Target, listaMatanzaId: string) =>
+  target === 'monitor'
+    ? `/operaciones/monitor-faena/${listaMatanzaId}`
+    : `/operaciones/ejecucion-faena/${listaMatanzaId}/tipificador`
+
 /**
  * Punto de entrada desde el menú para la Ejecución de Faena / Monitor.
  * Si hay una única LM En Ejecución, abre directo la pantalla que corresponde;
@@ -37,7 +43,7 @@ export default function EjecucionFaenaHubPage({ target }: { target: Target }) {
         if (cancel) return
         const unica = data.length === 1 ? data[0] : undefined
         if (unica) {
-          navigate(`/operaciones/ejecucion-faena/${unica.id}/${target}`, { replace: true })
+          navigate(rutaDestino(target, unica.id), { replace: true })
           return
         }
         setListas(data)
@@ -74,19 +80,19 @@ export default function EjecucionFaenaHubPage({ target }: { target: Target }) {
                 <div className="flex gap-2">
                   {target === 'tipificador' ? (
                     <>
-                      <Button size="sm" onClick={() => navigate(`/operaciones/ejecucion-faena/${l.id}/tipificador`)}>
+                      <Button size="sm" onClick={() => navigate(rutaDestino('tipificador', l.id))}>
                         Tipificar
                       </Button>
-                      <Button variant="secondary" size="sm" onClick={() => navigate(`/operaciones/ejecucion-faena/${l.id}/monitor`)}>
+                      <Button variant="secondary" size="sm" onClick={() => navigate(rutaDestino('monitor', l.id))}>
                         Monitor
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button size="sm" onClick={() => navigate(`/operaciones/ejecucion-faena/${l.id}/monitor`)}>
+                      <Button size="sm" onClick={() => navigate(rutaDestino('monitor', l.id))}>
                         Ver Monitor
                       </Button>
-                      <Button variant="secondary" size="sm" onClick={() => navigate(`/operaciones/ejecucion-faena/${l.id}/tipificador`)}>
+                      <Button variant="secondary" size="sm" onClick={() => navigate(rutaDestino('tipificador', l.id))}>
                         Tipificar
                       </Button>
                     </>

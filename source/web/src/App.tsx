@@ -71,8 +71,8 @@ function AppRoutes() {
                   <Route path="operaciones/trazabilidad-tropas" element={<TrazabilidadTropasPage />} />
                   <Route path="operaciones/ejecucion-faena" element={<EjecucionFaenaHubPage target="tipificador" />} />
                   <Route path="operaciones/ejecucion-faena/:listaMatanzaId/tipificador" element={<TipificadorPage />} />
-                  <Route path="operaciones/ejecucion-faena/:listaMatanzaId/monitor" element={<MonitorFaenaPage />} />
                   <Route path="operaciones/monitor-faena" element={<EjecucionFaenaHubPage target="monitor" />} />
+                  <Route path="operaciones/monitor-faena/:listaMatanzaId" element={<MonitorFaenaPage />} />
                   <Route path="operaciones/evaluacion-faena" element={<PlaceholderPage title="Evaluacion de Faena" />} />
                   {/* Datos Maestros */}
                   <Route path="empresas" element={<EmpresasListPage />} />
