@@ -57,7 +57,8 @@
       "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"SET NOCOUNT ON; SELECT EspecieCodigo, Codigo, UltimoNumero FROM Numeradores WHERE TipoNumerador='ROMANEO'; SELECT EspecieId, MAX\\(NumeroRomaneo\\) AS MaxRomaneo FROM Romaneos GROUP BY EspecieId;\")",
       "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"UPDATE Numeradores SET UltimoNumero = 5 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; SELECT EspecieCodigo, UltimoNumero FROM Numeradores WHERE TipoNumerador='ROMANEO';\")",
       "Bash(sqlcmd -S '.\\\\sqlexpress' -d MeatNet -E -C -W -I -Q 'SET NOCOUNT ON; *)",
-      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef database update -p Meat.Repositories -s Meat | Select-Object -Last 2)"
+      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef database update -p Meat.Repositories -s Meat | Select-Object -Last 2)",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -W -s \"|\" -Q $q)"
     ]
   }
 }
