@@ -237,7 +237,7 @@ modelBuilder.Entity<ListaMatanza>()
 | R-02 | `NumeroLista` es correlativo **por (Establecimiento, Especie)**: cada especie lleva su propia serie. Lo genera el `Numerador` con `TipoNumerador = "LISTAMATANZA"` mediante **reserva atómica** (`Correlativos.ReservarAsync`), en la **misma transacción** que el alta. **No se reutiliza** (tampoco el de una lista anulada). Índice único `(EstablecimientoId, EspecieId, NumeroLista)`. Mismo mecanismo que el nº de romaneo (ver R-E4 en `EjecucionFaena.md`). |
 | R-03 | Solo se pueden seleccionar **Tropas `RECEPCIONADA`** con hacienda **`EN_PIE`** de la **Especie** de la LM, en corrales del **Establecimiento** de contexto. |
 | R-04 | `Cantidad` de un renglón siempre `> 0`. |
-| R-05 | Σ `Cantidad` de todos los renglones de una **(Tropa, Corral, TipoEspecie)** en la LM ≤ **disponible** de esa (Tropa, Corral, TipoEspecie). Ver §10. |
+| R-05 | Σ `Cantidad` de todos los renglones de una **(Tropa, Corral, TipoEspecie)** en la LM ≤ **disponible** de esa (Tropa, Corral, TipoEspecie). Ver §10. Con la LM ya en ejecución la suma es del **pendiente** (`Cantidad − CantidadFaenada`), porque el En Pie ya viene neto de lo faenado: sumar la cantidad bruta descontaría dos veces la faena propia de la lista. |
 | R-06 | **Dividir/Fusionar** operan a nivel de renglón; la entidad `Tropa` **nunca** se modifica. |
 | R-07 | La **Secuencia** solo ordena; se puede renumerar libremente. No identifica el renglón ni es clave de negocio. |
 | R-08 | En `BORRADOR` la edición es libre y **no** genera historial. |

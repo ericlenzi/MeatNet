@@ -240,8 +240,18 @@ export default function ListaMatanzaDetailPage() {
 
   const claveDisp = (d: DisponibilidadFaenaItem) => `${d.tropaId}-${d.almacenId}-${d.tipoEspecieId}`
 
+  // El "Disponible" que informa el endpoint excluye la reserva de ESTA lista, asi que hay que
+  // restarle lo que la propia LM ya tiene pendiente de esa tropa/corral/categoria (espejo de la
+  // validacion del backend, que suma el pendiente propio).
+  const agregable = (d: DisponibilidadFaenaItem) =>
+    d.disponible -
+    lm.renglones
+      .filter((r) => r.tropaId === d.tropaId && r.almacenId === d.almacenId && r.tipoEspecieId === d.tipoEspecieId)
+      .reduce((acc, r) => acc + (r.cantidad - r.cantidadFaenada), 0)
+
   const agregarTropa = async (d: DisponibilidadFaenaItem) => {
-    if (d.disponible <= 0) return
+    const cantidad = agregable(d)
+    if (cantidad <= 0) return
     const destinoId = destinoAgregar[claveDisp(d)]
     if (!destinoId) {
       toast('error', 'Seleccione el destino de faena (camara) antes de agregar.')
@@ -252,7 +262,7 @@ export default function ListaMatanzaDetailPage() {
       AlmacenId: d.almacenId,
       AlmacenDestinoId: destinoId,
       TipoEspecieId: d.tipoEspecieId,
-      Cantidad: d.disponible,
+      Cantidad: cantidad,
     }
     if (enEjecucion) {
       await runAction(() => faenaEmergenciaListaMatanza(lm.id, req), 'Faena de emergencia agregada')
@@ -479,9 +489,9 @@ export default function ListaMatanzaDetailPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="py-2 pr-3 text-right font-mono">{d.disponible}</td>
+                    <td className="py-2 pr-3 text-right font-mono">{agregable(d)}</td>
                     <td className="py-2 text-right">
-                      <Button variant="secondary" size="sm" onClick={() => void agregarTropa(d)} disabled={d.disponible <= 0 || acting}>
+                      <Button variant="secondary" size="sm" onClick={() => void agregarTropa(d)} disabled={agregable(d) <= 0 || acting}>
                         {enEjecucion ? 'Emergencia' : 'Agregar'}
                       </Button>
                     </td>

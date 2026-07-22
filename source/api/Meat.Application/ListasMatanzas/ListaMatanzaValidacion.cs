@@ -48,13 +48,18 @@ namespace Meat.Application.ListasMatanzas
         }
 
         /// <summary>
-        /// Valida que el nuevo total planificado por esta LM para una (Tropa, Corral,
+        /// Valida que el nuevo <b>pendiente</b> planificado por esta LM para una (Tropa, Corral,
         /// TipoEspecie) no supere el disponible: En Pie menos lo reservado por otras LM
         /// Confirmadas/En Ejecucion (R-05 post-confirmacion).
+        /// <para>
+        /// El pendiente (Cantidad - CantidadFaenada), no la Cantidad bruta: el En Pie que devuelve
+        /// <see cref="ListaMatanzaStock.GetEnPieAsync"/> ya viene neto de lo faenado, asi que sumar
+        /// la cantidad bruta descontaria dos veces la faena propia de la lista.
+        /// </para>
         /// </summary>
         public static async Task ValidateDisponibilidadAsync(
             MeatContext context, ListaMatanza lm, Guid tropaId, Guid almacenId, string tipoEspecieId,
-            int nuevoTotalLista, CancellationToken cancellationToken)
+            int nuevoPendienteLista, CancellationToken cancellationToken)
         {
             var enPie = await ListaMatanzaStock.GetEnPieAsync(
                 context, lm.EstablecimientoId, lm.EspecieId, cancellationToken);
@@ -66,10 +71,10 @@ namespace Meat.Application.ListasMatanzas
                 throw new ValidationException("La tropa/corral/categoria no tiene hacienda En Pie disponible para faena.");
 
             var res = reservadoOtras.TryGetValue((tropaId, almacenId, tipoEspecieId), out var r) ? r : 0;
-            if (nuevoTotalLista > ep - res)
+            if (nuevoPendienteLista > ep - res)
                 throw new ValidationException(
                     $"No hay stock disponible suficiente para la tropa/corral/categoria: " +
-                    $"En Pie {ep}, reservado por otras listas {res}, se solicitan {nuevoTotalLista}.");
+                    $"En Pie {ep}, reservado por otras listas {res}, se solicitan {nuevoPendienteLista}.");
         }
 
         /// <summary>

@@ -50,12 +50,13 @@ namespace Meat.Application.ListasMatanzas.FaenaEmergenciaListaMatanza
             await ListaMatanzaValidacion.ValidateDestinoAsync(
                 this.context, entity.EstablecimientoId, request.AlmacenDestinoId.Value, cancellationToken);
 
-            var totalActual = entity.Renglones
+            // Pendiente (no cantidad bruta): lo ya faenado por esta LM tambien esta descontado del En Pie.
+            var pendienteActual = entity.Renglones
                 .Where(r => r.TropaId == request.TropaId && r.AlmacenId == request.AlmacenId && r.TipoEspecieId == request.TipoEspecieId)
-                .Sum(r => r.Cantidad);
+                .Sum(r => r.Cantidad - r.CantidadFaenada);
             await ListaMatanzaValidacion.ValidateDisponibilidadAsync(
                 this.context, entity, request.TropaId, request.AlmacenId, request.TipoEspecieId,
-                totalActual + request.Cantidad, cancellationToken);
+                pendienteActual + request.Cantidad, cancellationToken);
 
             // R-14: siempre anexada al final de la secuencia
             var secuencia = entity.Renglones.Any() ? entity.Renglones.Max(r => r.Secuencia) + 10 : 10;

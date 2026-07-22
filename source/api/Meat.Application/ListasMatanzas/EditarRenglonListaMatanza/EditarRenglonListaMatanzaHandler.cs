@@ -72,13 +72,14 @@ namespace Meat.Application.ListasMatanzas.EditarRenglonListaMatanza
                 // Incremento: validar disponibilidad (R-05)
                 if (request.Cantidad > renglon.Cantidad)
                 {
-                    var totalOtros = entity.Renglones
+                    // Pendiente (no cantidad bruta): lo ya faenado por esta LM tambien esta descontado del En Pie.
+                    var pendienteOtros = entity.Renglones
                         .Where(r => r.Id != renglon.Id && r.TropaId == renglon.TropaId
                             && r.AlmacenId == renglon.AlmacenId && r.TipoEspecieId == renglon.TipoEspecieId)
-                        .Sum(r => r.Cantidad);
+                        .Sum(r => r.Cantidad - r.CantidadFaenada);
                     await ListaMatanzaValidacion.ValidateDisponibilidadAsync(
                         this.context, entity, renglon.TropaId, renglon.AlmacenId, renglon.TipoEspecieId,
-                        totalOtros + request.Cantidad, cancellationToken);
+                        pendienteOtros + (request.Cantidad - renglon.CantidadFaenada), cancellationToken);
                 }
 
                 entity.Version += 1;
