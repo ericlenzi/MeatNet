@@ -41,7 +41,21 @@
       "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef migrations add 50_RomaneoPiezaPesoFueraRango -p Meat.Repositories\\\\Meat.Repositories.csproj -s Meat\\\\Meat.csproj | Select-Object -Last 6)",
       "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef database update -p Meat.Repositories\\\\Meat.Repositories.csproj -s Meat\\\\Meat.csproj | Select-Object -Last 5)",
       "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet run --project Meat\\\\Meat.csproj --no-launch-profile --urls http://localhost:5822)",
-      "Bash(curl -s -o /dev/null -w \"API 5822: %{http_code}\\\\n\" http://localhost:5822/UnidadesFaenas)"
+      "Bash(curl -s -o /dev/null -w \"API 5822: %{http_code}\\\\n\" http://localhost:5822/UnidadesFaenas)",
+      "Bash(git rm *)",
+      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef migrations list -p Meat.Repositories -s Meat | Select-Object -Last 4)",
+      "Bash(git commit *)",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT EspecieCodigo, Codigo, TipoNumerador, UltimoNumero FROM Numeradores;\")",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Numeradores' ORDER BY ORDINAL_POSITION;\")",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET LOCK_TIMEOUT 4000; WAITFOR DELAY '00:00:02'; PRINT 'B: intenta incrementar...'; UPDATE Numeradores SET UltimoNumero = UltimoNumero + 1 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; PRINT 'B: incremento OK \\(NO serializo!\\)';\")",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"BEGIN TRAN; UPDATE Numeradores SET UltimoNumero = UltimoNumero + 1 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; PRINT 'A: lock tomado'; WAITFOR DELAY '00:00:12'; ROLLBACK TRAN; PRINT 'A: rollback';\")",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"SET LOCK_TIMEOUT 5000; WAITFOR DELAY '00:00:03'; PRINT 'B: intenta incrementar...'; UPDATE Numeradores SET UltimoNumero = UltimoNumero + 1 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; PRINT 'B: incremento OK \\(NO serializo\\)';\")",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"BEGIN TRAN; UPDATE Numeradores SET UltimoNumero = UltimoNumero + 1 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; WAITFOR DELAY '00:01:00'; ROLLBACK TRAN;\")",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"SET LOCK_TIMEOUT 6000; UPDATE Numeradores SET UltimoNumero = UltimoNumero + 1 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; PRINT 'B: paso sin bloquearse';\")",
+      "PowerShell(Get-Process sqlcmd -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"SET NOCOUNT ON; SELECT EspecieCodigo, Codigo, UltimoNumero FROM Numeradores WHERE TipoNumerador='ROMANEO'; SELECT EspecieId, MAX\\(NumeroRomaneo\\) AS MaxRomaneo FROM Romaneos GROUP BY EspecieId;\")",
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"UPDATE Numeradores SET UltimoNumero = 5 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; SELECT EspecieCodigo, UltimoNumero FROM Numeradores WHERE TipoNumerador='ROMANEO';\")"
     ]
   }
 }

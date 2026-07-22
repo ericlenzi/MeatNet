@@ -215,6 +215,13 @@ namespace Meat.Repositories
                 .HasIndex(r => new { r.ListaMatanzaId, r.NumeroRomaneo })
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Correlativo de romaneo unico por (Establecimiento, Especie): es el alcance del
+            // Numerador ROMANEO. Incluye los anulados a proposito: el numero no se reutiliza.
+            modelBuilder.Entity<Domain.Romaneos.Romaneo>()
+                .HasIndex(r => new { r.EstablecimientoId, r.EspecieId, r.NumeroRomaneo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             #endregion Indices Unicos
 
             #region Relaciones - Ingreso de Hacienda
@@ -351,6 +358,7 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.Romaneos.Romaneo>(e =>
             {
                 e.HasOne(x => x.ListaMatanza).WithMany().HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.ListaMatanzaDetalle).WithMany().HasForeignKey(x => x.ListaMatanzaDetalleId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);

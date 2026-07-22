@@ -1,4 +1,5 @@
 using Meat.Domain.Especies;
+using Meat.Domain.Establecimientos;
 using Meat.Domain.ListasMatanzas;
 using Meat.Domain.Tropas;
 using Meat.Domain.UnidadesFaenas;
@@ -23,6 +24,9 @@ namespace Meat.Domain.Romaneos
 
         public Guid ListaMatanzaId { get; set; }               // jornada (LM en ejecucion)
         public virtual ListaMatanza ListaMatanza { get; set; }
+
+        public Guid EstablecimientoId { get; set; }            // denormalizado de la LM: es el alcance del correlativo NumeroRomaneo
+        public virtual Establecimiento Establecimiento { get; set; }
 
         public Guid ListaMatanzaDetalleId { get; set; }        // renglon elegido (Tropa+Corral+TipoEspecie)
         public virtual ListaMatanzaDetalle ListaMatanzaDetalle { get; set; }
