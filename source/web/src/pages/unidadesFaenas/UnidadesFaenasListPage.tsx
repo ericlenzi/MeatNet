@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { getUnidadesFaenas, deleteUnidadFaena } from '@/services/unidadesFaenas.service'
+import { getEspecies } from '@/services/especies.service'
 import { usePagination } from '@/hooks/usePagination'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useToast } from '@/components/ui/Toast'
-import type { UnidadFaena } from '@/types'
+import type { UnidadFaena, Especie } from '@/types'
 import DataTable from '@/components/ui/DataTable'
 import type { Column, SortState } from '@/components/ui/DataTable'
 import SearchInput from '@/components/ui/SearchInput'
@@ -13,6 +14,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import Select from '@/components/ui/Select'
 
 export default function UnidadesFaenasListPage() {
   const navigate = useNavigate()
@@ -20,11 +22,19 @@ export default function UnidadesFaenasListPage() {
   const pagination = usePagination()
   const debouncedFilter = useDebounce(pagination.filter)
   const [statusFilter, setStatusFilter] = useState('active')
+  const [especieFilter, setEspecieFilter] = useState('')
   const [data, setData] = useState<UnidadFaena[]>([])
+  const [especies, setEspecies] = useState<Especie[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sort, setSort] = useState<SortState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<UnidadFaena | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    getEspecies({ PageSize: 1000, Estado: true })
+      .then((res) => setEspecies(res.data || []))
+      .catch(() => {})
+  }, [])
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -32,6 +42,7 @@ export default function UnidadesFaenasListPage() {
       const response = await getUnidadesFaenas({
         Filter: debouncedFilter || undefined,
         Estado: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+        EspecieId: especieFilter || undefined,
         PageIndex: pagination.pageIndex,
         PageSize: pagination.pageSize,
       })
@@ -42,7 +53,7 @@ export default function UnidadesFaenasListPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [debouncedFilter, statusFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedFilter, statusFilter, especieFilter, pagination.pageIndex, pagination.pageSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void fetchData()
@@ -50,6 +61,11 @@ export default function UnidadesFaenasListPage() {
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value)
+    pagination.setPage(0)
+  }
+
+  const handleEspecieChange = (value: string) => {
+    setEspecieFilter(value)
     pagination.setPage(0)
   }
 
@@ -129,7 +145,17 @@ export default function UnidadesFaenasListPage() {
           onChange={pagination.setFilter}
           placeholder="Buscar por nombre, codigo material..."
         />
-        <StatusFilter value={statusFilter} onChange={handleStatusChange} />
+        <div className="flex items-center gap-2">
+          <Select
+            value={especieFilter}
+            onChange={(e) => handleEspecieChange(e.target.value)}
+            options={[
+              { value: '', label: 'Todas las especies' },
+              ...especies.map((e) => ({ value: e.codigo, label: e.nombre })),
+            ]}
+          />
+          <StatusFilter value={statusFilter} onChange={handleStatusChange} />
+        </div>
       </div>
 
       <DataTable
