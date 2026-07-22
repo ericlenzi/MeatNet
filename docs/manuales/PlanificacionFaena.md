@@ -114,7 +114,7 @@ CantidadFaenada = Cantidad -> renglón completo: congelado
 | Operación | BORRADOR | CONFIRMADA | EN_EJECUCION |
 |---|:---:|:---:|:---:|
 | Agregar tropa (renglón) | Sí | Controlado (audita) | Solo emergencia |
-| Quitar renglón | Sí | Solo si no faenado (audita) | No |
+| Quitar renglón | Sí | Solo si no faenado (audita) | Solo si no faenado (audita) |
 | Cambiar cantidad (incremento/decremento) | Sí | Sí, >= faenado (audita) | Solo renglón no faenado |
 | Cambiar secuencia | Sí | Sí, entre renglones no faenados (audita) | Solo pendientes |
 | Dividir / Fusionar | Sí | Controlado (audita) | No |
@@ -246,7 +246,7 @@ modelBuilder.Entity<ListaMatanza>()
 | R-11 | Un renglón con `CantidadFaenada > 0` no puede reducir su `Cantidad` por debajo de lo faenado, ni cambiar de tropa/corral/categoría. |
 | R-12 | Un renglón con `CantidadFaenada = Cantidad` está **congelado** (sin cambios). |
 | R-13 | Volver de `CONFIRMADA` a `BORRADOR` (desconfirmar) libera la reserva; solo si ningún renglón tiene `CantidadFaenada > 0`. Registra movimiento `DESCONFIRMACION` e incrementa `Version` (la re-confirmación no resetea el contador). |
-| R-14 | En `EN_EJECUCION` solo se permite **faena de emergencia** (nuevo renglón anexado con secuencia al final). No se reordena ni edita lo ya faenado. No se cancela la LM. |
+| R-14 | En `EN_EJECUCION` el alta de renglones es solo por **faena de emergencia** (nuevo renglón anexado con secuencia al final). Un renglón **sin faena** (`CantidadFaenada = 0`) todavía admite cambio de cantidad/secuencia y **baja** (`BAJA_TROPA`, auditada): no consumió stock, y es la forma de deshacer una emergencia cargada por error. La baja exige además que el renglón **nunca haya tenido romaneos** (ni anulados), para no dejar romaneos sin renglón en la grilla de la jornada. La lista debe conservar al menos un renglón. No se reordena ni edita lo ya faenado. No se cancela la LM. |
 | R-15 | La `CANCELACION` libera la reserva. La LM anulada queda visible (auditoría), no se borra. |
 | R-16 | Todo filtrado por empresa activa (vía Establecimiento) y por Establecimiento de contexto. |
 | R-17 | **Cierre de la lista** (acción *Finalizar*, `EN_EJECUCION → FINALIZADA`): por cada renglón con sobrante (`Cantidad − CantidadFaenada > 0`) registra un movimiento `LIBERACION` y, al pasar a `FINALIZADA`, ese sobrante deja de reservar (liberación por estado) y vuelve a estar **disponible** para futuras LM. El renglón conserva su `Cantidad` planificada (insumo del plan vs. real). El motivo del cierre es opcional. Todo el cierre es una única `Version`. |
@@ -316,7 +316,7 @@ Controller `ListasMatanzasController` (patrón `MeatBaseController`, `[Authorize
 | DELETE | `/ListasMatanzas/{id}` | Soft-delete (solo `BORRADOR`). |
 | POST | `/ListasMatanzas/{id}/renglones` | Alta controlada de renglón en `CONFIRMADA` (audita `ALTA_TROPA`). |
 | PUT | `/ListasMatanzas/{id}/renglones/{renglonId}` | Cambio de cantidad/secuencia en `CONFIRMADA`/`EN_EJECUCION` (audita `INCREMENTO`/`DECREMENTO`/`CAMBIO_SECUENCIA`). |
-| DELETE | `/ListasMatanzas/{id}/renglones/{renglonId}` | Baja de renglón sin faena en `CONFIRMADA` (audita `BAJA_TROPA`). |
+| DELETE | `/ListasMatanzas/{id}/renglones/{renglonId}` | Baja de renglón sin faena en `CONFIRMADA`/`EN_EJECUCION` (audita `BAJA_TROPA`). |
 | POST | `/ListasMatanzas/{id}/emergencia` | Faena de emergencia en `EN_EJECUCION`: renglón anexado al final (audita `FAENA_EMERGENCIA`). |
 | POST | `/ListasMatanzas/{id}/confirmar` | `BORRADOR` → `CONFIRMADA` (reserva stock). |
 | POST | `/ListasMatanzas/{id}/desconfirmar` | `CONFIRMADA` → `BORRADOR` (libera reserva; solo sin faena registrada, R-13). |

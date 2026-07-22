@@ -185,8 +185,10 @@ export default function ListaMatanzaDetailPage() {
   const puedeEditarCantidad = (r: ListaMatanzaRenglon) =>
     esConfirmada ? !congelado(r) : enEjecucion ? r.cantidadFaenada === 0 : false
   const puedeEditarSecuencia = (r: ListaMatanzaRenglon) => edicionControlada && r.cantidadFaenada === 0
+  // En ejecucion tambien se puede quitar: un renglon sin faena no consumio stock (permite
+  // deshacer una faena de emergencia cargada por error).
   const puedeQuitar = (r: ListaMatanzaRenglon) =>
-    esConfirmada && r.cantidadFaenada === 0 && lm.renglones.length > 1
+    edicionControlada && r.cantidadFaenada === 0 && lm.renglones.length > 1
 
   // Sobrante del cierre: planificado no faenado que se libera (R-17)
   const totalSobrante = lm.renglones.reduce((acc, r) => acc + Math.max(0, r.cantidad - r.cantidadFaenada), 0)

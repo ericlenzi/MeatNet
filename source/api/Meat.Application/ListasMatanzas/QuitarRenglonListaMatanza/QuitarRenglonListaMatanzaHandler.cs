@@ -11,8 +11,10 @@ using System.Threading.Tasks;
 namespace Meat.Application.ListasMatanzas.QuitarRenglonListaMatanza
 {
     /// <summary>
-    /// Baja controlada de un renglon sobre una LM CONFIRMADA, solo si no tiene
-    /// faena registrada (R-10). Registra movimiento BAJA_TROPA e incrementa Version.
+    /// Baja controlada de un renglon sobre una LM CONFIRMADA o EN_EJECUCION, solo si no
+    /// tiene faena registrada (R-10, R-14): un renglon sin romaneos no consumio stock, y
+    /// en ejecucion es la forma de corregir una faena de emergencia cargada por error.
+    /// Registra movimiento BAJA_TROPA e incrementa Version.
     /// </summary>
     public class QuitarRenglonListaMatanzaHandler : IRequestHandler<QuitarRenglonListaMatanzaRequest, QuitarRenglonListaMatanzaResponse>
     {
@@ -34,8 +36,9 @@ namespace Meat.Application.ListasMatanzas.QuitarRenglonListaMatanza
             if (entity == null)
                 throw new ValidationException("La lista de matanza no existe.");
 
-            if (entity.EstadoListaMatanzaId != EstadosListaMatanza.Confirmada)
-                throw new ValidationException("Solo se puede quitar un renglon de una lista Confirmada.");
+            if (entity.EstadoListaMatanzaId != EstadosListaMatanza.Confirmada
+                && entity.EstadoListaMatanzaId != EstadosListaMatanza.EnEjecucion)
+                throw new ValidationException("Solo se puede quitar un renglon de una lista Confirmada o En Ejecucion.");
 
             var renglon = entity.Renglones.FirstOrDefault(r => r.Id == request.RenglonId);
             if (renglon == null)
@@ -44,8 +47,17 @@ namespace Meat.Application.ListasMatanzas.QuitarRenglonListaMatanza
             if (renglon.CantidadFaenada > 0)
                 throw new ValidationException("No se puede quitar un renglon con faena registrada.");
 
+            // CantidadFaenada = 0 no alcanza: si el renglon tuvo romaneos y se anularon, la baja
+            // los dejaria fuera de la grilla de la jornada (que joinea el renglon) y sin rastro.
+            var tuvoRomaneos = await this.context.Romaneos
+                .AnyAsync(r => r.ListaMatanzaDetalleId == renglon.Id, cancellationToken);
+            if (tuvoRomaneos)
+                throw new ValidationException("No se puede quitar un renglon con romaneos registrados, aunque esten anulados.");
+
             if (entity.Renglones.Count <= 1)
-                throw new ValidationException("La lista confirmada debe conservar al menos un renglon. Para dejarla sin renglones, vuelva a Borrador o anulela.");
+                throw new ValidationException(entity.EstadoListaMatanzaId == EstadosListaMatanza.EnEjecucion
+                    ? "La lista debe conservar al menos un renglon. Para cerrar la jornada, finalicela."
+                    : "La lista confirmada debe conservar al menos un renglon. Para dejarla sin renglones, vuelva a Borrador o anulela.");
 
             entity.Version += 1;
             entity.FechaActualizacion = DateTime.Now;
@@ -61,7 +73,9 @@ namespace Meat.Application.ListasMatanzas.QuitarRenglonListaMatanza
                 AlmacenId = renglon.AlmacenId,
                 CantidadAnterior = renglon.Cantidad,
                 SecuenciaAnterior = renglon.Secuencia,
-                Motivo = "Baja de tropa en lista confirmada."
+                Motivo = entity.EstadoListaMatanzaId == EstadosListaMatanza.EnEjecucion
+                    ? "Baja de tropa sin faena en lista en ejecucion."
+                    : "Baja de tropa en lista confirmada."
             });
 
             this.context.ListasMatanzasDetalles.Remove(renglon);   // soft delete
