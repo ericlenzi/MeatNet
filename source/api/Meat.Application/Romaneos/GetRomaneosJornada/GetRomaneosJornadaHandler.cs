@@ -50,7 +50,8 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                             Peso = p.Peso,
                             AlmacenDestinoNombre = p.AlmacenDestino != null ? p.AlmacenDestino.Nombre : null,
                             TipificacionId = p.TipificacionId,
-                            TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null
+                            TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null,
+                            PesoFueraRango = p.PesoFueraRango
                         }).ToList()
                 })
                 .ToListAsync(cancellationToken);

@@ -31,6 +31,8 @@ namespace Meat.Domain.Romaneos
 
         public double Peso { get; set; }                       // cache de la medicion PESO
 
+        public bool PesoFueraRango { get; set; }               // el peso quedo fuera del rango de la Tipificacion y el operario forzo el registro
+
         public virtual ICollection<RomaneoPiezaMedicion> Mediciones { get; set; }
     }
 }

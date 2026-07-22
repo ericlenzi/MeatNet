@@ -32,7 +32,16 @@
       "Bash(sqlcmd -S '.\\\\sqlexpress' -d MeatNet -E -C -W -Q 'SET NOCOUNT ON; *)",
       "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT '['+Codigo+']' Codigo, Nombre, PorDefecto, Activo FROM UnidadesFaenas WHERE EspecieId='P' ORDER BY Codigo;\")",
       "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT TOP 5 UserName, CodigoEmpresa FROM Usuarios;\")",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Tipificaciones' ORDER BY ORDINAL_POSITION;\")",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add 50_RomaneoPiezaPesoFueraRango -p Meat.Repositories -s Meat)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add 50_RomaneoPiezaPesoFueraRango -p Meat.Repositories/Meat.Repositories.csproj -s Meat/Meat.csproj)",
+      "Bash(rm -rf ./*/obj ./*/bin && echo \"obj/bin limpiados\" && dotnet build Meat/Meat.csproj 2>&1 | grep -E \": error|Compilación correcta|error\\\\\\(es\\\\\\)\" | head -8)",
+      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; Get-ChildItem -Directory | ForEach-Object { foreach \\($s in 'obj','bin'\\) { $p = Join-Path $_.FullName $s; if \\(Test-Path $p\\) { Remove-Item -Recurse -Force $p } } }; Write-Output \"obj/bin limpiados\")",
+      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef migrations add 50_RomaneoPiezaPesoFueraRango -p Meat.Repositories\\\\Meat.Repositories.csproj -s Meat\\\\Meat.csproj | Select-Object -Last 6)",
+      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef database update -p Meat.Repositories\\\\Meat.Repositories.csproj -s Meat\\\\Meat.csproj | Select-Object -Last 5)",
+      "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet run --project Meat\\\\Meat.csproj --no-launch-profile --urls http://localhost:5822)",
+      "Bash(curl -s -o /dev/null -w \"API 5822: %{http_code}\\\\n\" http://localhost:5822/UnidadesFaenas)"
     ]
   }
 }

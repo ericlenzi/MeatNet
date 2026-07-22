@@ -55,6 +55,7 @@ export interface RomaneoPiezaItem {
   almacenDestinoNombre: string | null
   tipificacionId: string
   tipificacionDescripcion: string | null
+  pesoFueraRango: boolean
 }
 
 export interface RomaneoJornadaItem {
@@ -100,6 +101,7 @@ export interface PiezaRomaneoInput {
   AlmacenDestinoId: string
   TipificacionId: string
   Peso: number
+  ForzarFueraRango: boolean
 }
 
 export interface CrearRomaneoRequest {

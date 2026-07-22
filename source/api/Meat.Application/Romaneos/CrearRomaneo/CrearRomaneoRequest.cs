@@ -26,6 +26,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
         public Guid AlmacenDestinoId { get; set; }          // camara destino de la pieza (default del renglon; obligatoria)
         public string TipificacionId { get; set; }
         public double Peso { get; set; }
+        public bool ForzarFueraRango { get; set; }          // confirmacion explicita del operario para pesar fuera del rango de la tipificacion
     }
 
     public class CrearRomaneoResponse

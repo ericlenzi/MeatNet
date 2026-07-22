@@ -39,5 +39,6 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
         public string AlmacenDestinoNombre { get; set; }
         public string TipificacionId { get; set; }
         public string TipificacionDescripcion { get; set; }
+        public bool PesoFueraRango { get; set; }
     }
 }

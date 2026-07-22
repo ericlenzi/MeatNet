@@ -107,6 +107,16 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 throw new ValidationException("Una tipificacion seleccionada no existe, no esta activa o no pertenece a la empresa.");
             var tipPorCodigo = tipificaciones.ToDictionary(t => t.Codigo);
 
+            // 7b) Peso dentro del rango de su tipificacion. Fuera de rango no bloquea la linea:
+            // se permite si el operario lo confirma (ForzarFueraRango) y queda registrado en la pieza.
+            foreach (var p in piezas)
+            {
+                var t = tipPorCodigo[p.TipificacionId];
+                if (p.Peso >= t.PesoDesde && p.Peso <= t.PesoHasta) continue;
+                if (!p.ForzarFueraRango)
+                    throw new ValidationException($"El peso {p.Peso} kg esta fuera del rango {t.PesoDesde}-{t.PesoHasta} kg de la tipificacion '{t.Descripcion}'. Confirme el registro para forzarlo.");
+            }
+
             // 8) Numerador ROMANEO por (Establecimiento, Especie): get-or-create + incremento
             var numerador = await this.context.Numeradores
                 .FirstOrDefaultAsync(n => n.EstablecimientoId == lm.EstablecimientoId
@@ -150,6 +160,8 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 pieza.AlmacenDestinoId = p.AlmacenDestinoId;
                 pieza.TipificacionId = p.TipificacionId;
                 pieza.Peso = p.Peso;
+                var tipPieza = tipPorCodigo[p.TipificacionId];
+                pieza.PesoFueraRango = p.Peso < tipPieza.PesoDesde || p.Peso > tipPieza.PesoHasta;
 
                 var medicion = RomaneoFactory.CreateMedicion();
                 medicion.RomaneoPiezaId = pieza.Id;

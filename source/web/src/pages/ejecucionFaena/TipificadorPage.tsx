@@ -67,6 +67,8 @@ export default function TipificadorPage() {
 
   const [candidatas, setCandidatas] = useState<TipificacionCandidata[]>([])
   const [sticky, setSticky] = useState<StickyTip | null>(null)
+  // Confirmacion explicita para registrar con el peso fuera del rango de la tipificacion.
+  const [forzarFueraRango, setForzarFueraRango] = useState(false)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -162,7 +164,14 @@ export default function TipificadorPage() {
           UnidadFaenaId: unidadFaenaId,
           DestinoComercialId: destinoId || undefined,
         })
-        if (!cancel) setCandidatas(res.candidatas)
+        if (cancel) return
+        setCandidatas(res.candidatas)
+        // La tipificacion se propone ANTES del peso: al llegar el gancho el tipificador ya sabe
+        // que esta tipificando. Se toma la de mayor Puntos (el backend ordena por Puntos desc),
+        // o sea la mas usada para esta combinacion. El peso despues solo valida el rango.
+        setSticky(null)
+        const sugerida = res.candidatas[0]?.codigo ?? ''
+        setPiezas((prev) => prev.map((p) => ({ ...p, tipificacionId: sugerida })))
       } catch {
         if (!cancel) setCandidatas([])
       }
@@ -172,15 +181,37 @@ export default function TipificadorPage() {
     }
   }, [renglonSel, unidadFaenaId, destinoId, data])
 
-  // Sticky hibrido: dado un peso, propone el codigo de tipificacion
-  const proponerTipificacion = useCallback(
-    (peso: number): string => {
-      if (sticky && peso >= sticky.pesoDesde && peso <= sticky.pesoHasta) return sticky.codigo
+  // La tipificacion ya viene propuesta antes del peso. Al cargar el peso solo se reacomoda si el
+  // operador NO eligio manualmente (sin sticky) y otra candidata cubre ese peso. Si ninguna lo
+  // cubre se mantiene la elegida y la pieza queda fuera de rango (requiere confirmacion).
+  const ajustarPorPeso = useCallback(
+    (codigoActual: string, peso: number): string => {
+      const actual = candidatas.find((c) => c.codigo === codigoActual)
+      if (actual && peso >= actual.pesoDesde && peso <= actual.pesoHasta) return codigoActual
+      if (sticky) return codigoActual
       const match = candidatas.find((c) => peso >= c.pesoDesde && peso <= c.pesoHasta)
-      return match?.codigo ?? sticky?.codigo ?? ''
+      return match?.codigo ?? codigoActual
     },
     [sticky, candidatas],
   )
+
+  // Peso cargado que cae fuera del rango de la tipificacion elegida.
+  const piezaFueraRango = useCallback(
+    (p: PiezaState): boolean => {
+      const peso = Number(p.peso)
+      if (!(peso > 0) || !p.tipificacionId) return false
+      const c = candidatas.find((x) => x.codigo === p.tipificacionId)
+      return !!c && (peso < c.pesoDesde || peso > c.pesoHasta)
+    },
+    [candidatas],
+  )
+  const hayFueraRango = piezas.some(piezaFueraRango)
+  const detalleFueraRango = (() => {
+    const p = piezas.find(piezaFueraRango)
+    const c = p && candidatas.find((x) => x.codigo === p.tipificacionId)
+    if (!p || !c) return null
+    return `${p.peso} kg queda fuera del rango ${c.pesoDesde}–${c.pesoHasta} kg de "${c.descripcion}".`
+  })()
 
   const onPesoChange = (idx: number, value: string) => {
     setPiezas((prev) => {
@@ -188,7 +219,8 @@ export default function TipificadorPage() {
       if (!current) return prev
       const next = [...prev]
       const peso = Number(value)
-      const tipificacionId = peso > 0 ? proponerTipificacion(peso) : current.tipificacionId
+      const tipificacionId =
+        peso > 0 ? ajustarPorPeso(current.tipificacionId, peso) : current.tipificacionId
       next[idx] = { ...current, peso: value, tipificacionId }
       return next
     })
@@ -218,7 +250,15 @@ export default function TipificadorPage() {
 
   const resetCaptura = (proximoGarron: number) => {
     setGarron(proximoGarron)
-    setPiezas(Array.from({ length: nroPiezas }, () => nuevaPieza(defaultCamaraRef.current)))
+    setForzarFueraRango(false)
+    // La proxima pieza arranca con la tipificacion ya propuesta (la de mayor Puntos).
+    const sugerida = candidatas[0]?.codigo ?? ''
+    setPiezas(
+      Array.from({ length: nroPiezas }, () => ({
+        ...nuevaPieza(defaultCamaraRef.current),
+        tipificacionId: sugerida,
+      })),
+    )
   }
 
   const guardar = async () => {
@@ -242,6 +282,10 @@ export default function TipificadorPage() {
       toast('error', 'Cada pieza requiere una camara de destino.')
       return
     }
+    if (hayFueraRango && !forzarFueraRango) {
+      toast('error', 'Hay un peso fuera del rango de su tipificacion. Confirme para registrarlo igual.')
+      return
+    }
     setSaving(true)
     try {
       const res = await crearRomaneo({
@@ -253,6 +297,7 @@ export default function TipificadorPage() {
           AlmacenDestinoId: p.almacenDestinoId,
           TipificacionId: p.tipificacionId,
           Peso: Number(p.peso),
+          ForzarFueraRango: piezaFueraRango(p) && forzarFueraRango,
         })),
       })
       toast('success', `Romaneo N° ${res.numeroRomaneo} (garron ${res.numeroGarron}) registrado`)
@@ -361,6 +406,12 @@ export default function TipificadorPage() {
           <h3 className="mb-2 text-sm font-semibold text-text">
             Piezas ({nroPiezas === 1 ? 'res completa' : `${nroPiezas} medias reses`})
           </h3>
+          {renglonSel && unidadFaenaId && candidatas.length === 0 && (
+            <div className="mb-2 rounded-lg border border-danger/40 bg-red-50 px-3 py-2 text-sm text-danger">
+              No hay tipificacion configurada para esta combinacion (categoria / unidad de faena /
+              destino comercial). Revisela en el ABM de Tipificaciones antes de romanear.
+            </div>
+          )}
           <div className="space-y-2">
             {piezas.map((p, idx) => (
               <div key={idx} className="grid grid-cols-1 items-end gap-3 sm:grid-cols-12">
@@ -376,7 +427,9 @@ export default function TipificadorPage() {
                     type="number"
                     step="0.01"
                     min={0}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm font-mono"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm font-mono ${
+                      piezaFueraRango(p) ? 'border-danger bg-red-50' : 'border-border'
+                    }`}
                     value={p.peso}
                     onChange={(e) => onPesoChange(idx, e.target.value)}
                   />
@@ -415,8 +468,32 @@ export default function TipificadorPage() {
           </div>
         </div>
 
+        {hayFueraRango && (
+          <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <p className="font-medium">Peso fuera de rango</p>
+            <p className="mt-0.5">{detalleFueraRango}</p>
+            <label className="mt-2 flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={forzarFueraRango}
+                onChange={(e) => setForzarFueraRango(e.target.checked)}
+              />
+              <span>Confirmo el registro; la pieza quedara marcada como fuera de rango.</span>
+            </label>
+          </div>
+        )}
+
         <div className="mt-4 flex justify-end">
-          <Button onClick={() => void guardar()} loading={saving} disabled={!enEjecucion || !renglonSel}>
+          <Button
+            onClick={() => void guardar()}
+            loading={saving}
+            disabled={
+              !enEjecucion ||
+              !renglonSel ||
+              candidatas.length === 0 ||
+              (hayFueraRango && !forzarFueraRango)
+            }
+          >
             Registrar romaneo
           </Button>
         </div>
@@ -454,12 +531,21 @@ export default function TipificadorPage() {
                     <td className="py-2 pr-3">{r.tipoEspecieNombre}</td>
                     <td className="py-2 pr-3">{r.unidadFaenaNombre}</td>
                     <td className="py-2 pr-3">
-                      {r.piezas
-                        .map(
-                          (p) =>
-                            `${p.letra ? p.letra + ': ' : ''}${p.peso}kg → ${p.almacenDestinoNombre ?? '—'}`,
-                        )
-                        .join('  ·  ')}
+                      {r.piezas.map((p, i) => (
+                        <span key={i}>
+                          {i > 0 && '  ·  '}
+                          {p.letra ? `${p.letra}: ` : ''}
+                          {p.peso}kg → {p.almacenDestinoNombre ?? '—'}
+                          {p.pesoFueraRango && (
+                            <span
+                              className="ml-1 rounded bg-amber-100 px-1 text-xs text-amber-800"
+                              title="Peso fuera del rango de la tipificacion, registrado con confirmacion"
+                            >
+                              fuera de rango
+                            </span>
+                          )}
+                        </span>
+                      ))}
                     </td>
                     <td className="py-2 pr-3 text-right font-mono">{r.pesoTotal.toFixed(2)}</td>
                     <td className="py-2 text-right">
