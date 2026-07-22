@@ -138,7 +138,7 @@ Contexto:
 - EstablecimientoId (FK)            [da el filtro por empresa]
 - EspecieId (string, FK a Especie)
 - Fecha (date)                      [dia de faena]
-- NumeroLista (long)                [correlativo por Establecimiento, MAX+1 transaccional]
+- NumeroLista (long)                [correlativo por (Establecimiento, Especie); Numerador LISTAMATANZA (R-02)]
 
 Control:
 - EstadoListaMatanzaId (string, FK a TipoEstadoListaMatanza)
@@ -218,9 +218,10 @@ modelBuilder.Entity<ListaMatanza>()
     .IsUnique()
     .HasFilter("[FechaBaja] IS NULL AND [EstadoListaMatanzaId] <> 'ANULADA'");
 
-// Numero de lista unico por Establecimiento.
+// Numero de lista unico por (Establecimiento, Especie): mismo alcance que el Numerador
+// LISTAMATANZA que lo genera.
 modelBuilder.Entity<ListaMatanza>()
-    .HasIndex(x => new { x.EstablecimientoId, x.NumeroLista })
+    .HasIndex(x => new { x.EstablecimientoId, x.EspecieId, x.NumeroLista })
     .IsUnique()
     .HasFilter("[FechaBaja] IS NULL");
 ```
@@ -233,7 +234,7 @@ modelBuilder.Entity<ListaMatanza>()
 | # | Regla |
 |---|---|
 | R-01 | Una LM por **(Establecimiento, Fecha, Especie)**, ignorando las `ANULADA`. Validado en handler + índice único filtrado. |
-| R-02 | `NumeroLista` = MAX+1 por Establecimiento, calculado transaccionalmente al crear. No se reutiliza. |
+| R-02 | `NumeroLista` es correlativo **por (Establecimiento, Especie)**: cada especie lleva su propia serie. Lo genera el `Numerador` con `TipoNumerador = "LISTAMATANZA"` mediante **reserva atómica** (`Correlativos.ReservarAsync`), en la **misma transacción** que el alta. **No se reutiliza** (tampoco el de una lista anulada). Índice único `(EstablecimientoId, EspecieId, NumeroLista)`. Mismo mecanismo que el nº de romaneo (ver R-E4 en `EjecucionFaena.md`). |
 | R-03 | Solo se pueden seleccionar **Tropas `RECEPCIONADA`** con hacienda **`EN_PIE`** de la **Especie** de la LM, en corrales del **Establecimiento** de contexto. |
 | R-04 | `Cantidad` de un renglón siempre `> 0`. |
 | R-05 | Σ `Cantidad` de todos los renglones de una **(Tropa, Corral, TipoEspecie)** en la LM ≤ **disponible** de esa (Tropa, Corral, TipoEspecie). Ver §10. |
@@ -346,8 +347,19 @@ Reemplaza el `PlaceholderPage` actual del ítem "Planificación de Faena" en el 
 
 - **Puente con Monitor:** `CantidadFaenada` la escribe el Monitor al pesar en
   Tipificación. Definir el contrato exacto (evento/handler) al documentar el Monitor.
-- **Numeración:** se asume `NumeroLista` por Establecimiento (MAX+1). Confirmar si debe
-  ser por (Establecimiento, Especie) o global.
+- **Numeración (resuelto):** `NumeroLista` es por **(Establecimiento, Especie)** — cada especie
+  lleva su propia serie (ver R-02). Se descartó el `MAX+1` por Establecimiento que había
+  originalmente, por dos motivos: (a) tenía una condición de carrera, dos altas simultáneas leían el
+  mismo máximo y la segunda fallaba con un error crudo de BD contra el índice único; (b) los
+  numeradores `LM-P` / `LM-V` ya estaban sembrados con alcance por especie pero nadie los
+  incrementaba, o sea que el diseño previsto y el implementado no coincidían. Ahora usa el mismo
+  mecanismo de reserva atómica que el nº de romaneo.
+  **Consecuencia a tener presente:** las listas emitidas antes del cambio conservaron su número, así
+  que las series arrancan con huecos históricos (porcino 1, 2, 4 / vacuno 3). Es esperado, no es un
+  error de datos.
+- **Reinicio de correlativos (abierto):** ni `NumeroLista` ni `NumeroRomaneo` reinician por año ni
+  por jornada; crecen indefinidamente. Si el negocio necesita numeración por ejercicio, el cambio
+  queda acotado a `Correlativos.ReservarAsync`, que es hoy el único lugar que asigna correlativos.
 - **Faena de emergencia (resuelto en v1):** la emergencia siempre sale de una **tropa
   existente En Pie** (misma validación de disponibilidad que un alta normal). Si a
   futuro aparece el caso de emergencia sin tropa en corral, se evaluará con el Monitor.

@@ -85,17 +85,24 @@ LM EN_EJECUCION  ──►  abrir Tipificador
     (V: A y B; P: sin letra). El operador confirma o ajusta el garrón/UF si difiere de la playa.
     │
     ▼
-[3] Destino comercial: selector con default sticky por jornada/tropa (filtra las
+[3] Destino comercial: selector con default = el marcado Favorito (filtra las
     tipificaciones candidatas). El operador lo ajusta al cambiar de tropa si hace falta.
+    │
+    ▼
+[3b] Con renglón + UF + destino ya definidos, el sistema PROPONE la Tipificacion
+    ANTES de pedir el peso: la de mayor Puntos (la más usada para esa combinación).
+    Cuando llega el gancho el tipificador ya ve qué va a tipificar.
+    Si no hay ninguna candidata → aviso explícito y no se puede romanear (R-E14).
     │
     ▼
 [4] Captura de piezas:
     - PORCINO: 1 pieza (sin letra). Ingresa Peso.
     - VACUNO : 2 piezas (letra A y B). Ingresa Peso de cada media res.
-    Por cada pieza el sistema PROPONE la Tipificacion:
-      • Sticky: mantiene la última tipificación elegida MIENTRAS el peso siga dentro de su rango.
-      • Si el peso cae FUERA de rango → re-propone por (especie+categoria+UF+destino+peso), orden Puntos.
-    El operador puede cambiarla manualmente (y esa pasa a ser la sticky).
+    El peso VALIDA la tipificación propuesta, no la elige (R-E7):
+      • Si cae dentro del rango → sigue la propuesta.
+      • Si cae fuera y el operador NO eligió a mano, y otra candidata cubre ese peso → cambia a esa.
+      • Si ninguna candidata lo cubre → aviso de fuera de rango + confirmación explícita (R-E15).
+    El operador puede cambiarla manualmente (y esa elección se respeta: el peso ya no la mueve).
     │
     ▼
 [5] Confirmar romaneo  ──►  CrearRomaneo:
@@ -131,20 +138,51 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   (jornada): índice `(ListaMatanzaId, NumeroGarron)`. En vacuno el garrón identifica al animal y sus 2
   piezas lo comparten; la **letra** (`A`/`B`) es automática, no se teclea. Se reutiliza en otra jornada.
 - **R-E4 (numeración de romaneo).** `NumeroRomaneo` es correlativo **por (Establecimiento, Especie)**
-  vía `Numerador` con `TipoNumerador = "ROMANEO"` (get-or-create + `UltimoNumero += 1`, transaccional).
-  Uno por **animal** (Romaneo), no por pieza.
+  vía `Numerador` con `TipoNumerador = "ROMANEO"`. Uno por **animal** (Romaneo), no por pieza.
+  La reserva es **atómica**: `Correlativos.ReservarAsync` incrementa con un `UPDATE` en BD, que toma
+  el lock exclusivo de la fila del numerador y lo retiene hasta el commit. El `UltimoNumero += 1` en
+  memoria que se usaba antes permitía que dos romaneos concurrentes tomaran el mismo número.
+  La reserva y el alta van en la **misma transacción**, así un fallo posterior revierte el correlativo.
+  Red de seguridad en BD: índice único `(EstablecimientoId, EspecieId, NumeroRomaneo)` — por eso
+  `Romaneo` lleva `EstablecimientoId` denormalizado de la LM. El índice **incluye los anulados**:
+  el número **no se reutiliza nunca**. Mismo mecanismo que usa la Lista de Matanza (ver R-02 en
+  `PlanificacionFaena.md`).
 - **R-E5 (tope por renglón).** `CrearRomaneo` valida `pendiente = Cantidad - CantidadFaenada > 0`
   en el renglón elegido. **No** se puede faenar por encima de lo planificado desde el Tipificador;
   para exceder, primero se amplía el renglón con la **faena de emergencia** de la LM (Paso 2, audita).
-- **R-E6 (peso requerido).** Cada pieza requiere su medición `PESO` (> 0). Sin peso no hay
-  tipificación posible.
-- **R-E7 (tipificación — propuesta y sticky híbrido).** El default sale del filtro duro
-  `Especie + TipoEspecie + UnidadFaena + DestinoComercial(seleccionado) + Activo` con
-  `PesoDesde <= Peso <= PesoHasta`, ordenado por `Puntos` desc (la más usada primero). Comportamiento
-  **sticky híbrido**: se mantiene la última tipificación elegida **mientras el peso de la nueva pieza
-  siga dentro de su rango**; si cae **fuera**, se re-propone automáticamente por el filtro anterior.
-  El operador siempre puede cambiarla manualmente (y esa pasa a ser la sticky). Al confirmar,
-  `Puntos += 1` en cada tipificación usada.
+- **R-E6 (peso requerido).** Cada pieza requiere su medición `PESO` (> 0). El peso **no** determina
+  la tipificación (eso es R-E7), pero sin peso no se puede registrar el romaneo.
+- **R-E7 (tipificación — propuesta antes del peso).** Las candidatas salen del filtro duro
+  `Especie + TipoEspecie + UnidadFaena + DestinoComercial(seleccionado) + Activo`, ordenadas por
+  `Puntos` desc (la más usada primero). La propuesta se hace **apenas están definidos renglón + UF +
+  destino, sin esperar el peso**: cuando llega el gancho el tipificador ya sabe qué está tipificando.
+  Se propone la de **mayor `Puntos`**.
+  El **peso valida el rango**, no elige:
+  - Dentro de `PesoDesde <= Peso <= PesoHasta` de la propuesta → no pasa nada.
+  - Fuera de rango y el operador **no** eligió a mano → si otra candidata cubre ese peso, se cambia a
+    esa; si ninguna la cubre, se dispara R-E15.
+  - El operador puede cambiarla manualmente y esa elección **se respeta**: el peso ya no la mueve.
+
+  Motivo del cambio: el rango de `Tipificacion` funciona en la práctica como **cota de sanidad**, no
+  como discriminador — hoy cada combinación tiene una sola candidata. Modelar el peso como "selector"
+  escondía la tipificación hasta después de pesar, sin necesidad. Si a futuro se cargan bandas de peso
+  para una misma combinación, el comportamiento sigue siendo correcto porque la propuesta se hace
+  igual y el peso reacomoda.
+
+  Al confirmar, `Puntos += 1` en cada tipificación usada (por eso `Puntos` es, de hecho, un contador
+  de uso: la propuesta se va adaptando a lo que la planta realmente tipifica).
+- **R-E14 (sin tipificación configurada).** Si para la combinación `Especie + TipoEspecie + UF +
+  Destino` no hay **ninguna** candidata activa, el Tipificador lo avisa **explícitamente antes de
+  pedir el peso** y bloquea el registro. Antes este caso se veía igual que un error de conexión
+  (combo vacío, sin explicación), lo que hacía perder tiempo diagnosticando.
+- **R-E15 (peso fuera de rango — override registrado).** Si el peso cae fuera del rango de su
+  tipificación, **no se bloquea la línea**: se advierte mostrando el rango esperado y se permite
+  registrar con **confirmación explícita** del operador. La pieza queda marcada con
+  `RomaneoPieza.PesoFueraRango = 1` y se muestra como "fuera de rango" en la grilla de la jornada.
+  La validación es **server-side**: `CrearRomaneo` rechaza el alta si el peso está fuera de rango y la
+  pieza no trae `ForzarFueraRango`, así que el override no se puede saltear desde el cliente.
+  Criterio: un peso atípico puede ser real (animal fuera de lo común) o un error de balanza; frenar
+  el registro frenaría la faena, así que se prefiere **advertir y dejar registro** antes que bloquear.
 - **R-E13 (cámara destino — por pieza).** El Tipificador captura la **cámara de destino por cada
   media res / pieza** (`RomaneoPieza.AlmacenDestinoId`), de modo que las 2 medias reses de un
   vacuno pueden ir a **cámaras distintas**. **Default = la cámara del animal programado**, i.e. la
@@ -211,15 +249,20 @@ Tres entidades de proceso (PK `Guid Id`, Factory). La LM y sus renglones (Paso 2
 ```
 PK: Guid Id
 - ListaMatanzaId (Guid, FK)            [jornada = LM EN_EJECUCION]
+- EstablecimientoId (Guid, FK)         [denormalizado de la LM; es el alcance del correlativo (R-E4)]
 - ListaMatanzaDetalleId (Guid, FK)     [renglón elegido: Tropa+Corral+TipoEspecie]
 - TropaId (Guid, FK)                   [denormalizado del renglón; trazabilidad directa]
 - EspecieId (string, FK)
 - UnidadFaenaId (string, FK)           [FK a UnidadFaena.Codigo; RES / MEDIA RES; define nº de piezas]
 - NumeroGarron (int)                   [físico; único por LM]
-- NumeroRomaneo (long)                 [correlativo Numerador ROMANEO por Estab+Especie]
+- NumeroRomaneo (long)                 [correlativo Numerador ROMANEO por Estab+Especie; reserva atómica (R-E4)]
 - Fecha (DateTime), UsuarioId (Guid?)
 - Anulado (bool, default false)
 Navegación: Piezas (ICollection<RomaneoPieza>)
+
+Índices únicos:
+- (ListaMatanzaId, NumeroGarron)  filtro: FechaBaja IS NULL AND Anulado = 0   [garrón único por jornada]
+- (EstablecimientoId, EspecieId, NumeroRomaneo)  filtro: FechaBaja IS NULL    [correlativo; incluye anulados]
 ```
 
 ### 9.2 `RomaneoPieza` (por pieza pesada — P:1 / V:2)
@@ -230,6 +273,7 @@ PK: Guid Id
 - AlmacenDestinoId (Guid, FK)          [cámara destino de la pieza; default del renglón, editable y obligatoria (R-E13)]
 - TipificacionId (string, FK a Tipificacion.Codigo)
 - Peso (double)                        [caché de la medición PESO; canónico p/ tipificación y KG]
+- PesoFueraRango (bool, default false) [el peso quedó fuera del rango de la tipificación y se forzó (R-E15)]
 Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
 ```
 
@@ -256,11 +300,14 @@ modelBuilder.Entity<Romaneo>()
     .IsUnique()
     .HasFilter("[FechaBaja] IS NULL AND [Anulado] = 0");
 
-// Nº de romaneo único por Establecimiento+Especie (vía la LM; validar en handler,
-// e índice de apoyo por (ListaMatanzaId, NumeroRomaneo) para lecturas de jornada).
+// Nº de romaneo único por (Establecimiento, Especie): índice único propio, más un
+// índice de apoyo por (ListaMatanzaId, NumeroRomaneo) para lecturas de jornada.
 ```
-> La unicidad de `NumeroRomaneo` por (Establecimiento, Especie) la garantiza el `Numerador`
-> transaccional; el índice físico de apoyo es por LM. Ver `[[project_unique_indexes]]`.
+> La unicidad de `NumeroRomaneo` por (Establecimiento, Especie) la garantizan **dos capas**: la
+> reserva atómica del `Numerador` (que la previene) y el índice único
+> `(EstablecimientoId, EspecieId, NumeroRomaneo)` (que la detecta). Antes solo existía el índice de
+> apoyo por LM, que **no** cubría este caso: un duplicado de correlativo pasaba silencioso.
+> Ver `[[project_unique_indexes]]`.
 
 ## 10. Superficie de API (endpoints)
 
@@ -288,12 +335,14 @@ El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por r
 ## 12. Prerequisitos y temas abiertos
 
 - **Numerador `ROMANEO`:** debe existir un `Numerador` (`TipoNumerador = "ROMANEO"`) por
-  (Establecimiento, Especie). Si falta, `CrearRomaneo` lo crea (get-or-create) arrancando en 0.
+  (Establecimiento, Especie). Si falta, `Correlativos.ReservarAsync` lo crea arrancando en 0, con un
+  `INSERT` condicional que es seguro ante concurrencia.
 - **Medición `PESO`:** debe existir el `TipoMedicion` con código `PESO` (Fase 1 lo siembra por
   script; validar su presencia).
-- **Tipificaciones cargadas:** el matcheo por rango de peso requiere `Tipificaciones` activas que
-  cubran los pesos esperados; si no matchea ninguna, el operador la elige manualmente y se registra
-  igual (no bloquea la faena).
+- **Tipificaciones cargadas:** tiene que haber al menos una `Tipificacion` activa por combinación
+  `Especie + TipoEspecie + UF + Destino`; si no hay ninguna, el Tipificador lo avisa y **bloquea** el
+  registro (R-E14). Que el peso caiga fuera del rango de la que corresponde **no** bloquea: se
+  registra con confirmación y queda marcado (R-E15).
 - **Balanza:** integración de hardware de puesto fuera de MVP (peso manual).
 - **Grano de trazabilidad:** adoptado grano grueso (§8); si se necesita el detalle por animal en el
   timeline, se evaluará en Evaluación de Faena (Paso 4).
