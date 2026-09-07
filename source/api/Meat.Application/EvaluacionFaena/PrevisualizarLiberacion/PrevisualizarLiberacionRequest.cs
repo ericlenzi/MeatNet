@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -31,7 +31,7 @@ namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
         public int PiezasAProcesar { get; set; }
         public int PiezasYaLiberadas { get; set; }
 
-        /// <summary>Kilos que ingresarian a camara (altas, sin las bajas por cuarteo).</summary>
+        /// <summary>Kilos netos que quedarian en camara (el cuarteo no duplica).</summary>
         public double KilosAIngresar { get; set; }
 
         /// <summary>Resumen de lo que quedaria en camara, por material y almacen.</summary>

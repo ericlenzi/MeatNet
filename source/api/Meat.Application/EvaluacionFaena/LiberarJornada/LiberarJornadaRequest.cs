@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
@@ -28,7 +28,7 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
         /// <summary>Piezas que ya estaban liberadas y se saltearon (R-L7).</summary>
         public int PiezasYaLiberadas { get; set; }
 
-        /// <summary>Kilos que ingresaron a camara (suma de las altas, sin las bajas por cuarteo).</summary>
+        /// <summary>Kilos netos que quedaron en camara (el cuarteo no duplica: la media res se cancela con su baja).</summary>
         public double KilosIngresados { get; set; }
     }
 }

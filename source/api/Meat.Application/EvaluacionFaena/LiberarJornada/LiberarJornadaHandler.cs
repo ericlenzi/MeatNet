@@ -114,7 +114,9 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
                 romaneosLiberados += 1;
             }
 
-            var kilosIngresados = plan.Movimientos.Where(m => m.Cantidad > 0).Sum(m => m.Peso);
+            // Neto: en un cuarteo el ingreso de la media res y su baja se cancelan, y quedan los
+            // kilos de los cuartos. Sumar solo las altas contaria la misma carne dos veces.
+            var kilosIngresados = plan.Movimientos.Sum(m => m.Peso);
 
             // Deja el hito en el historial de la LM, donde el usuario ya sigue la vida de la jornada.
             this.context.ListasMatanzasMovimientos.Add(new ListaMatanzaMovimiento

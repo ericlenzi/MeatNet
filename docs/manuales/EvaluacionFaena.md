@@ -107,12 +107,20 @@ RomaneoPieza ──(Tipificacion.MaterialId)──► Material de entrada (ej. "
                           ┌────────────────────┴───────────────────┐
                           │ sin despiece: entra tal cual            │ con despiece: CUARTEO
                           ▼                                         ▼
-             1 mov. INGRESO de ese material           N mov. de TRANSFORMACION:
-             (media res a su cámara destino)          − baja la media res
+             1 mov. INGRESO de ese material           1 mov. INGRESO de la media res
+             (media res a su cámara destino)          + N mov. de TRANSFORMACION:
+                                                       − baja la media res
                                                        + alta de cada cuarto (materiales destino),
                                                          repartiendo el peso por rendimiento,
                                                          en la cámara destino de la pieza
 ```
+
+> **Por qué el cuarteo también empieza con un INGRESO (corregido 2026-09-07).** La primera versión
+> de este flujo escribía solo la baja de la media res y las altas de los cuartos. Al ejecutarlo se
+> vio el problema: como la media res nunca había entrado a la cámara, restarla dejaba su saldo en
+> **−1 por pieza** — un error de inventario. El cuarteo registra entonces los tres pasos reales:
+> la media res entra, se da de baja y nacen sus cuartos. El saldo del material origen cierra en
+> **cero** y el log queda auditable de punta a punta.
 
 - **Qué material es cada pieza** lo resuelve la **Tipificación** (`Tipificacion.MaterialId`), no la
   Unidad de Faena. La tipificación distingue categoría + destino + tipificación oficial, que es lo
@@ -144,8 +152,11 @@ LM FINALIZADA (jornada cerrada)  ──►  abrir Evaluación de Faena
       • resolver Material por Tipificacion.MaterialId (R-L1)
       • buscar Despiece activo del material (R-L4):
           - sin despiece  → 1 movimiento INGRESO (material, cámara destino, cantidad 1, peso)
-          - con despiece  → cuarteo: por cada material destino, 1 movimiento TRANSFORMACION_ALTA
-                            (peso = peso pieza × rendimiento) + 1 TRANSFORMACION_BAJA de la media res
+          - con despiece  → cuarteo: 1 INGRESO de la media res (para que su saldo no quede en
+                            negativo) + 1 TRANSFORMACION_BAJA de la media res + por cada material
+                            destino, 1 TRANSFORMACION_ALTA (peso = peso pieza × rendimiento);
+                            una regla con Cantidad = N produce N altas de 1 unidad, repartiendo
+                            ese peso entre ellas
       • marcar el Romaneo/pieza como LIBERADO (definitivo)
     │
     ▼

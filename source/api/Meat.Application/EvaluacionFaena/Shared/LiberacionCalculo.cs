@@ -1,4 +1,4 @@
-using Meat.Application.IngresosHaciendas; // FamiliaAlmacen
+﻿using Meat.Application.IngresosHaciendas; // FamiliaAlmacen
 using Meat.Application.MovimientosCamaras;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +19,9 @@ namespace Meat.Application.EvaluacionFaena.Shared
     /// Por cada pieza no anulada y no liberada:
     ///   - material = Tipificacion.MaterialId (R-L1)
     ///   - sin despiece activo  -> 1 INGRESO del material a la camara de la pieza
-    ///   - con despiece activo  -> cuarteo: 1 TRANSF_BAJA del origen + N TRANSF_ALTA de cada
-    ///     destino, todos con el mismo TransformacionId
+    ///   - con despiece activo  -> cuarteo: 1 INGRESO del origen (para que su saldo no quede
+    ///     negativo) + 1 TRANSF_BAJA del origen + N TRANSF_ALTA de cada destino, estos dos
+    ///     ultimos con el mismo TransformacionId
     ///
     /// El despiece se aplica en UN SOLO NIVEL, como especifica el manual: si un material destino
     /// tuviera a su vez despiece, no se encadena. Alcanza para los casos actuales (media res ->
@@ -191,7 +192,33 @@ namespace Meat.Application.EvaluacionFaena.Shared
                     continue;
                 }
 
-                // Cuarteo: la baja del origen y las altas de los destinos son un solo hecho.
+                // Cuarteo: la media res primero ingresa y recien despues se transforma. Sin ese
+                // ingreso la baja dejaria el saldo del material origen en negativo, porque nunca
+                // habria entrado a la camara. Asi el log queda auditable de punta a punta (entro
+                // una media res de N kg, se convirtio en sus cuartos) y el saldo del origen cierra
+                // en cero.
+                plan.Movimientos.Add(new MovimientoPlaneado
+                {
+                    PiezaId = pieza.PiezaId,
+                    RomaneoId = pieza.RomaneoId,
+                    NumeroRomaneo = pieza.NumeroRomaneo,
+                    NumeroGarron = pieza.NumeroGarron,
+                    Letra = pieza.Letra,
+                    TipoMovimientoId = TiposMovimientoCamara.Ingreso,
+                    AlmacenId = pieza.AlmacenDestinoId,
+                    AlmacenNombre = pieza.AlmacenDestinoNombre,
+                    MaterialId = materialId,
+                    MaterialCodigo = material?.CodigoMaterial,
+                    MaterialNombre = material?.Nombre,
+                    Cantidad = 1,
+                    Peso = pieza.Peso,
+                    TropaId = pieza.TropaId,
+                    EspecieId = pieza.EspecieId,
+                    TipoEspecieId = pieza.TipoEspecieId,
+                    Referencia = referencia
+                });
+
+                // La baja del origen y las altas de los destinos son un solo hecho.
                 var transformacionId = Guid.NewGuid();
 
                 plan.Movimientos.Add(new MovimientoPlaneado

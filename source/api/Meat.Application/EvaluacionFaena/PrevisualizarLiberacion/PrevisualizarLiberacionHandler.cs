@@ -49,7 +49,9 @@ namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
                 JornadaFinalizada = finalizada,
                 PiezasAProcesar = plan.PiezasAProcesar,
                 PiezasYaLiberadas = plan.PiezasYaLiberadas,
-                KilosAIngresar = plan.Movimientos.Where(m => m.Cantidad > 0).Sum(m => m.Peso),
+                // Neto: en un cuarteo el ingreso de la media res y su baja se cancelan, y quedan
+                // los kilos de los cuartos. Sumar solo las altas contaria la carne dos veces.
+                KilosAIngresar = plan.Movimientos.Sum(m => m.Peso),
                 Problemas = plan.Problemas.Select(p => new ProblemaItem
                 {
                     PiezaId = p.PiezaId,
