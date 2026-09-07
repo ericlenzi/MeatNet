@@ -66,6 +66,10 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Romaneos.RomaneoPieza> RomaneosPiezas { get; set; }
         public virtual DbSet<Domain.Romaneos.RomaneoPiezaMedicion> RomaneosPiezasMediciones { get; set; }
 
+        // Evaluacion de Faena - existencia de camara (paso 4)
+        public virtual DbSet<Domain.TiposMovimientosCamaras.TipoMovimientoCamara> TiposMovimientosCamaras { get; set; }
+        public virtual DbSet<Domain.MovimientosCamaras.MovimientoCamara> MovimientosCamaras { get; set; }
+
         public MeatContext(DbContextOptions<MeatContext> options)
             : base(options)
         {
@@ -227,6 +231,16 @@ namespace Meat.Repositories
             // Indice de apoyo para lecturas de la jornada por nro de romaneo
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.ListaMatanzaId, r.NumeroRomaneo })
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Apoyo del saldo de existencia de camara: se agrupa por (Almacen, Material)
+            modelBuilder.Entity<Domain.MovimientosCamaras.MovimientoCamara>()
+                .HasIndex(m => new { m.AlmacenId, m.MaterialId })
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Apoyo de la trazabilidad: que materiales salieron de una pieza romaneada
+            modelBuilder.Entity<Domain.MovimientosCamaras.MovimientoCamara>()
+                .HasIndex(m => m.RomaneoPiezaOrigenId)
                 .HasFilter("[FechaBaja] IS NULL");
 
             // Correlativo de romaneo unico por (Establecimiento, Especie): es el alcance del
@@ -403,6 +417,21 @@ namespace Meat.Repositories
             });
 
             #endregion Relaciones - Romaneo (Ejecucion de Faena)
+
+            #region Relaciones - Existencia de camara (Evaluacion de Faena)
+
+            modelBuilder.Entity<Domain.MovimientosCamaras.MovimientoCamara>(e =>
+            {
+                e.HasOne(x => x.Almacen).WithMany().HasForeignKey(x => x.AlmacenId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoMovimiento).WithMany().HasForeignKey(x => x.TipoMovimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.RomaneoPiezaOrigen).WithMany().HasForeignKey(x => x.RomaneoPiezaOrigenId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            #endregion Relaciones - Existencia de camara (Evaluacion de Faena)
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

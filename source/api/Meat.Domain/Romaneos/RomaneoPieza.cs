@@ -33,6 +33,10 @@ namespace Meat.Domain.Romaneos
 
         public bool PesoFueraRango { get; set; }               // el peso quedo fuera del rango de la Tipificacion y el operario forzo el registro
 
+        // Marca por pieza: la Liberacion la usa para saltear lo ya procesado (idempotencia,
+        // R-L7) y para bloquear la edicion de la pieza (R-L3).
+        public bool Liberado { get; set; }
+
         public virtual ICollection<RomaneoPiezaMedicion> Mediciones { get; set; }
     }
 }

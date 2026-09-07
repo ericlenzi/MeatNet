@@ -48,6 +48,12 @@ namespace Meat.Domain.Romaneos
 
         public bool Anulado { get; set; }                      // correccion de errores (devuelve stock)
 
+        // Liberacion (Ciclo I paso 4): al liberar la jornada el romaneo queda definitivo
+        // (no admite edicion ni anulacion) y sus piezas ya generaron existencia de camara.
+        public bool Liberado { get; set; }
+        public DateTime? FechaLiberacion { get; set; }
+        public Guid? UsuarioLiberacionId { get; set; }
+
         public virtual ICollection<RomaneoPieza> Piezas { get; set; }
     }
 }
