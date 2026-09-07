@@ -44,6 +44,8 @@ import IngresoHaciendaFormPage from '@/pages/ingresosHacienda/IngresoHaciendaFor
 import AprobacionHaciendaListPage from '@/pages/aprobacionHacienda/AprobacionHaciendaListPage'
 import ExistenciaHaciendaPage from '@/pages/existenciaHacienda/ExistenciaHaciendaPage'
 import ExistenciaCamaraPage from '@/pages/existenciaCamara/ExistenciaCamaraPage'
+import EvaluacionFaenaHubPage from '@/pages/evaluacionFaena/EvaluacionFaenaHubPage'
+import EvaluacionFaenaPage from '@/pages/evaluacionFaena/EvaluacionFaenaPage'
 import TrazabilidadTropasPage from '@/pages/trazabilidadTropas/TrazabilidadTropasPage'
 import PlanificacionFaenaListPage from '@/pages/planificacionFaena/PlanificacionFaenaListPage'
 import ListaMatanzaFormPage from '@/pages/planificacionFaena/ListaMatanzaFormPage'
@@ -51,7 +53,6 @@ import ListaMatanzaDetailPage from '@/pages/planificacionFaena/ListaMatanzaDetai
 import TipificadorPage from '@/pages/ejecucionFaena/TipificadorPage'
 import MonitorFaenaPage from '@/pages/ejecucionFaena/MonitorFaenaPage'
 import EjecucionFaenaHubPage from '@/pages/ejecucionFaena/EjecucionFaenaHubPage'
-import PlaceholderPage from '@/pages/shared/PlaceholderPage'
 import NotFoundPage from '@/pages/shared/NotFoundPage'
 
 function AppRoutes() {
@@ -78,7 +79,8 @@ function AppRoutes() {
                   <Route path="operaciones/ejecucion-faena/:listaMatanzaId/tipificador" element={<TipificadorPage />} />
                   <Route path="operaciones/monitor-faena" element={<EjecucionFaenaHubPage target="monitor" />} />
                   <Route path="operaciones/monitor-faena/:listaMatanzaId" element={<MonitorFaenaPage />} />
-                  <Route path="operaciones/evaluacion-faena" element={<PlaceholderPage title="Evaluacion de Faena" />} />
+                  <Route path="operaciones/evaluacion-faena" element={<EvaluacionFaenaHubPage />} />
+                  <Route path="operaciones/evaluacion-faena/:listaMatanzaId" element={<EvaluacionFaenaPage />} />
                   <Route path="operaciones/existencia-camara" element={<ExistenciaCamaraPage />} />
                   {/* Datos Maestros */}
                   <Route path="empresas" element={<EmpresasListPage />} />

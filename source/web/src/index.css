@@ -41,3 +41,33 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Impresion: la planilla de romaneo (Evaluacion de Faena) se imprime sin el marco
+   de la aplicacion ni los controles, para que entre como documento de la jornada. */
+@media print {
+  .no-print,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  table {
+    font-size: 11px;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+}
