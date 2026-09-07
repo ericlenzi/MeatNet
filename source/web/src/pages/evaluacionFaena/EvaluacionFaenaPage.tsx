@@ -324,9 +324,16 @@ export default function EvaluacionFaenaPage() {
         </table>
       </div>
 
-      <div className="no-print mt-4">
+      <div className="no-print mt-4 flex gap-2">
         <Button variant="secondary" size="sm" onClick={() => navigate('/operaciones/evaluacion-faena')}>
           Volver
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => navigate(`/operaciones/analisis-faena/${jornada.listaMatanzaId}`)}
+        >
+          Ver análisis
         </Button>
       </div>
 

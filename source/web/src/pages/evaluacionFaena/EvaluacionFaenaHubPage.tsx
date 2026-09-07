@@ -8,12 +8,25 @@ import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 
+type Target = 'evaluacion' | 'analisis'
+
+const TITULO: Record<Target, string> = {
+  evaluacion: 'Evaluación de Faena',
+  analisis: 'Análisis de Faena',
+}
+
+/** Cada destino cuelga de su ruta de menu para que el item activo del sidebar sea el correcto. */
+const rutaDestino = (target: Target, listaMatanzaId: string) =>
+  target === 'analisis'
+    ? `/operaciones/analisis-faena/${listaMatanzaId}`
+    : `/operaciones/evaluacion-faena/${listaMatanzaId}`
+
 /**
- * Punto de entrada desde el menu para la Evaluacion de Faena. Ofrece las jornadas
- * Finalizadas (las unicas que se pueden liberar) y tambien las En Ejecucion, para
- * poder revisarlas y anticipar problemas antes de cerrarlas.
+ * Punto de entrada desde el menu para la Evaluacion y el Analisis de Faena. Ofrece las
+ * jornadas Finalizadas (las unicas que se pueden liberar) y tambien las En Ejecucion,
+ * para revisarlas y anticipar problemas antes de cerrarlas.
  */
-export default function EvaluacionFaenaHubPage() {
+export default function EvaluacionFaenaHubPage({ target = 'evaluacion' }: { target?: Target }) {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [listas, setListas] = useState<ListaMatanzaListItem[]>([])
@@ -45,12 +58,12 @@ export default function EvaluacionFaenaHubPage() {
 
   return (
     <>
-      <PageHeader title="Evaluación de Faena" />
+      <PageHeader title={TITULO[target]} />
       <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-        <h3 className="mb-3 text-sm font-semibold text-text">Jornadas para evaluar</h3>
+        <h3 className="mb-3 text-sm font-semibold text-text">Jornadas de faena</h3>
         {listas.length === 0 ? (
           <p className="text-sm text-text-light">
-            No hay jornadas finalizadas ni en ejecución para evaluar.
+            No hay jornadas finalizadas ni en ejecución.
           </p>
         ) : (
           <div className="divide-y divide-border">
@@ -66,8 +79,8 @@ export default function EvaluacionFaenaHubPage() {
                   <Badge variant={l.estadoListaMatanzaId === EstadoListaMatanza.Finalizada ? 'success' : 'info'}>
                     {l.estadoListaMatanzaId === EstadoListaMatanza.Finalizada ? 'Finalizada' : 'En ejecución'}
                   </Badge>
-                  <Button size="sm" onClick={() => navigate(`/operaciones/evaluacion-faena/${l.id}`)}>
-                    Evaluar
+                  <Button size="sm" onClick={() => navigate(rutaDestino(target, l.id))}>
+                    {target === 'analisis' ? 'Analizar' : 'Evaluar'}
                   </Button>
                 </div>
               </div>

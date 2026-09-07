@@ -139,6 +139,7 @@ const navGroups: NavGroup[] = [
       { label: 'Ejecución de Faena', path: '/operaciones/ejecucion-faena', icon: icons.tag },
       { label: 'Monitor de Faena', path: '/operaciones/monitor-faena', icon: icons.desktopComputer },
       { label: 'Evaluación de Faena', path: '/operaciones/evaluacion-faena', icon: icons.documentReport },
+      { label: 'Análisis de Faena', path: '/operaciones/analisis-faena', icon: icons.chartBar },
       { label: 'Existencia de Cámara', path: '/operaciones/existencia-camara', icon: icons.chartBar },
     ],
   },

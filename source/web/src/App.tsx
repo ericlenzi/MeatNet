@@ -46,6 +46,7 @@ import ExistenciaHaciendaPage from '@/pages/existenciaHacienda/ExistenciaHaciend
 import ExistenciaCamaraPage from '@/pages/existenciaCamara/ExistenciaCamaraPage'
 import EvaluacionFaenaHubPage from '@/pages/evaluacionFaena/EvaluacionFaenaHubPage'
 import EvaluacionFaenaPage from '@/pages/evaluacionFaena/EvaluacionFaenaPage'
+import AnalisisFaenaPage from '@/pages/analisisFaena/AnalisisFaenaPage'
 import TrazabilidadTropasPage from '@/pages/trazabilidadTropas/TrazabilidadTropasPage'
 import PlanificacionFaenaListPage from '@/pages/planificacionFaena/PlanificacionFaenaListPage'
 import ListaMatanzaFormPage from '@/pages/planificacionFaena/ListaMatanzaFormPage'
@@ -81,6 +82,8 @@ function AppRoutes() {
                   <Route path="operaciones/monitor-faena/:listaMatanzaId" element={<MonitorFaenaPage />} />
                   <Route path="operaciones/evaluacion-faena" element={<EvaluacionFaenaHubPage />} />
                   <Route path="operaciones/evaluacion-faena/:listaMatanzaId" element={<EvaluacionFaenaPage />} />
+                  <Route path="operaciones/analisis-faena" element={<EvaluacionFaenaHubPage target="analisis" />} />
+                  <Route path="operaciones/analisis-faena/:listaMatanzaId" element={<AnalisisFaenaPage />} />
                   <Route path="operaciones/existencia-camara" element={<ExistenciaCamaraPage />} />
                   {/* Datos Maestros */}
                   <Route path="empresas" element={<EmpresasListPage />} />
