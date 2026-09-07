@@ -26,6 +26,11 @@ namespace Meat.Application.ListasMatanzas
         public const string Cancelacion = "CANCELACION";
         public const string Inicio = "INICIO";
         public const string Finalizacion = "FINALIZACION";
+
+        // Ojo: son dos cosas distintas. Liberacion = al cerrar, devuelve al stock el sobrante
+        // planificado y no faenado. LiberacionCamara = el paso 4, que materializa la existencia
+        // de camara a partir de los romaneos y cierra el Ciclo I.
         public const string Liberacion = "LIBERACION";
+        public const string LiberacionCamara = "LIBERACION_CAMARA";
     }
 }
