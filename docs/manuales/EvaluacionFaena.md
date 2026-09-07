@@ -180,7 +180,8 @@ PK: Guid Id
 - ERP_Codigo (string)              [PUENTE AL ERP]
 - Activo (bool), FechaActualizacion
 ```
-> Falta CRUD + seed (medias reses, reses, cuartos por especie). Ver §8.
+> CRUD implementado (migración 54). Las filas de `Material` son datos de negocio y las carga el
+> usuario desde la pantalla; no se siembran. Ver §8.
 
 ### 7.2 `TipoMaterial` (catálogo — ya existe)
 ```
@@ -283,29 +284,38 @@ o un estado. Una pieza liberada no admite edición (R-L3) y ya generó su existe
 - **R-L8 (piezas sin cuartear que igual cambian de material).** El despiece admite `MaterialDestino`
   distinto sin ser "cuarto" (ej. reclasificación); el mecanismo es el mismo (transformación 1→1).
 
-## 10. Superficie de API (borrador)
+## 10. Superficie de API (implementada)
 
-Controller `EvaluacionFaenaController` (o extender el de Romaneos):
+`EvaluacionFaenaController` y `ExistenciaCamaraController`, ambos con roles `ABAST,ABASTADMIN,ADMIN`
+(la edición de piezas exige `ABASTADMIN,ADMIN`):
 
 | Verbo | Ruta | Descripción |
 |---|---|---|
-| GET | `/EvaluacionFaena/romaneos?listaMatanzaId=` | Romaneos de la jornada con material resultante y previsualización de existencia. |
+| GET | `/EvaluacionFaena/romaneos?listaMatanzaId=` | Romaneos de la jornada con material resultante, estado de liberación y cámaras del establecimiento. |
+| GET | `/EvaluacionFaena/previsualizar?listaMatanzaId=` | Qué quedaría en cada cámara y qué piezas lo impiden. No exige jornada finalizada. |
 | PUT | `/EvaluacionFaena/pieza/{id}` | Editar peso/tipificación/cámara de una pieza no liberada. |
-| GET | `/EvaluacionFaena/imprimir?listaMatanzaId=` | Datos de la planilla para impresión. |
 | POST | `/EvaluacionFaena/liberar` | Libera la jornada: genera los movimientos de cámara y fija los romaneos. |
-| GET | `/ExistenciaCamara?almacenId=&materialId=` | Saldo de existencia de cámara (derivado del log). |
+| GET | `/ExistenciaCamara?establecimientoId=&almacenId=&materialId=&clienteId=&agruparPor=` | Saldo derivado del log. `agruparPor`: `MATERIAL` (cámara+material, default), `PROVEEDOR` (cliente+material) o `CAMARA` (cámara+cliente). |
+| GET | `/ExistenciaCamara/movimientos?almacenId=&materialId=&clienteId=&tropaId=&romaneoPiezaOrigenId=` | Detalle detrás del saldo, con el origen hasta el garrón (R-L5). |
+
+> **La impresión no tiene endpoint.** Se resolvió en el frontend con `@media print` sobre la misma
+> pantalla de Evaluación: la planilla sale con el encabezado de la jornada y sin el marco de la
+> aplicación. Evita duplicar la consulta y el navegador ya ofrece "Guardar como PDF". Si alguna vez
+> se necesita un PDF generado por el servidor (membrete, numeración, archivado), ahí sí hará falta
+> el endpoint y elegir librería: **`iTextSharp` fue eliminado del proyecto** por AGPL y estar
+> discontinuado, así que la decisión queda abierta.
 
 ## 11. Análisis de Faena (diferido a su propio manual)
 
-Parte del Paso 4, pero se desarrolla en **`AnalisisFaena.md`** cuando se implemente. Es análisis
-**read-only** (rindes, plan vs. real, tipificación consolidada, mermas) sobre los datos del Paso 3
-y de la Liberación; no altera datos y va **después** de generar la existencia.
+Parte del Paso 4, desarrollado en su propio manual **`AnalisisFaena.md`** (Paso 4b) e
+**implementado**: rinde caliente, plan vs. real, tipificación consolidada, dispersión de pesos y
+destino a cámaras, todo abierto por cliente. Es **read-only** y va después de la Liberación.
 
-**Precondición no técnica:** antes de especificarlo hay que **definir las reglas de negocio del
-rinde** — rinde caliente vs. frío, si el peso vivo de referencia es el de ingreso o el de balanza
-en playa (desbaste), e imputación de mermas/decomisos. Fuentes ya trazadas: peso vivo
-(`IngresoHacienda`), peso de faena (`RomaneoPieza.Peso`), peso en cámara (existencia), enlace por
-`Romaneo.TropaId`.
+**Reglas del rinde — RESUELTAS (2026-09-07).** Se calcula **solo rinde caliente**, sobre el peso
+vivo **de ingreso** prorrateado por tropa. No se descuenta desbaste (no hay balanza en playa) ni
+merma de oreo (no hay segunda pesada), y no se imputan decomisos. La definición completa y sus
+supuestos están en `AnalisisFaena.md` §2; el rinde frío, el desbaste y los decomisos quedan como
+temas abiertos O-A2, O-A3 y O-A1 de ese manual.
 
 ## 12. Temas abiertos
 
