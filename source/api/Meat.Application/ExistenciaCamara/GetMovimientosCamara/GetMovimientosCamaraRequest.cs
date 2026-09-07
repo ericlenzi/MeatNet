@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -13,6 +13,9 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
         public Guid? AlmacenId { get; set; }
         public Guid? MaterialId { get; set; }
         public Guid? TropaId { get; set; }
+
+        /// <summary>Filtra por el dueno de la hacienda.</summary>
+        public Guid? ClienteId { get; set; }
 
         /// <summary>Movimientos originados en una pieza concreta: la trazabilidad de un garron.</summary>
         public Guid? RomaneoPiezaOrigenId { get; set; }
@@ -55,6 +58,8 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
 
         public Guid? TropaId { get; set; }
         public long? NumeroTropa { get; set; }
+        public Guid? ClienteId { get; set; }
+        public string ClienteNombre { get; set; }
         public string EspecieId { get; set; }
         public string TipoEspecieId { get; set; }
 

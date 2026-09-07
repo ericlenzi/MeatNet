@@ -32,10 +32,19 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
                 join m in this.context.Materiales on mc.MaterialId equals m.Id
                 join tmc in this.context.TiposMovimientosCamaras on mc.TipoMovimientoId equals tmc.Codigo into tmcj
                 from tmc in tmcj.DefaultIfEmpty()
+                // Dueno de la hacienda: un movimiento sin tropa (ej. un egreso del Ciclo II) no
+                // tiene, y el left join lo deja sin cliente en vez de descartarlo.
+                join tr in this.context.Tropas on mc.TropaId equals tr.Id into trj
+                from tr in trj.DefaultIfEmpty()
+                join ih in this.context.IngresosHaciendas on tr.IngresoHaciendaId equals ih.Id into ihj
+                from ih in ihj.DefaultIfEmpty()
+                join cli in this.context.Clientes on ih.ClienteId equals cli.Id into clij
+                from cli in clij.DefaultIfEmpty()
                 where emp.CodigoEmpresa == request.CodigoEmpresa
                     && (request.AlmacenId == null || a.Id == request.AlmacenId)
                     && (request.MaterialId == null || m.Id == request.MaterialId)
                     && (request.TropaId == null || mc.TropaId == request.TropaId)
+                    && (request.ClienteId == null || (cli != null && cli.Id == request.ClienteId))
                     && (request.RomaneoPiezaOrigenId == null || mc.RomaneoPiezaOrigenId == request.RomaneoPiezaOrigenId)
                     && (request.FechaDesde == null || mc.Fecha >= request.FechaDesde)
                     && (request.FechaHasta == null || mc.Fecha <= request.FechaHasta)
@@ -61,6 +70,8 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
                     Letra = mc.RomaneoPiezaOrigen.Letra,
                     TropaId = mc.TropaId,
                     NumeroTropa = mc.Tropa.NumeroTropa,
+                    ClienteId = cli != null ? (System.Guid?)cli.Id : null,
+                    ClienteNombre = cli != null ? cli.Nombre : null,
                     EspecieId = mc.EspecieId,
                     TipoEspecieId = mc.TipoEspecieId,
                     Referencia = mc.Referencia

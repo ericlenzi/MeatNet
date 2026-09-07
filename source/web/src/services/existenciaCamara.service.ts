@@ -1,15 +1,18 @@
 import api from './axios-instance'
-import type { ExistenciaCamaraItem, MovimientoCamaraItem } from '@/types/existenciaCamara'
+import type { Agrupacion, ExistenciaCamaraItem, MovimientoCamaraItem } from '@/types/existenciaCamara'
 
 interface GetExistenciaCamaraParams {
   EstablecimientoId?: string
   AlmacenId?: string
   MaterialId?: string
+  ClienteId?: string
+  AgruparPor?: Agrupacion
   IncluirSaldoCero?: boolean
 }
 
 interface ExistenciaCamaraResponse {
   data: ExistenciaCamaraItem[]
+  agruparPor: Agrupacion
   totalCantidad: number
   totalPeso: number
 }
@@ -20,6 +23,7 @@ export async function getExistenciaCamara(
   const response = await api.get<ExistenciaCamaraResponse>('/ExistenciaCamara', { params })
   return {
     data: response.data.data || [],
+    agruparPor: response.data.agruparPor,
     totalCantidad: response.data.totalCantidad ?? 0,
     totalPeso: response.data.totalPeso ?? 0,
   }
@@ -29,6 +33,7 @@ interface GetMovimientosCamaraParams {
   AlmacenId?: string
   MaterialId?: string
   TropaId?: string
+  ClienteId?: string
   RomaneoPiezaOrigenId?: string
 }
 
