@@ -7,7 +7,8 @@ import {
   updateUnidadFaena,
 } from '@/services/unidadesFaenas.service'
 import { getEspecies } from '@/services/especies.service'
-import type { Especie } from '@/types'
+import { getTiposMateriales } from '@/services/materiales.service'
+import type { Especie, TipoMaterial } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
@@ -26,6 +27,7 @@ export default function UnidadFaenaFormPage() {
   const [fetching, setFetching] = useState(true)
   const [loading, setLoading] = useState(false)
   const [especies, setEspecies] = useState<Especie[]>([])
+  const [tipos, setTipos] = useState<TipoMaterial[]>([])
 
   const [form, setForm] = useState({
     Codigo: '',
@@ -34,7 +36,7 @@ export default function UnidadFaenaFormPage() {
     CantidadCuartos: '0',
     PiezasPorAnimal: '1',
     PorDefecto: false,
-    CodigoMaterial: '',
+    TipoMaterialId: '',
     ERP_Codigo: '',
     Activo: true,
   })
@@ -43,8 +45,12 @@ export default function UnidadFaenaFormPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const esp = await getEspecies({ Estado: true, PageSize: 1000 })
+        const [esp, tiposRes] = await Promise.all([
+          getEspecies({ Estado: true, PageSize: 1000 }),
+          getTiposMateriales(),
+        ])
         setEspecies(esp.data || [])
+        setTipos(tiposRes)
         if (isEdit && id) {
           const e = await getUnidadFaena(id)
           setForm({
@@ -54,7 +60,7 @@ export default function UnidadFaenaFormPage() {
             CantidadCuartos: String(e.cantidadCuartos),
             PiezasPorAnimal: String(e.piezasPorAnimal),
             PorDefecto: e.porDefecto,
-            CodigoMaterial: e.codigoMaterial ?? '',
+            TipoMaterialId: e.tipoMaterialId ?? '',
             ERP_Codigo: e.erP_Codigo ?? '',
             Activo: e.activo,
           })
@@ -95,7 +101,7 @@ export default function UnidadFaenaFormPage() {
         CantidadCuartos: num(form.CantidadCuartos),
         PiezasPorAnimal: num(form.PiezasPorAnimal),
         PorDefecto: form.PorDefecto,
-        CodigoMaterial: form.CodigoMaterial,
+        TipoMaterialId: form.TipoMaterialId || undefined,
         ERP_Codigo: form.ERP_Codigo,
       }
       if (isEdit && id) {
@@ -163,10 +169,12 @@ export default function UnidadFaenaFormPage() {
               onChange={(e) => updateField('PiezasPorAnimal', e.target.value)}
               error={errors['PiezasPorAnimal']}
             />
-            <Input
-              label="Codigo material"
-              value={form.CodigoMaterial}
-              onChange={(e) => updateField('CodigoMaterial', e.target.value)}
+            <Select
+              label="Tipo de material"
+              value={form.TipoMaterialId}
+              onChange={(e) => updateField('TipoMaterialId', e.target.value)}
+              options={tipos.map((t) => ({ value: t.codigo, label: t.nombre }))}
+              placeholder="Seleccionar tipo..."
             />
             <Input
               label="Codigo ERP"

@@ -15,6 +15,9 @@ export interface Tipificacion {
   pesoHasta: number
   unidadMedidaId: string
   unidadMedidaNombre?: string
+  materialId?: string | null
+  materialCodigo?: string
+  materialNombre?: string
   puntos: number
   activo: boolean
 }
@@ -30,6 +33,7 @@ export interface CreateTipificacionRequest {
   PesoDesde: number
   PesoHasta: number
   UnidadMedidaId?: string
+  MaterialId?: string
 }
 
 export interface UpdateTipificacionRequest {
@@ -42,6 +46,7 @@ export interface UpdateTipificacionRequest {
   PesoDesde: number
   PesoHasta: number
   UnidadMedidaId?: string
+  MaterialId?: string
   Activo: boolean
 }
 

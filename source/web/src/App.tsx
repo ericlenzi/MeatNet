@@ -29,6 +29,10 @@ import UnidadesFaenasListPage from '@/pages/unidadesFaenas/UnidadesFaenasListPag
 import UnidadFaenaFormPage from '@/pages/unidadesFaenas/UnidadFaenaFormPage'
 import TipificacionesListPage from '@/pages/tipificaciones/TipificacionesListPage'
 import TipificacionFormPage from '@/pages/tipificaciones/TipificacionFormPage'
+import MaterialesListPage from '@/pages/materiales/MaterialesListPage'
+import MaterialFormPage from '@/pages/materiales/MaterialFormPage'
+import DespiecesMaterialesListPage from '@/pages/despiecesMateriales/DespiecesMaterialesListPage'
+import DespieceMaterialFormPage from '@/pages/despiecesMateriales/DespieceMaterialFormPage'
 import NumeradoresListPage from '@/pages/numeradores/NumeradoresListPage'
 import NumeradorFormPage from '@/pages/numeradores/NumeradorFormPage'
 import NumeradoresTropasListPage from '@/pages/numeradoresTropas/NumeradoresTropasListPage'
@@ -114,6 +118,12 @@ function AppRoutes() {
                   <Route path="tipificaciones" element={<TipificacionesListPage />} />
                   <Route path="tipificaciones/create" element={<TipificacionFormPage />} />
                   <Route path="tipificaciones/:codigo/edit" element={<TipificacionFormPage />} />
+                  <Route path="materiales" element={<MaterialesListPage />} />
+                  <Route path="materiales/create" element={<MaterialFormPage />} />
+                  <Route path="materiales/:id/edit" element={<MaterialFormPage />} />
+                  <Route path="despieces-materiales" element={<DespiecesMaterialesListPage />} />
+                  <Route path="despieces-materiales/create" element={<DespieceMaterialFormPage />} />
+                  <Route path="despieces-materiales/:id/edit" element={<DespieceMaterialFormPage />} />
                   <Route path="numeradores" element={<NumeradoresListPage />} />
                   <Route path="numeradores/create" element={<NumeradorFormPage />} />
                   <Route path="numeradores/:id/edit" element={<NumeradorFormPage />} />

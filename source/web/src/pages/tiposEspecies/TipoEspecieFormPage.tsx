@@ -26,7 +26,6 @@ export default function TipoEspecieFormPage() {
     Nombre: '',
     EspecieId: '',
     TipoSexoId: '',
-    CodigoMaterial: '',
     ERP_Codigo: '',
     PesoTeorico: '',
     Activo: true,
@@ -50,7 +49,6 @@ export default function TipoEspecieFormPage() {
             Nombre: entity.nombre || '',
             EspecieId: entity.especieId || '',
             TipoSexoId: entity.tipoSexoId || '',
-            CodigoMaterial: entity.codigoMaterial || '',
             ERP_Codigo: entity.erP_Codigo || '',
             PesoTeorico: entity.pesoTeorico != null ? String(entity.pesoTeorico) : '',
             Activo: entity.activo,
@@ -85,7 +83,6 @@ export default function TipoEspecieFormPage() {
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
-          CodigoMaterial: form.CodigoMaterial || undefined,
           ERP_Codigo: form.ERP_Codigo || undefined,
           PesoTeorico: form.PesoTeorico ? Number(form.PesoTeorico) : undefined,
           Activo: form.Activo,
@@ -97,7 +94,6 @@ export default function TipoEspecieFormPage() {
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
-          CodigoMaterial: form.CodigoMaterial || undefined,
           ERP_Codigo: form.ERP_Codigo || undefined,
           PesoTeorico: form.PesoTeorico ? Number(form.PesoTeorico) : undefined,
         })
@@ -158,11 +154,6 @@ export default function TipoEspecieFormPage() {
               onChange={(e) => updateField('TipoSexoId', e.target.value)}
               options={tiposSexos.map((t) => ({ value: t.codigo, label: t.nombre }))}
               placeholder="Seleccionar sexo..."
-            />
-            <Input
-              label="Codigo Material"
-              value={form.CodigoMaterial}
-              onChange={(e) => updateField('CodigoMaterial', e.target.value)}
             />
             <Input
               label="Codigo ERP"

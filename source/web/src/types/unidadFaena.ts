@@ -6,7 +6,8 @@ export interface UnidadFaena {
   cantidadCuartos: number
   piezasPorAnimal: number
   porDefecto: boolean
-  codigoMaterial: string
+  tipoMaterialId: string
+  tipoMaterialNombre: string
   erP_Codigo: string
   activo: boolean
 }
@@ -18,7 +19,7 @@ export interface CreateUnidadFaenaRequest {
   CantidadCuartos: number
   PiezasPorAnimal: number
   PorDefecto: boolean
-  CodigoMaterial?: string
+  TipoMaterialId?: string
   ERP_Codigo?: string
 }
 
@@ -28,7 +29,7 @@ export interface UpdateUnidadFaenaRequest {
   CantidadCuartos: number
   PiezasPorAnimal: number
   PorDefecto: boolean
-  CodigoMaterial?: string
+  TipoMaterialId?: string
   ERP_Codigo?: string
   Activo: boolean
 }

@@ -28,7 +28,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
             await TipificacionValidacion.ValidateAsync(
                 this.context, request.EspecieId, request.TipoEspecieId, request.UnidadFaenaId,
                 request.DestinoComercialId, request.TipificacionOficialId, request.UnidadMedidaId,
-                request.PesoDesde, request.PesoHasta, cancellationToken);
+                request.PesoDesde, request.PesoHasta, request.MaterialId, cancellationToken);
 
             entity.Descripcion = request.Descripcion;
             entity.EspecieId = request.EspecieId;
@@ -39,6 +39,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
             entity.PesoDesde = request.PesoDesde;
             entity.PesoHasta = request.PesoHasta;
             entity.UnidadMedidaId = request.UnidadMedidaId;
+            entity.MaterialId = request.MaterialId;
             entity.Activo = request.Activo;
             entity.FechaActualizacion = DateTime.Now;
 

@@ -166,6 +166,43 @@ namespace Meat.Repositories.Migrations
                     b.ToTable("Denticiones");
                 });
 
+            modelBuilder.Entity("Meat.Domain.DespiecesMateriales.DespieceMaterial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MaterialDestinoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MaterialOrigenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("Rendimiento")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialDestinoId");
+
+                    b.HasIndex("MaterialOrigenId", "MaterialDestinoId")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
+
+                    b.ToTable("DespiecesMateriales");
+                });
+
             modelBuilder.Entity("Meat.Domain.DestinosComerciales.DestinoComercial", b =>
                 {
                     b.Property<string>("Codigo")
@@ -670,7 +707,7 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("CodigoMaterial")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
@@ -694,6 +731,10 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CodigoMaterial")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
 
                     b.HasIndex("TipoMaterialId");
 
@@ -1135,6 +1176,9 @@ namespace Meat.Repositories.Migrations
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("MaterialId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<double>("PesoDesde")
                         .HasColumnType("float");
 
@@ -1161,6 +1205,8 @@ namespace Meat.Repositories.Migrations
                     b.HasIndex("DestinoComercialId");
 
                     b.HasIndex("EspecieId");
+
+                    b.HasIndex("MaterialId");
 
                     b.HasIndex("TipificacionOficialId");
 
@@ -1312,9 +1358,6 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
-
-                    b.Property<string>("CodigoMaterial")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
@@ -1596,9 +1639,6 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("CantidadCuartos")
                         .HasColumnType("int");
 
-                    b.Property<string>("CodigoMaterial")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
 
@@ -1620,11 +1660,16 @@ namespace Meat.Repositories.Migrations
                     b.Property<bool>("PorDefecto")
                         .HasColumnType("bit");
 
+                    b.Property<string>("TipoMaterialId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Codigo");
 
                     b.HasIndex("EspecieId")
                         .IsUnique()
                         .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+
+                    b.HasIndex("TipoMaterialId");
 
                     b.ToTable("UnidadesFaenas");
                 });
@@ -1833,6 +1878,25 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("Especie");
 
                     b.Navigation("TipoDenticion");
+                });
+
+            modelBuilder.Entity("Meat.Domain.DespiecesMateriales.DespieceMaterial", b =>
+                {
+                    b.HasOne("Meat.Domain.Materiales.Material", "MaterialDestino")
+                        .WithMany()
+                        .HasForeignKey("MaterialDestinoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Materiales.Material", "MaterialOrigen")
+                        .WithMany()
+                        .HasForeignKey("MaterialOrigenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MaterialDestino");
+
+                    b.Navigation("MaterialOrigen");
                 });
 
             modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
@@ -2291,6 +2355,11 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("EspecieId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Meat.Domain.Materiales.Material", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Meat.Domain.TipificacionesOficiales.TipificacionOficial", "TipificacionOficial")
                         .WithMany()
                         .HasForeignKey("TipificacionOficialId")
@@ -2314,6 +2383,8 @@ namespace Meat.Repositories.Migrations
                     b.Navigation("DestinoComercial");
 
                     b.Navigation("Especie");
+
+                    b.Navigation("Material");
 
                     b.Navigation("TipificacionOficial");
 
@@ -2419,7 +2490,14 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("EspecieId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Meat.Domain.TiposMateriales.TipoMaterial", "TipoMaterial")
+                        .WithMany()
+                        .HasForeignKey("TipoMaterialId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Especie");
+
+                    b.Navigation("TipoMaterial");
                 });
 
             modelBuilder.Entity("Meat.Domain.Usuarios.Usuario", b =>

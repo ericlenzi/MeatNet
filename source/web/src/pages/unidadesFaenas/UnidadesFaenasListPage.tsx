@@ -90,6 +90,7 @@ export default function UnidadesFaenasListPage() {
     { key: 'nombre', header: 'Nombre' },
     { key: 'cantidadCuartos', header: 'Cuartos', width: '90px' },
     { key: 'piezasPorAnimal', header: 'Piezas/animal', width: '120px' },
+    { key: 'tipoMaterialNombre', header: 'Tipo mat.', width: '120px' },
     {
       key: 'porDefecto',
       header: 'Por defecto',

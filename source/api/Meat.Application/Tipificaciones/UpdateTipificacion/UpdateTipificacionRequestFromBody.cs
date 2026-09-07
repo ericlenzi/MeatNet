@@ -16,6 +16,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
         public double PesoDesde { get; set; }
         public double PesoHasta { get; set; }
         public string UnidadMedidaId { get; set; }
+        public Guid? MaterialId { get; set; }
         public bool Activo { get; set; }
     }
 }

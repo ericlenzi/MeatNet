@@ -22,6 +22,8 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadFaena
                 from u in this.context.UnidadesFaenas
                 join e in this.context.Especies on u.EspecieId equals e.Codigo into ej
                 from e in ej.DefaultIfEmpty()
+                join tm in this.context.TiposMateriales on u.TipoMaterialId equals tm.Codigo into tmj
+                from tm in tmj.DefaultIfEmpty()
                 where u.Codigo == request.Codigo
                 select new GetUnidadFaenaResponse
                 {
@@ -32,7 +34,8 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadFaena
                     CantidadCuartos = u.CantidadCuartos,
                     PiezasPorAnimal = u.PiezasPorAnimal,
                     PorDefecto = u.PorDefecto,
-                    CodigoMaterial = u.CodigoMaterial,
+                    TipoMaterialId = u.TipoMaterialId,
+                    TipoMaterialNombre = tm != null ? tm.Nombre : null,
                     ERP_Codigo = u.ERP_Codigo,
                     Activo = u.Activo
                 }

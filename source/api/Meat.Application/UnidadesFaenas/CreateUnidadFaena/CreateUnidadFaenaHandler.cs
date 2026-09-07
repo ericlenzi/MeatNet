@@ -37,6 +37,14 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
             if (request.PiezasPorAnimal < 1)
                 throw new ValidationException("Las piezas por animal deben ser al menos 1.");
 
+            if (!string.IsNullOrEmpty(request.TipoMaterialId))
+            {
+                var tipoExiste = await this.context.TiposMateriales
+                    .AnyAsync(t => t.Codigo == request.TipoMaterialId, cancellationToken);
+                if (!tipoExiste)
+                    throw new ValidationException("El tipo de material indicado no existe.");
+            }
+
             // Una sola unidad por defecto por especie: destildar las demas si esta se marca.
             if (request.PorDefecto)
             {
@@ -54,7 +62,7 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
                 CantidadCuartos = request.CantidadCuartos,
                 PiezasPorAnimal = request.PiezasPorAnimal,
                 PorDefecto = request.PorDefecto,
-                CodigoMaterial = request.CodigoMaterial,
+                TipoMaterialId = request.TipoMaterialId,
                 ERP_Codigo = request.ERP_Codigo,
                 Activo = true,
                 FechaActualizacion = DateTime.Now

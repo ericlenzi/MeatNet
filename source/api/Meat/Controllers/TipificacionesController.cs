@@ -56,6 +56,7 @@ namespace Meat.Controllers
                 PesoDesde = body.PesoDesde,
                 PesoHasta = body.PesoHasta,
                 UnidadMedidaId = body.UnidadMedidaId,
+                MaterialId = body.MaterialId,
                 Activo = body.Activo
             });
 

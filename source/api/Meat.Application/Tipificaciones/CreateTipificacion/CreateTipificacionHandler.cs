@@ -27,7 +27,7 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
             await TipificacionValidacion.ValidateAsync(
                 this.context, request.EspecieId, request.TipoEspecieId, request.UnidadFaenaId,
                 request.DestinoComercialId, request.TipificacionOficialId, request.UnidadMedidaId,
-                request.PesoDesde, request.PesoHasta, cancellationToken);
+                request.PesoDesde, request.PesoHasta, request.MaterialId, cancellationToken);
 
             var entity = new Domain.Tipificaciones.Tipificacion
             {
@@ -42,6 +42,7 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
                 PesoDesde = request.PesoDesde,
                 PesoHasta = request.PesoHasta,
                 UnidadMedidaId = request.UnidadMedidaId,
+                MaterialId = request.MaterialId,
                 Puntos = 0,
                 Activo = true,
                 FechaActualizacion = DateTime.Now

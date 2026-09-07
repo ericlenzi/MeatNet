@@ -74,6 +74,7 @@ export default function TipificacionesListPage() {
     { key: 'especieNombre', header: 'Especie', width: '110px' },
     { key: 'tipoEspecieNombre', header: 'Categoria', width: '120px', render: (v) => (v ? String(v) : '-') },
     { key: 'unidadFaenaNombre', header: 'Unidad Faena', width: '130px', render: (v) => (v ? String(v) : '-') },
+    { key: 'materialNombre', header: 'Material', width: '130px', render: (v) => (v ? String(v) : '-') },
     {
       key: 'pesoDesde',
       header: 'Peso',

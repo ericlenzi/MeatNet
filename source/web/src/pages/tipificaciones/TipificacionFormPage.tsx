@@ -12,10 +12,12 @@ import {
 import { getEspecies } from '@/services/especies.service'
 import { getTiposEspecies } from '@/services/tiposEspecies.service'
 import { getUnidadesFaenasOptions } from '@/services/unidadesFaenas.service'
+import { getMateriales } from '@/services/materiales.service'
 import type {
   Especie,
   TipoEspecie,
   UnidadFaena,
+  Material,
   CatalogoFaenaOption,
   TipificacionOficialOption,
 } from '@/types'
@@ -42,6 +44,7 @@ export default function TipificacionFormPage() {
   const [destinos, setDestinos] = useState<CatalogoFaenaOption[]>([])
   const [oficiales, setOficiales] = useState<TipificacionOficialOption[]>([])
   const [unidadesMedidas, setUnidadesMedidas] = useState<CatalogoFaenaOption[]>([])
+  const [materiales, setMateriales] = useState<Material[]>([])
   const [puntos, setPuntos] = useState(0)
 
   const [form, setForm] = useState({
@@ -55,6 +58,7 @@ export default function TipificacionFormPage() {
     PesoDesde: '0',
     PesoHasta: '0',
     UnidadMedidaId: '',
+    MaterialId: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -62,14 +66,16 @@ export default function TipificacionFormPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [esp, dest, um] = await Promise.all([
+        const [esp, dest, um, mats] = await Promise.all([
           getEspecies({ Estado: true, PageSize: 1000 }),
           getDestinosComerciales(),
           getUnidadesMedidas(),
+          getMateriales({ Estado: true, PageSize: 1000 }),
         ])
         setEspecies(esp.data || [])
         setDestinos(dest)
         setUnidadesMedidas(um)
+        setMateriales(mats.data || [])
         if (isEdit && codigo) {
           const t = await getTipificacion(codigo)
           setForm({
@@ -83,6 +89,7 @@ export default function TipificacionFormPage() {
             PesoDesde: String(t.pesoDesde),
             PesoHasta: String(t.pesoHasta),
             UnidadMedidaId: t.unidadMedidaId ?? '',
+            MaterialId: t.materialId ?? '',
             Activo: t.activo,
           })
           setPuntos(t.puntos)
@@ -136,8 +143,15 @@ export default function TipificacionFormPage() {
       TipoEspecieId: '',
       UnidadFaenaId: '',
       TipificacionOficialId: '',
+      MaterialId: '',
     }))
     setErrors((p) => ({ ...p, EspecieId: '' }))
+  }
+
+  // Al cambiar la unidad de faena cambia la forma valida del material: limpiar el material.
+  const handleUnidadFaenaChange = (value: string) => {
+    setForm((p) => ({ ...p, UnidadFaenaId: value, MaterialId: '' }))
+    setErrors((p) => ({ ...p, UnidadFaenaId: '' }))
   }
 
   const validate = (): boolean => {
@@ -167,6 +181,7 @@ export default function TipificacionFormPage() {
         PesoDesde: num(form.PesoDesde),
         PesoHasta: num(form.PesoHasta),
         UnidadMedidaId: form.UnidadMedidaId || undefined,
+        MaterialId: form.MaterialId || undefined,
       }
       if (isEdit && codigo) {
         await updateTipificacion(codigo, { ...payload, Activo: form.Activo })
@@ -182,6 +197,14 @@ export default function TipificacionFormPage() {
       setLoading(false)
     }
   }
+
+  // El material se filtra por la forma (TipoMaterial) de la unidad de faena elegida.
+  // Si la unidad no tiene TipoMaterial definido, se ofrecen todos los materiales.
+  const selectedUf = unidadesFaenas.find((u) => u.codigo === form.UnidadFaenaId)
+  const ufTipoMaterial = selectedUf?.tipoMaterialId ?? ''
+  const materialesFiltrados = ufTipoMaterial
+    ? materiales.filter((m) => m.tipoMaterialId === ufTipoMaterial)
+    : materiales
 
   if (fetching) {
     return (
@@ -229,10 +252,17 @@ export default function TipificacionFormPage() {
             <Select
               label="Unidad de faena"
               value={form.UnidadFaenaId}
-              onChange={(e) => updateField('UnidadFaenaId', e.target.value)}
+              onChange={(e) => handleUnidadFaenaChange(e.target.value)}
               options={unidadesFaenas.map((u) => ({ value: u.codigo, label: u.nombre }))}
               placeholder="Seleccionar unidad..."
               error={errors['UnidadFaenaId']}
+            />
+            <Select
+              label="Material (producto)"
+              value={form.MaterialId}
+              onChange={(e) => updateField('MaterialId', e.target.value)}
+              options={materialesFiltrados.map((m) => ({ value: m.id, label: `${m.codigoMaterial} - ${m.nombre}` }))}
+              placeholder="(Ninguno)"
             />
             <Select
               label="Destino comercial"

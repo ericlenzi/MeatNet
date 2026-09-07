@@ -9,7 +9,8 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadFaena
         public int CantidadCuartos { get; set; }
         public int PiezasPorAnimal { get; set; }
         public bool PorDefecto { get; set; }
-        public string CodigoMaterial { get; set; }
+        public string TipoMaterialId { get; set; }
+        public string TipoMaterialNombre { get; set; }
         public string ERP_Codigo { get; set; }
         public bool Activo { get; set; }
     }

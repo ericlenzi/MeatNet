@@ -24,5 +24,6 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
         public double PesoDesde { get; set; }
         public double PesoHasta { get; set; }
         public string UnidadMedidaId { get; set; }
+        public Guid? MaterialId { get; set; }
     }
 }

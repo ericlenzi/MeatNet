@@ -39,6 +39,8 @@ export type {
 export { EstadoListaMatanza } from './listaMatanza'
 export type { TrazabilidadTropa, TrazabilidadMovimiento } from './trazabilidadTropa'
 export type { UnidadFaena, CreateUnidadFaenaRequest, UpdateUnidadFaenaRequest } from './unidadFaena'
+export type { Material, CreateMaterialRequest, UpdateMaterialRequest, TipoMaterial } from './material'
+export type { DespieceMaterial, CreateDespieceMaterialRequest, UpdateDespieceMaterialRequest } from './despieceMaterial'
 export type { Numerador, CreateNumeradorRequest, UpdateNumeradorRequest } from './numerador'
 export type {
   Tipificacion,

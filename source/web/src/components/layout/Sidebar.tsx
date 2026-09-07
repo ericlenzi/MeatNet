@@ -164,6 +164,8 @@ const navGroups: NavGroup[] = [
           { label: 'Tipos de Especies', path: '/tipos-especies', icon: icons.tag },
           { label: 'Unidades de Faena', path: '/unidades-faenas', icon: icons.adjustments },
           { label: 'Tipificaciones', path: '/tipificaciones', icon: icons.tag },
+          { label: 'Materiales', path: '/materiales', icon: icons.database },
+          { label: 'Despieces de Material', path: '/despieces-materiales', icon: icons.adjustments },
           { label: 'Numeradores', path: '/numeradores', icon: icons.chartBar },
           { label: 'Clientes', path: '/clientes', icon: icons.users },
           { label: 'Numeradores de Tropas', path: '/numeradores-tropas', icon: icons.chartBar },

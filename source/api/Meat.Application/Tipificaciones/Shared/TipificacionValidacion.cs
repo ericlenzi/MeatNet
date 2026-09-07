@@ -20,6 +20,7 @@ namespace Meat.Application.Tipificaciones.Shared
             string unidadMedidaId,
             double pesoDesde,
             double pesoHasta,
+            Guid? materialId,
             CancellationToken cancellationToken)
         {
             if (!await context.Especies.AnyAsync(e => e.Codigo == especieId, cancellationToken))
@@ -47,6 +48,21 @@ namespace Meat.Application.Tipificaciones.Shared
 
             if (pesoHasta > 0 && pesoDesde > pesoHasta)
                 throw new ValidationException("El peso desde no puede ser mayor al peso hasta.");
+
+            if (materialId.HasValue)
+            {
+                var material = await context.Materiales
+                    .FirstOrDefaultAsync(m => m.Id == materialId.Value, cancellationToken);
+                if (material == null)
+                    throw new ValidationException("El material indicado no existe.");
+
+                // Consistencia de forma: el material debe ser del TipoMaterial de la unidad de faena.
+                var unidad = await context.UnidadesFaenas
+                    .FirstOrDefaultAsync(u => u.Codigo == unidadFaenaId, cancellationToken);
+                if (unidad != null && !string.IsNullOrEmpty(unidad.TipoMaterialId)
+                    && material.TipoMaterialId != unidad.TipoMaterialId)
+                    throw new ValidationException("El material no corresponde al tipo (forma) de la unidad de faena.");
+            }
         }
     }
 }

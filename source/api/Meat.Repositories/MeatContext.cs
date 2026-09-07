@@ -59,6 +59,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.Numeradores.Numerador> Numeradores { get; set; }
         public virtual DbSet<Domain.UnidadesFaenas.UnidadFaena> UnidadesFaenas { get; set; }
         public virtual DbSet<Domain.Tipificaciones.Tipificacion> Tipificaciones { get; set; }
+        public virtual DbSet<Domain.DespiecesMateriales.DespieceMaterial> DespiecesMateriales { get; set; }
 
         // Ejecucion de Faena - romaneo (paso 3)
         public virtual DbSet<Domain.Romaneos.Romaneo> Romaneos { get; set; }
@@ -205,6 +206,18 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[Favorito] = 1");
 
+            // Codigo de material unico (catalogo de productos terminados)
+            modelBuilder.Entity<Domain.Materiales.Material>()
+                .HasIndex(m => m.CodigoMaterial)
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Un solo despiece por par (origen, destino)
+            modelBuilder.Entity<Domain.DespiecesMateriales.DespieceMaterial>()
+                .HasIndex(d => new { d.MaterialOrigenId, d.MaterialDestinoId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             // Garron unico por jornada (LM), entre romaneos no anulados
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.ListaMatanzaId, r.NumeroGarron })
@@ -339,8 +352,11 @@ namespace Meat.Repositories
                 e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieCodigo).OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
-                .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>(e =>
+            {
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoMaterial).WithMany().HasForeignKey(x => x.TipoMaterialId).OnDelete(DeleteBehavior.Restrict);
+            });
 
             modelBuilder.Entity<Domain.Tipificaciones.Tipificacion>(e =>
             {
@@ -350,6 +366,13 @@ namespace Meat.Repositories
                 e.HasOne(x => x.DestinoComercial).WithMany().HasForeignKey(x => x.DestinoComercialId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.TipificacionOficial).WithMany().HasForeignKey(x => x.TipificacionOficialId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.UnidadMedida).WithMany().HasForeignKey(x => x.UnidadMedidaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.DespiecesMateriales.DespieceMaterial>(e =>
+            {
+                e.HasOne(x => x.MaterialOrigen).WithMany().HasForeignKey(x => x.MaterialOrigenId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.MaterialDestino).WithMany().HasForeignKey(x => x.MaterialDestinoId).OnDelete(DeleteBehavior.Restrict);
             });
 
             #endregion Relaciones - Ejecucion de Faena (master data)

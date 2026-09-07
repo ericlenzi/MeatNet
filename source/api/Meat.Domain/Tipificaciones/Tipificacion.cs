@@ -1,5 +1,6 @@
 using Meat.Domain.DestinosComerciales;
 using Meat.Domain.Especies;
+using Meat.Domain.Materiales;
 using Meat.Domain.TipificacionesOficiales;
 using Meat.Domain.TiposEspecies;
 using Meat.Domain.UnidadesFaenas;
@@ -33,6 +34,11 @@ namespace Meat.Domain.Tipificaciones
 
         public string UnidadFaenaId { get; set; }              // FK a UnidadFaena.Codigo
         public virtual UnidadFaena UnidadFaena { get; set; }
+
+        // Producto (Material) que esta tipificacion representa. Su TipoMaterial debe coincidir
+        // con el de la UnidadFaena (validacion de forma). Insumo de la Liberacion (Paso 4).
+        public Guid? MaterialId { get; set; }
+        public virtual Material Material { get; set; }
 
         public string DestinoComercialId { get; set; }
         public virtual DestinoComercial DestinoComercial { get; set; }

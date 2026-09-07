@@ -23,11 +23,12 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadesFaenas
                 from u in this.context.UnidadesFaenas
                 join e in this.context.Especies on u.EspecieId equals e.Codigo into ej
                 from e in ej.DefaultIfEmpty()
+                join tm in this.context.TiposMateriales on u.TipoMaterialId equals tm.Codigo into tmj
+                from tm in tmj.DefaultIfEmpty()
                 where (request.EspecieId == null || u.EspecieId == request.EspecieId)
                     && (request.Estado == null || u.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || u.Nombre.Contains(request.Filter)
-                        || u.CodigoMaterial.Contains(request.Filter))
+                        || u.Nombre.Contains(request.Filter))
                 orderby u.EspecieId, u.Codigo
                 select new UnidadFaenaItem
                 {
@@ -38,7 +39,8 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadesFaenas
                     CantidadCuartos = u.CantidadCuartos,
                     PiezasPorAnimal = u.PiezasPorAnimal,
                     PorDefecto = u.PorDefecto,
-                    CodigoMaterial = u.CodigoMaterial,
+                    TipoMaterialId = u.TipoMaterialId,
+                    TipoMaterialNombre = tm != null ? tm.Nombre : null,
                     ERP_Codigo = u.ERP_Codigo,
                     Activo = u.Activo
                 };

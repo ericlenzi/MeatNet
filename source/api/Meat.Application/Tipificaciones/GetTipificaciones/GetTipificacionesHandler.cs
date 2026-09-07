@@ -56,6 +56,9 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
                     PesoDesde = t.PesoDesde,
                     PesoHasta = t.PesoHasta,
                     UnidadMedidaId = t.UnidadMedidaId,
+                    MaterialId = t.MaterialId,
+                    MaterialCodigo = t.Material != null ? t.Material.CodigoMaterial : null,
+                    MaterialNombre = t.Material != null ? t.Material.Nombre : null,
                     Puntos = t.Puntos,
                     Activo = t.Activo
                 };

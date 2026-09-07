@@ -42,7 +42,7 @@ namespace Meat.Controllers
                 CantidadCuartos = body.CantidadCuartos,
                 PiezasPorAnimal = body.PiezasPorAnimal,
                 PorDefecto = body.PorDefecto,
-                CodigoMaterial = body.CodigoMaterial,
+                TipoMaterialId = body.TipoMaterialId,
                 ERP_Codigo = body.ERP_Codigo,
                 Activo = body.Activo
             });

@@ -25,6 +25,9 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
         public double PesoDesde { get; set; }
         public double PesoHasta { get; set; }
         public string UnidadMedidaId { get; set; }
+        public Guid? MaterialId { get; set; }
+        public string MaterialCodigo { get; set; }
+        public string MaterialNombre { get; set; }
         public int Puntos { get; set; }
         public bool Activo { get; set; }
     }

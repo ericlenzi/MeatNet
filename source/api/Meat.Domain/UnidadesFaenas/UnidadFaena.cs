@@ -1,4 +1,5 @@
 using Meat.Domain.Especies;
+using Meat.Domain.TiposMateriales;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,7 +31,12 @@ namespace Meat.Domain.UnidadesFaenas
         // Unidad predeterminada de la especie (una sola por especie).
         public bool PorDefecto { get; set; }
 
-        public string CodigoMaterial { get; set; }
+        // Forma del producto que esta unidad captura (MEDIA_RES, RES, CUARTO...). Alinea la
+        // unidad de faena con el catalogo de Materiales: el Material de una Tipificacion debe
+        // tener este TipoMaterial. Es el eje de forma, no un puente al ERP (ver ERP_Codigo).
+        public string TipoMaterialId { get; set; }
+        public virtual TipoMaterial TipoMaterial { get; set; }
+
         public string ERP_Codigo { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
