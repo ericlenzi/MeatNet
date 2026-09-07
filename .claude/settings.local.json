@@ -58,7 +58,10 @@
       "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -W -I -Q \"UPDATE Numeradores SET UltimoNumero = 5 WHERE TipoNumerador='ROMANEO' AND EspecieCodigo='P'; SELECT EspecieCodigo, UltimoNumero FROM Numeradores WHERE TipoNumerador='ROMANEO';\")",
       "Bash(sqlcmd -S '.\\\\sqlexpress' -d MeatNet -E -C -W -I -Q 'SET NOCOUNT ON; *)",
       "PowerShell(Set-Location 'C:\\\\Eric\\\\App\\\\Claude\\\\Projects\\\\MeatNet\\\\source\\\\api'; $env:ASPNETCORE_ENVIRONMENT='Development'; dotnet ef database update -p Meat.Repositories -s Meat | Select-Object -Last 2)",
-      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -W -s \"|\" -Q $q)"
+      "PowerShell(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -W -s \"|\" -Q $q)",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -h -1 -W -s \"|\" -Q \"SET NOCOUNT ON; SELECT m.CodigoMaterial, m.Nombre, m.TipoMaterialId, m.UnidadMedidaId, ISNULL\\(m.ERP_Codigo,''\\) AS ERP, CAST\\(m.Activo AS int\\) AS Activo FROM Materiales m WHERE m.FechaBaja IS NULL ORDER BY m.TipoMaterialId, m.Nombre;\")",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -h -1 -W -s \"|\" -Q \"SET NOCOUNT ON; SELECT Codigo, Nombre, CAST\\(Activo AS int\\) FROM TiposMateriales WHERE FechaBaja IS NULL ORDER BY Codigo;\")",
+      "Bash(sqlcmd -S \".\\\\sqlexpress\" -d MeatNet -E -C -h -1 -W -s \"|\" -Q \"SET NOCOUNT ON; SELECT Codigo, Nombre FROM UnidadesMedidas WHERE FechaBaja IS NULL ORDER BY Codigo;\")"
     ]
   }
 }
