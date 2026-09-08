@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Almacenes.DeleteAlmacen
 {
-    public class DeleteAlmacenRequest : IRequest<DeleteAlmacenResponse>
+    public class DeleteAlmacenRequest : RequestBase, IRequest<DeleteAlmacenResponse>
     {
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 }

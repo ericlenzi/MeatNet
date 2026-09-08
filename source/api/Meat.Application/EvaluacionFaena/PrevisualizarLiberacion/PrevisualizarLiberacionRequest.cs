@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
 {
-    public class PrevisualizarLiberacionRequest : IRequest<PrevisualizarLiberacionResponse>
+    public class PrevisualizarLiberacionRequest : RequestBase, IRequest<PrevisualizarLiberacionResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }

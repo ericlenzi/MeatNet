@@ -22,7 +22,6 @@ namespace Meat.Application.Sucursales.GetSucursal
         public async Task<GetSucursalResponse> Handle(GetSucursalRequest request, CancellationToken cancellationToken)
         {
             var sucursal = await this.context.Sucursales
-                .Include(s => s.Empresa)
                 .FirstOrDefaultAsync(p => p.Id == request.Id);
 
             return this.mapper.Map<GetSucursalResponse>(sucursal);

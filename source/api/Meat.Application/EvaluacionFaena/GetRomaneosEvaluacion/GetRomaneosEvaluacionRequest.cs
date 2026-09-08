@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
 {
-    public class GetRomaneosEvaluacionRequest : IRequest<GetRomaneosEvaluacionResponse>
+    public class GetRomaneosEvaluacionRequest : RequestBase, IRequest<GetRomaneosEvaluacionResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }

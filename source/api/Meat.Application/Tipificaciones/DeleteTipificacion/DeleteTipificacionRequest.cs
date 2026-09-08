@@ -1,13 +1,11 @@
-﻿using MediatR;
-using System.Text.Json.Serialization;
+﻿using Meat.Application.Shared;
+using MediatR;
 
 namespace Meat.Application.Tipificaciones.DeleteTipificacion
 {
-    public class DeleteTipificacionRequest : IRequest<DeleteTipificacionResponse>
+    public class DeleteTipificacionRequest : RequestBase, IRequest<DeleteTipificacionResponse>
     {
         public string Codigo { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 }

@@ -29,7 +29,6 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
                 throw new ValidationException("El establecimiento debe tener al menos una especie asignada.");
 
             var entity = await this.context.Establecimientos
-                .Include(x => x.Empresa)
                 .Include(x => x.Especies)
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 

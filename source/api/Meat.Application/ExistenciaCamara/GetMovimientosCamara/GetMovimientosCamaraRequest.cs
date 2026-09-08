@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
 {
-    public class GetMovimientosCamaraRequest : IRequest<GetMovimientosCamaraResponse>
+    public class GetMovimientosCamaraRequest : RequestBase, IRequest<GetMovimientosCamaraResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid? AlmacenId { get; set; }
         public Guid? MaterialId { get; set; }

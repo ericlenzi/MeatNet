@@ -21,7 +21,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresosHaciendas
         public async Task<GetIngresosHaciendasResponse> Handle(GetIngresosHaciendasRequest request, CancellationToken cancellationToken)
         {
             IQueryable<IngresoHacienda> queryable = this.context.IngresosHaciendas
-                .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(i => i.Establecimiento)
                 .Include(i => i.Cliente)
                 .Include(i => i.EstadoIngreso)
                 .Include(i => i.Ubicaciones);

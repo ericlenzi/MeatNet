@@ -1,15 +1,13 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.DeleteListaMatanza
 {
-    public class DeleteListaMatanzaRequest : IRequest<DeleteListaMatanzaResponse>
+    public class DeleteListaMatanzaRequest : RequestBase, IRequest<DeleteListaMatanzaResponse>
     {
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 
     public class DeleteListaMatanzaResponse

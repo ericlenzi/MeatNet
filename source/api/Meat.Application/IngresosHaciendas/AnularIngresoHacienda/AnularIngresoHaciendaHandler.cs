@@ -21,7 +21,7 @@ namespace Meat.Application.IngresosHaciendas.AnularIngresoHacienda
         public async Task<AnularIngresoHaciendaResponse> Handle(AnularIngresoHaciendaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.IngresosHaciendas
-                .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(i => i.Establecimiento)
                 .Include(i => i.Tropas)
                 .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 

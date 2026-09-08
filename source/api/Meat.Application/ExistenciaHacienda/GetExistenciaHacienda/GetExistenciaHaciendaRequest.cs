@@ -1,13 +1,11 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
 {
-    public class GetExistenciaHaciendaRequest : IRequest<GetExistenciaHaciendaResponse>
+    public class GetExistenciaHaciendaRequest : RequestBase, IRequest<GetExistenciaHaciendaResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid? EstablecimientoId { get; set; }
     }

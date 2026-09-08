@@ -20,7 +20,6 @@ namespace Meat.Application.Establecimientos.DeleteEstablecimiento
         public async Task<DeleteEstablecimientoResponse> Handle(DeleteEstablecimientoRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Establecimientos
-                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (entity == null)

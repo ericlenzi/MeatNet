@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Romaneos.GetRenglonesEjecucion
 {
-    public class GetRenglonesEjecucionRequest : IRequest<GetRenglonesEjecucionResponse>
+    public class GetRenglonesEjecucionRequest : RequestBase, IRequest<GetRenglonesEjecucionResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }

@@ -19,7 +19,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
         public async Task<GetIngresoHaciendaResponse> Handle(GetIngresoHaciendaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.IngresosHaciendas
-                .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(i => i.Establecimiento)
                 .Include(i => i.Especie)
                 .Include(i => i.Cliente)
                 .Include(i => i.ClienteEstablecimiento)

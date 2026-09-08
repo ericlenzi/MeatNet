@@ -1,12 +1,10 @@
-﻿using MediatR;
-using System.Text.Json.Serialization;
+﻿using Meat.Application.Shared;
+using MediatR;
 
 namespace Meat.Application.Sucursales.GetSucursalByCodigo
 {
-    public class GetSucursalByCodigoRequest : IRequest<GetSucursalByCodigoResponse>
+    public class GetSucursalByCodigoRequest : RequestBase, IRequest<GetSucursalByCodigoResponse>
     {
         public string Codigo { get; set; }
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 }

@@ -21,7 +21,7 @@ namespace Meat.Application.IngresosHaciendas.EnviarAprobacionIngresoHacienda
         public async Task<EnviarAprobacionIngresoHaciendaResponse> Handle(EnviarAprobacionIngresoHaciendaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.IngresosHaciendas
-                .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(i => i.Establecimiento)
                 .Include(i => i.Ubicaciones)
                 .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 

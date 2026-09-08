@@ -20,7 +20,6 @@ namespace Meat.Application.Almacenes.CreateAlmacen
         public async Task<CreateAlmacenResponse> Handle(CreateAlmacenRequest request, CancellationToken cancellationToken)
         {
             var establecimiento = await this.context.Establecimientos
-                .Include(e => e.Empresa)
                 .FirstOrDefaultAsync(e => e.Id == request.EstablecimientoId, cancellationToken);
             if (establecimiento == null)
                 throw new ValidationException("El establecimiento activo no es valido.");

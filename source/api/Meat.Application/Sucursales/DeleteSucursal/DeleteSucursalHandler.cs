@@ -24,7 +24,6 @@ namespace Meat.Application.Sucursales.DeleteSucursal
             //this.context.Articulos.RemoveRange(articulosSucursal);
 
             var sucursal = await this.context.Sucursales
-                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(x => x.Id == request.Id);
 
             if (sucursal == null)

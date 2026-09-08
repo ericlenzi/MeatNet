@@ -19,7 +19,6 @@ namespace Meat.Application.Parametros.DeleteParametro
         public async Task<DeleteParametroResponse> Handle(DeleteParametroRequest request, CancellationToken cancellationToken)
         {
             var parametro = await this.context.Parametros
-                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(x => x.Codigo == request.Codigo);
 
             if (parametro == null)

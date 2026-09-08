@@ -1,16 +1,14 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.GetListaMatanza
 {
-    public class GetListaMatanzaRequest : IRequest<GetListaMatanzaResponse>
+    public class GetListaMatanzaRequest : RequestBase, IRequest<GetListaMatanzaResponse>
     {
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 
     public class GetListaMatanzaResponse

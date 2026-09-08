@@ -26,7 +26,7 @@ namespace Meat.Application.ListasMatanzas.DesconfirmarListaMatanza
         public async Task<DesconfirmarListaMatanzaResponse> Handle(DesconfirmarListaMatanzaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.ListasMatanzas
-                .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(lm => lm.Establecimiento)
                 .Include(lm => lm.Renglones)
                 .FirstOrDefaultAsync(lm => lm.Id == request.Id, cancellationToken);
 

@@ -22,7 +22,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
         public async Task<GetMonitorFaenaResponse> Handle(GetMonitorFaenaRequest request, CancellationToken cancellationToken)
         {
             var lm = await this.context.ListasMatanzas
-                .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(x => x.Establecimiento)
                 .Include(x => x.Especie)
                 .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)

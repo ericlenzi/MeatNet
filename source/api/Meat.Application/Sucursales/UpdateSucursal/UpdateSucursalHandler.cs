@@ -24,7 +24,6 @@ namespace Meat.Application.Sucursales.UpdateSucursal
         public async Task<UpdateSucursalResponse> Handle(UpdateSucursalRequest request, CancellationToken cancellationToken)
         {
             var sucursal = await this.context.Sucursales
-                .Include(s => s.Empresa)
                 .FirstOrDefaultAsync(x => x.Id == request.Id);
             if (sucursal == null)
             {

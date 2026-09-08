@@ -29,7 +29,7 @@ namespace Meat.Application.Usuarios.RestaurarPasswordUsuario
                 throw new ValidationException("No se encontro el parametro PASSWORD_INICIAL para esta empresa.");
 
             var usuario = await this.context.Usuarios
-                .FirstOrDefaultAsync(u => u.Id == request.UsuarioId, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken);
 
             if (usuario == null)
                 throw new ValidationException("El usuario no existe.");

@@ -19,7 +19,7 @@ namespace Meat.Application.Usuarios.GetUsuarioEstablecimientos
         public async Task<GetUsuarioEstablecimientosResponse> Handle(GetUsuarioEstablecimientosRequest request, CancellationToken cancellationToken)
         {
             var items = await this.context.UsuariosEstablecimientos
-                .Where(ue => ue.UsuarioId == request.UsuarioId)
+                .Where(ue => ue.UsuarioId == request.Id)
                 .Join(
                     this.context.Establecimientos
                         .Include(e => e.Sucursal),

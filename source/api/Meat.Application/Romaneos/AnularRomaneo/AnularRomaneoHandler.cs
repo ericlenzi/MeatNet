@@ -35,7 +35,7 @@ namespace Meat.Application.Romaneos.AnularRomaneo
 
             // Verificar empresa via la LM
             var lm = await this.context.ListasMatanzas
-                .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(x => x.Establecimiento)
                 .FirstOrDefaultAsync(x => x.Id == romaneo.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("El romaneo no pertenece a la empresa.");

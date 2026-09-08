@@ -1,13 +1,11 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Usuarios.RestaurarPasswordUsuario
 {
-    public class RestaurarPasswordUsuarioRequest : IRequest<RestaurarPasswordUsuarioResponse>
+    public class RestaurarPasswordUsuarioRequest : RequestBase, IRequest<RestaurarPasswordUsuarioResponse>
     {
-        public Guid UsuarioId { get; set; }
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
+        public Guid Id { get; set; }
     }
 }

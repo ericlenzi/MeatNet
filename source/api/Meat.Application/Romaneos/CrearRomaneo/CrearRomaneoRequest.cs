@@ -1,16 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Romaneos.CrearRomaneo
 {
-    public class CrearRomaneoRequest : IRequest<CrearRomaneoResponse>
+    public class CrearRomaneoRequest : RequestBase, IRequest<CrearRomaneoResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
-        [JsonIgnore]
-        public Guid UsuarioId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
         public Guid ListaMatanzaDetalleId { get; set; }     // renglon elegido (hibrido)

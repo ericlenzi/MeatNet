@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Numeradores.CreateNumerador
 {
-    public class CreateNumeradorRequest : IRequest<CreateNumeradorResponse>
+    public class CreateNumeradorRequest : RequestBase, IRequest<CreateNumeradorResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid EstablecimientoId { get; set; }
         [Required]

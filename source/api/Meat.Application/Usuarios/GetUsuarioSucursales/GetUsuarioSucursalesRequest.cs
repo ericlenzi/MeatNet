@@ -1,13 +1,11 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Usuarios.GetUsuarioSucursales
 {
-    public class GetUsuarioSucursalesRequest : IRequest<GetUsuarioSucursalesResponse>
+    public class GetUsuarioSucursalesRequest : RequestBase, IRequest<GetUsuarioSucursalesResponse>
     {
-        public Guid UsuarioId { get; set; }
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
+        public Guid Id { get; set; }
     }
 }

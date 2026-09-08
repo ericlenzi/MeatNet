@@ -1,13 +1,11 @@
-﻿using MediatR;
-using System.Text.Json.Serialization;
+﻿using Meat.Application.Shared;
+using MediatR;
 
 namespace Meat.Application.Tipificaciones.GetTipificacion
 {
-    public class GetTipificacionRequest : IRequest<GetTipificacionResponse>
+    public class GetTipificacionRequest : RequestBase, IRequest<GetTipificacionResponse>
     {
         public string Codigo { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 }

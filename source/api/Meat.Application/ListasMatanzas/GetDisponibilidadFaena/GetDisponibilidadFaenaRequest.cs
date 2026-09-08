@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
 {
-    public class GetDisponibilidadFaenaRequest : IRequest<GetDisponibilidadFaenaResponse>
+    public class GetDisponibilidadFaenaRequest : RequestBase, IRequest<GetDisponibilidadFaenaResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid EstablecimientoId { get; set; }
         public string EspecieId { get; set; }

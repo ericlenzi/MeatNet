@@ -1,17 +1,14 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.FaenaEmergenciaListaMatanza
 {
-    public class FaenaEmergenciaListaMatanzaRequest : IRequest<FaenaEmergenciaListaMatanzaResponse>
+    public class FaenaEmergenciaListaMatanzaRequest : RequestBase, IRequest<FaenaEmergenciaListaMatanzaResponse>
     {
         [JsonIgnore]
         public Guid Id { get; set; }                       // lista de matanza
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
-        [JsonIgnore]
-        public Guid UsuarioId { get; set; }
 
         public Guid TropaId { get; set; }
         public Guid AlmacenId { get; set; }

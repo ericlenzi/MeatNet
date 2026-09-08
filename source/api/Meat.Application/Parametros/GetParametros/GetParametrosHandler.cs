@@ -21,7 +21,6 @@ namespace Meat.Application.Parametros.GetParametros
         public async Task<GetParametrosResponse> Handle(GetParametrosRequest request, CancellationToken cancellationToken)
         {
             IQueryable<Parametro> queryable = this.context.Parametros
-                .Include(x => x.Empresa)
                 .OrderBy(x => x.Codigo)
                 .AsQueryable();
 

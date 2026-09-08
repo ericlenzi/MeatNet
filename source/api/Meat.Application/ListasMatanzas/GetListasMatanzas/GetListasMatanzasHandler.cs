@@ -21,7 +21,7 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
         public async Task<GetListasMatanzasResponse> Handle(GetListasMatanzasRequest request, CancellationToken cancellationToken)
         {
             IQueryable<ListaMatanza> queryable = this.context.ListasMatanzas
-                .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(lm => lm.Establecimiento)
                 .Include(lm => lm.Especie)
                 .Include(lm => lm.EstadoListaMatanza)
                 .Include(lm => lm.Renglones);

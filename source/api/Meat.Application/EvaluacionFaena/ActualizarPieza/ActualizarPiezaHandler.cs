@@ -38,7 +38,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
                 throw new ValidationException("La pieza no existe.");
 
             var lm = await this.context.ListasMatanzas
-                .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(x => x.Establecimiento)
                 .FirstOrDefaultAsync(x => x.Id == pieza.Romaneo.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La pieza no pertenece a la empresa.");

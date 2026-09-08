@@ -22,7 +22,7 @@ namespace Meat.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromRoute] Guid usuarioId) => await this.Handle(
-            new GetUsuarioEstablecimientosRequest { UsuarioId = usuarioId, EmpresaId = base.CurrentUser.EmpresaId }
+            new GetUsuarioEstablecimientosRequest { Id = usuarioId, EmpresaId = base.CurrentUser.EmpresaId }
         );
 
         [HttpPost]

@@ -25,7 +25,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
         public async Task<GetRenglonesEjecucionResponse> Handle(GetRenglonesEjecucionRequest request, CancellationToken cancellationToken)
         {
             var lm = await this.context.ListasMatanzas
-                .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(x => x.Establecimiento)
                 .Include(x => x.Especie)
                 .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)

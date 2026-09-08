@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.IngresosHaciendas.DeleteIngresoHacienda
 {
-    public class DeleteIngresoHaciendaRequest : IRequest<DeleteIngresoHaciendaResponse>
+    public class DeleteIngresoHaciendaRequest : RequestBase, IRequest<DeleteIngresoHaciendaResponse>
     {
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
     }
 }

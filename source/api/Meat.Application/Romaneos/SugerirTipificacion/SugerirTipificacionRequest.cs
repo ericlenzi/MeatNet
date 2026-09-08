@@ -1,14 +1,12 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Romaneos.SugerirTipificacion
 {
-    public class SugerirTipificacionRequest : IRequest<SugerirTipificacionResponse>
+    public class SugerirTipificacionRequest : RequestBase, IRequest<SugerirTipificacionResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public string EspecieId { get; set; }
         public Guid? TipoEspecieId { get; set; }

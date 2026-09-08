@@ -74,7 +74,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> RestaurarPasswordAsync([FromRoute] Guid id) => await this.Handle(
             new RestaurarPasswordUsuarioRequest
             {
-                UsuarioId = id,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId
             }
         );

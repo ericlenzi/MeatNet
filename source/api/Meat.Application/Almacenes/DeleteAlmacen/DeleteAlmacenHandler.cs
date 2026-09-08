@@ -19,7 +19,7 @@ namespace Meat.Application.Almacenes.DeleteAlmacen
         public async Task<DeleteAlmacenResponse> Handle(DeleteAlmacenRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Almacenes
-                .Include(a => a.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(a => a.Establecimiento)
                 .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
 
             if (entity == null)

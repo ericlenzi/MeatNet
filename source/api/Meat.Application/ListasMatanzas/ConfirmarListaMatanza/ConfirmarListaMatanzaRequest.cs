@@ -1,17 +1,13 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.ConfirmarListaMatanza
 {
-    public class ConfirmarListaMatanzaRequest : IRequest<ConfirmarListaMatanzaResponse>
+    public class ConfirmarListaMatanzaRequest : RequestBase, IRequest<ConfirmarListaMatanzaResponse>
     {
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
-        [JsonIgnore]
-        public Guid UsuarioId { get; set; }
     }
 
     public class ConfirmarListaMatanzaResponse

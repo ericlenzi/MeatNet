@@ -1,16 +1,15 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
 namespace Meat.Application.Tipificaciones.UpdateTipificacion
 {
-    public class UpdateTipificacionRequest : IRequest<UpdateTipificacionResponse>
+    public class UpdateTipificacionRequest : RequestBase, IRequest<UpdateTipificacionResponse>
     {
         [JsonIgnore]
         public string Codigo { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public string Descripcion { get; set; }
         public string EspecieId { get; set; }

@@ -1,14 +1,11 @@
-﻿using MediatR;
-using System;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Sucursales.CreateSucursal
 {
-    public class CreateSucursalRequest : IRequest<CreateSucursalResponse>
+    public class CreateSucursalRequest : RequestBase, IRequest<CreateSucursalResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
         [Required]
         public string CodigoSucursal { get; set; }
 

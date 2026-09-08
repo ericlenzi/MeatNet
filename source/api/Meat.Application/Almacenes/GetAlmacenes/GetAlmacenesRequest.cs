@@ -1,13 +1,11 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Almacenes.GetAlmacenes
 {
-    public class GetAlmacenesRequest : IRequest<GetAlmacenesResponse>
+    public class GetAlmacenesRequest : RequestBase, IRequest<GetAlmacenesResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid? EstablecimientoId { get; set; }
 

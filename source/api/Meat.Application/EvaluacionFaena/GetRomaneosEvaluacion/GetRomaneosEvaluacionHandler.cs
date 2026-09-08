@@ -29,7 +29,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public async Task<GetRomaneosEvaluacionResponse> Handle(GetRomaneosEvaluacionRequest request, CancellationToken cancellationToken)
         {
             var lm = await this.context.ListasMatanzas
-                .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(x => x.Establecimiento)
                 .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");

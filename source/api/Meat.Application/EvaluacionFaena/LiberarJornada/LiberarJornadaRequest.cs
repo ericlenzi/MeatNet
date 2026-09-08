@@ -1,15 +1,11 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.EvaluacionFaena.LiberarJornada
 {
-    public class LiberarJornadaRequest : IRequest<LiberarJornadaResponse>
+    public class LiberarJornadaRequest : RequestBase, IRequest<LiberarJornadaResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
-        [JsonIgnore]
-        public Guid UsuarioId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }

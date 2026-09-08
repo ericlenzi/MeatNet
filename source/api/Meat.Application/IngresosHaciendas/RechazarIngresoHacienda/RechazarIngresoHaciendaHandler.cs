@@ -20,7 +20,7 @@ namespace Meat.Application.IngresosHaciendas.RechazarIngresoHacienda
         public async Task<RechazarIngresoHaciendaResponse> Handle(RechazarIngresoHaciendaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.IngresosHaciendas
-                .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(i => i.Establecimiento)
                 .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
             if (entity == null)

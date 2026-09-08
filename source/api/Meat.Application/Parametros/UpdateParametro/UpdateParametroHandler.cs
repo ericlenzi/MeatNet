@@ -22,7 +22,6 @@ namespace Meat.Application.Parametros.UpdateParametro
         public async Task<UpdateParametroResponse> Handle(UpdateParametroRequest request, CancellationToken cancellationToken)
         {
             var parametro = await this.context.Parametros
-                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(x => x.Codigo == request.Codigo);
             if (parametro == null)
             {

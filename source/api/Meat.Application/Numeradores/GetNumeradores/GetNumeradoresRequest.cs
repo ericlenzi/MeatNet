@@ -1,13 +1,11 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.Numeradores.GetNumeradores
 {
-    public class GetNumeradoresRequest : IRequest<GetNumeradoresResponse>
+    public class GetNumeradoresRequest : RequestBase, IRequest<GetNumeradoresResponse>
     {
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public Guid? EstablecimientoId { get; set; }
         public bool? Estado { get; set; }

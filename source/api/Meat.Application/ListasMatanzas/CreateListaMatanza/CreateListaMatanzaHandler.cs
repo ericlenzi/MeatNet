@@ -24,7 +24,6 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
         {
             // Establecimiento activo dentro de la empresa
             var establecimiento = await this.context.Establecimientos
-                .Include(e => e.Empresa)
                 .FirstOrDefaultAsync(e => e.Id == request.EstablecimientoId, cancellationToken);
             if (establecimiento == null)
                 throw new ValidationException("El establecimiento activo no es valido.");

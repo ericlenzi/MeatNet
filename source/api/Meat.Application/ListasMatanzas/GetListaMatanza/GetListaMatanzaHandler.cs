@@ -19,7 +19,7 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
         public async Task<GetListaMatanzaResponse> Handle(GetListaMatanzaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.ListasMatanzas
-                .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(lm => lm.Establecimiento)
                 .Include(lm => lm.Especie)
                 .Include(lm => lm.Puesto)
                 .Include(lm => lm.EstadoListaMatanza)

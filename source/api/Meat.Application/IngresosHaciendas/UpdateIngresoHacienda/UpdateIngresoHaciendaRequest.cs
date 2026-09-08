@@ -1,17 +1,16 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Meat.Application.IngresosHaciendas.UpdateIngresoHacienda
 {
-    public class UpdateIngresoHaciendaRequest : IRequest<UpdateIngresoHaciendaResponse>
+    public class UpdateIngresoHaciendaRequest : RequestBase, IRequest<UpdateIngresoHaciendaResponse>
     {
         [JsonIgnore]
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
 
         public DateTime FechaHoraIngreso { get; set; }
 

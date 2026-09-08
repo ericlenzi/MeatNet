@@ -1,18 +1,14 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.QuitarRenglonListaMatanza
 {
-    public class QuitarRenglonListaMatanzaRequest : IRequest<QuitarRenglonListaMatanzaResponse>
+    public class QuitarRenglonListaMatanzaRequest : RequestBase, IRequest<QuitarRenglonListaMatanzaResponse>
     {
         public Guid Id { get; set; }                       // lista de matanza
         public Guid RenglonId { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
-        [JsonIgnore]
-        public Guid UsuarioId { get; set; }
     }
 
     public class QuitarRenglonListaMatanzaResponse

@@ -22,7 +22,7 @@ namespace Meat.Application.ListasMatanzas.IniciarListaMatanza
         public async Task<IniciarListaMatanzaResponse> Handle(IniciarListaMatanzaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.ListasMatanzas
-                .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
+                .Include(lm => lm.Establecimiento)
                 .FirstOrDefaultAsync(lm => lm.Id == request.Id, cancellationToken);
 
             if (entity == null)

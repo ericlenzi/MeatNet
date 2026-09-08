@@ -1,18 +1,15 @@
-﻿using MediatR;
+﻿using Meat.Application.Shared;
+using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
 namespace Meat.Application.ListasMatanzas.FinalizarListaMatanza
 {
-    public class FinalizarListaMatanzaRequest : IRequest<FinalizarListaMatanzaResponse>
+    public class FinalizarListaMatanzaRequest : RequestBase, IRequest<FinalizarListaMatanzaResponse>
     {
         [JsonIgnore]
         public Guid Id { get; set; }
 
-        [JsonIgnore]
-        public string EmpresaId { get; set; }
-        [JsonIgnore]
-        public Guid UsuarioId { get; set; }
 
         public string Motivo { get; set; }                 // opcional: por que quedo sobrante sin faenar
     }
