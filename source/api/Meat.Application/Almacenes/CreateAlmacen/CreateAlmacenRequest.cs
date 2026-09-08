@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.Almacenes.CreateAlmacen
     public class CreateAlmacenRequest : IRequest<CreateAlmacenResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         [Required]
         public string CodigoAlmacen { get; set; }

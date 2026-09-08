@@ -49,6 +49,19 @@ namespace Meat.Application.Autenticacion
             if (!user.Activo)
                 throw new ArgumentException("Usuario inactivo.");
 
+            // La empresa del usuario es la fuente de verdad del tenant; la sucursal solo aporta
+            // el contexto operativo. Ojo: aca todavia no hay empresa activa resuelta, asi que el
+            // query filter del contexto no aplica y estas consultas ven todas las empresas.
+            var empresaJwt = user.EmpresaId;
+            if (string.IsNullOrEmpty(empresaJwt))
+                throw new ArgumentException("El usuario no tiene una empresa asignada.");
+
+            var empresa = await this.context.Empresas
+                .FirstOrDefaultAsync(x => x.Id == empresaJwt, cancellationToken);
+
+            if (empresa == null)
+                throw new ArgumentException("La empresa asignada al usuario no existe.");
+
             var sucursalesUsuario = await this.context.UsuariosSucursales
                 .Where(x => x.UsuarioId == user.Id)
                 .ToListAsync(cancellationToken);
@@ -62,20 +75,15 @@ namespace Meat.Application.Autenticacion
                 mainSucursal = sucursalesUsuario.FirstOrDefault();
 
             var sucursal = await this.context.Sucursales
-                .Include(x => x.Empresa)
                 .FirstOrDefaultAsync(x => x.Id == mainSucursal.SucursalId, cancellationToken);
 
             if (sucursal == null)
                 throw new ArgumentException("La sucursal principal asignada al usuario no existe.");
 
-            var empresaJwt = sucursal.Empresa?.CodigoEmpresa;
-            if (string.IsNullOrEmpty(empresaJwt))
-                throw new ArgumentException("La sucursal no tiene una empresa asignada.");
-
             var sucursalJwt = sucursal.CodigoSucursal;
 
             var parametroPasswordInicial = await this.context.Parametros
-                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == sucursal.EmpresaId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == empresaJwt, cancellationToken);
 
             bool debeCambiarContrasena = parametroPasswordInicial != null
                 && !string.IsNullOrWhiteSpace(parametroPasswordInicial.Valor)
@@ -91,8 +99,10 @@ namespace Meat.Application.Autenticacion
                     UserName = user.UserName,
                     NombreCompleto = $"{user.Nombre} {user.Apellido}",
                     RolId = user.RolId,
-                    CodigoEmpresa = empresaJwt,
-                    NombreEmpresa = sucursal.Empresa?.Nombre ?? string.Empty,
+                    EmpresaId = empresaJwt,
+                    NombreEmpresa = empresa.Nombre ?? string.Empty,
+                    ColorEmpresa = empresa.Color,
+                    LogoEmpresa = empresa.Logo,
                     CodigoSucursal = sucursalJwt
                 }
             };
@@ -105,6 +115,9 @@ namespace Meat.Application.Autenticacion
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
+        /// <summary>Claim que transporta la empresa activa. Debe coincidir con HttpTenantContext.</summary>
+        public const string EmpresaClaimType = "empresa_id";
+
         private string GenerateJwt(Usuario user, string codigoEmpresa, string codigoSucursal)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -116,7 +129,7 @@ namespace Meat.Application.Autenticacion
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.String),
                     new Claim(ClaimTypes.Name, user.UserName, ClaimValueTypes.String),
                     new Claim(ClaimTypes.Role, user.RolId ?? string.Empty, ClaimValueTypes.String),
-                    new Claim(ClaimTypes.PrimarySid, codigoEmpresa, ClaimValueTypes.String),
+                    new Claim(EmpresaClaimType, codigoEmpresa, ClaimValueTypes.String),
                     new Claim(ClaimTypes.PrimaryGroupSid, codigoSucursal, ClaimValueTypes.String)
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(this.validFor),

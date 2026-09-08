@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -37,7 +37,7 @@ namespace Meat.Application.TiposEspecies.GetTiposEspecies
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.Id.Contains(request.Filter) ||
+                    x.Codigo.Contains(request.Filter) ||
                     x.Nombre.Contains(request.Filter));
 
             queryable = queryable.OrderBy(x => x.EspecieId).ThenBy(x => x.Nombre);

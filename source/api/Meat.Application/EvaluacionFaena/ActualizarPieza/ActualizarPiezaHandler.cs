@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.IngresosHaciendas; // FamiliaAlmacen
 using Meat.Application.Romaneos;
 using Meat.Application.Shared;
@@ -39,8 +39,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
 
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == pieza.Romaneo.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == pieza.Romaneo.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La pieza no pertenece a la empresa.");
 
@@ -54,12 +53,12 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
             if (request.Peso <= 0)
                 throw new ValidationException("El peso debe ser mayor a cero.");
 
-            if (string.IsNullOrWhiteSpace(request.TipificacionId))
+            if (!request.TipificacionId.HasValue)
                 throw new ValidationException("La pieza debe tener una tipificacion.");
 
             var tipificacion = await this.context.Tipificaciones
-                .FirstOrDefaultAsync(t => t.Codigo == request.TipificacionId
-                    && t.CodigoEmpresa == request.CodigoEmpresa
+                .FirstOrDefaultAsync(t => t.Id == request.TipificacionId.Value
+                   
                     && t.Activo, cancellationToken);
             if (tipificacion == null)
                 throw new ValidationException("La tipificacion no existe, no esta activa o no pertenece a la empresa.");
@@ -86,10 +85,10 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
 
             // Puntos: la pieza deja de contar para la tipificacion anterior y pasa a contar para
             // la nueva, igual que los suma el Tipificador al crear el romaneo.
-            if (pieza.TipificacionId != tipificacion.Codigo)
+            if (pieza.TipificacionId != tipificacion.Id)
             {
                 var anterior = await this.context.Tipificaciones
-                    .FirstOrDefaultAsync(t => t.Codigo == pieza.TipificacionId, cancellationToken);
+                    .FirstOrDefaultAsync(t => t.Id == pieza.TipificacionId, cancellationToken);
                 if (anterior != null)
                 {
                     anterior.Puntos = Math.Max(0, anterior.Puntos - 1);
@@ -102,7 +101,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
 
             pieza.Peso = request.Peso;
             pieza.PesoFueraRango = fueraRango;
-            pieza.TipificacionId = tipificacion.Codigo;
+            pieza.TipificacionId = tipificacion.Id;
             pieza.AlmacenDestinoId = request.AlmacenDestinoId;
 
             // Peso es cache de la medicion PESO: si no se actualiza, la medicion queda mintiendo.

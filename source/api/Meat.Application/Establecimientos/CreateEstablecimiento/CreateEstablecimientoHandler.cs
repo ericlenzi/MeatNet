@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -34,7 +34,7 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
                 throw new ValidationException("Ya existe un establecimiento con ese codigo.");
 
             var empresa = await this.context.Empresas
-                .FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(e => e.Id == request.EmpresaId, cancellationToken);
             if (empresa == null)
                 throw new ValidationException("La empresa activa no es valida.");
 

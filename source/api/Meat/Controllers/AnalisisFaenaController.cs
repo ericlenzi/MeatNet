@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.AnalisisFaena.GetAnalisisFaena;
@@ -20,7 +20,7 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetAnalisisFaenaRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
     }

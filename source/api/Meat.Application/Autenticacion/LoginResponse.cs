@@ -15,8 +15,12 @@ namespace Meat.Application.Autenticacion
         public string UserName { get; set; }
         public string NombreCompleto { get; set; }
         public string RolId { get; set; }
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         public string NombreEmpresa { get; set; }
+        /// <summary>Color identitario de la empresa; pinta el panel del dashboard.</summary>
+        public string ColorEmpresa { get; set; }
+        /// <summary>Logo de la empresa como data URI base64.</summary>
+        public string LogoEmpresa { get; set; }
         public string CodigoSucursal { get; set; }
     }
 }

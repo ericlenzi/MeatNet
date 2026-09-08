@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -24,15 +24,15 @@ namespace Meat.Application.Tipificaciones.GetTipificacion
                 from e in ej.DefaultIfEmpty()
                 join te in this.context.TiposEspecies on t.TipoEspecieId equals te.Id into tej
                 from te in tej.DefaultIfEmpty()
-                join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Codigo into ufj
+                join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Id into ufj
                 from uf in ufj.DefaultIfEmpty()
-                join dc in this.context.DestinosComerciales on t.DestinoComercialId equals dc.Codigo into dcj
+                join dc in this.context.DestinosComerciales on t.DestinoComercialId equals dc.Id into dcj
                 from dc in dcj.DefaultIfEmpty()
                 join tofi in this.context.TipificacionesOficiales on t.TipificacionOficialId equals tofi.Codigo into tofij
                 from tofi in tofij.DefaultIfEmpty()
                 join um in this.context.UnidadesMedidas on t.UnidadMedidaId equals um.Codigo into umj
                 from um in umj.DefaultIfEmpty()
-                where t.Codigo == request.Codigo && t.CodigoEmpresa == request.CodigoEmpresa
+                where t.Codigo == request.Codigo
                 select new GetTipificacionResponse
                 {
                     Codigo = t.Codigo,

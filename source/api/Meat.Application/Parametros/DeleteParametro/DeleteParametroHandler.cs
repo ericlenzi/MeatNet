@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +20,7 @@ namespace Meat.Application.Parametros.DeleteParametro
         {
             var parametro = await this.context.Parametros
                 .Include(x => x.Empresa)
-                .FirstOrDefaultAsync(x => x.Codigo == request.Codigo && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .FirstOrDefaultAsync(x => x.Codigo == request.Codigo);
 
             if (parametro == null)
             {

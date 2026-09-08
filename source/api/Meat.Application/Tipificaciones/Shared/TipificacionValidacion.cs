@@ -1,4 +1,4 @@
-using Meat.Application.Shared;
+﻿using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,9 +13,9 @@ namespace Meat.Application.Tipificaciones.Shared
         public static async Task ValidateAsync(
             MeatContext context,
             string especieId,
-            string tipoEspecieId,
-            string unidadFaenaId,
-            string destinoComercialId,
+            Guid? tipoEspecieId,
+            Guid unidadFaenaId,
+            Guid? destinoComercialId,
             string tipificacionOficialId,
             string unidadMedidaId,
             double pesoDesde,
@@ -26,16 +26,16 @@ namespace Meat.Application.Tipificaciones.Shared
             if (!await context.Especies.AnyAsync(e => e.Codigo == especieId, cancellationToken))
                 throw new ValidationException("La especie indicada no existe.");
 
-            if (!string.IsNullOrEmpty(tipoEspecieId)
-                && !await context.TiposEspecies.AnyAsync(t => t.Id == tipoEspecieId && t.EspecieId == especieId, cancellationToken))
+            if (tipoEspecieId.HasValue
+                && !await context.TiposEspecies.AnyAsync(t => t.Id == tipoEspecieId.Value && t.EspecieId == especieId, cancellationToken))
                 throw new ValidationException("La categoria (tipo de especie) no es valida para la especie.");
 
-            if (string.IsNullOrEmpty(unidadFaenaId)
-                || !await context.UnidadesFaenas.AnyAsync(u => u.Codigo == unidadFaenaId, cancellationToken))
+            if (unidadFaenaId == Guid.Empty
+                || !await context.UnidadesFaenas.AnyAsync(u => u.Id == unidadFaenaId, cancellationToken))
                 throw new ValidationException("La unidad de faena indicada no existe.");
 
-            if (!string.IsNullOrEmpty(destinoComercialId)
-                && !await context.DestinosComerciales.AnyAsync(d => d.Codigo == destinoComercialId, cancellationToken))
+            if (destinoComercialId.HasValue
+                && !await context.DestinosComerciales.AnyAsync(d => d.Id == destinoComercialId.Value, cancellationToken))
                 throw new ValidationException("El destino comercial indicado no existe.");
 
             if (!string.IsNullOrEmpty(tipificacionOficialId)
@@ -58,7 +58,7 @@ namespace Meat.Application.Tipificaciones.Shared
 
                 // Consistencia de forma: el material debe ser del TipoMaterial de la unidad de faena.
                 var unidad = await context.UnidadesFaenas
-                    .FirstOrDefaultAsync(u => u.Codigo == unidadFaenaId, cancellationToken);
+                    .FirstOrDefaultAsync(u => u.Id == unidadFaenaId, cancellationToken);
                 if (unidad != null && !string.IsNullOrEmpty(unidad.TipoMaterialId)
                     && material.TipoMaterialId != unidad.TipoMaterialId)
                     throw new ValidationException("El material no corresponde al tipo (forma) de la unidad de faena.");

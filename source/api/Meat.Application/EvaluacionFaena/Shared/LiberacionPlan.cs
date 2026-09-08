@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -47,7 +47,7 @@ namespace Meat.Application.EvaluacionFaena.Shared
 
         public Guid? TropaId { get; set; }
         public string EspecieId { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string Referencia { get; set; }
     }
 
@@ -77,13 +77,13 @@ namespace Meat.Application.EvaluacionFaena.Shared
         public double Peso { get; set; }
         public Guid AlmacenDestinoId { get; set; }
         public string AlmacenDestinoNombre { get; set; }
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public bool TipificacionExiste { get; set; }
         public string TipificacionDescripcion { get; set; }
         public Guid? MaterialId { get; set; }
         public Guid? TropaId { get; set; }
         public string EspecieId { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public bool YaLiberada { get; set; }
     }
 

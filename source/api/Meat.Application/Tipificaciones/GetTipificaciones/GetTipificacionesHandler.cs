@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -25,14 +25,13 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
                 from e in ej.DefaultIfEmpty()
                 join te in this.context.TiposEspecies on t.TipoEspecieId equals te.Id into tej
                 from te in tej.DefaultIfEmpty()
-                join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Codigo into ufj
+                join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Id into ufj
                 from uf in ufj.DefaultIfEmpty()
-                join dc in this.context.DestinosComerciales on t.DestinoComercialId equals dc.Codigo into dcj
+                join dc in this.context.DestinosComerciales on t.DestinoComercialId equals dc.Id into dcj
                 from dc in dcj.DefaultIfEmpty()
                 join tofi in this.context.TipificacionesOficiales on t.TipificacionOficialId equals tofi.Codigo into tofij
                 from tofi in tofij.DefaultIfEmpty()
-                where t.CodigoEmpresa == request.CodigoEmpresa
-                    && (request.Estado == null || t.Activo == request.Estado)
+                where (request.Estado == null || t.Activo == request.Estado)
                     && (request.EspecieId == null || t.EspecieId == request.EspecieId)
                     && (request.TipoEspecieId == null || t.TipoEspecieId == request.TipoEspecieId)
                     && (string.IsNullOrEmpty(request.Filter)

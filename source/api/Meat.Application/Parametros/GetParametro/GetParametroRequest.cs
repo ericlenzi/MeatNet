@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 
 namespace Meat.Application.Parametros.GetParametro
 {
@@ -6,6 +6,6 @@ namespace Meat.Application.Parametros.GetParametro
     {
         public string Codigo { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 }

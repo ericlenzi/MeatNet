@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -28,8 +28,7 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
                 .Include(lm => lm.Renglones).ThenInclude(r => r.AlmacenDestino)
                 .Include(lm => lm.Renglones).ThenInclude(r => r.TipoEspecie)
                 .Include(lm => lm.Movimientos)
-                .FirstOrDefaultAsync(lm => lm.Id == request.Id
-                    && lm.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(lm => lm.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 return null;

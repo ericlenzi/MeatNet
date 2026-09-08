@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -24,7 +24,7 @@ namespace Meat.Application.ExistenciaCamara.GetExistenciaCamara
     public class GetExistenciaCamaraRequest : IRequest<GetExistenciaCamaraResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid? EstablecimientoId { get; set; }
         public Guid? AlmacenId { get; set; }

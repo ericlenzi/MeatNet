@@ -1,4 +1,4 @@
-using Meat.Domain.DestinosComerciales;
+﻿using Meat.Domain.DestinosComerciales;
 using Meat.Domain.Especies;
 using Meat.Domain.Materiales;
 using Meat.Domain.TipificacionesOficiales;
@@ -8,6 +8,8 @@ using Meat.Domain.UnidadesMedidas;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Tipificaciones
 {
@@ -16,23 +18,26 @@ namespace Meat.Domain.Tipificaciones
     /// categoria, unidad de faena, destino, tipificacion oficial y rango de peso.
     /// Puntos se incrementa cada vez que se usa (para ordenar las mas frecuentes primero).
     /// </summary>
-    public class Tipificacion
+    public class Tipificacion : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public Guid Id { get; set; }
+        /// <summary>Codigo de negocio, unico dentro de la empresa.</summary>
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
 
         // Empresa activa (columna simple, no FK: el sistema opera para una unica Empresa).
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
 
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
-        public string UnidadFaenaId { get; set; }              // FK a UnidadFaena.Codigo
+        public Guid UnidadFaenaId { get; set; }              // FK a UnidadFaena.Codigo
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         // Producto (Material) que esta tipificacion representa. Su TipoMaterial debe coincidir
@@ -40,7 +45,7 @@ namespace Meat.Domain.Tipificaciones
         public Guid? MaterialId { get; set; }
         public virtual Material Material { get; set; }
 
-        public string DestinoComercialId { get; set; }
+        public Guid? DestinoComercialId { get; set; }
         public virtual DestinoComercial DestinoComercial { get; set; }
 
         public string TipificacionOficialId { get; set; }

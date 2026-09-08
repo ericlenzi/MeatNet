@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,7 @@ namespace Meat.Application.UnidadesFaenas.DeleteUnidadFaena
                 throw new ValidationException("La unidad de faena no existe.");
 
             var enUsoTipificacion = await this.context.Tipificaciones
-                .AnyAsync(t => t.UnidadFaenaId == request.Codigo, cancellationToken);
+                .AnyAsync(t => t.UnidadFaenaId == entity.Id, cancellationToken);
             if (enUsoTipificacion)
                 throw new ValidationException("No se puede eliminar la unidad de faena porque esta en uso en tipificaciones.");
 

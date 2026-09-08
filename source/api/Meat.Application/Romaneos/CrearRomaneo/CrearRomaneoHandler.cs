@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.IngresosHaciendas; // TiposAlmacen / FamiliaAlmacen
 using Meat.Application.ListasMatanzas;
 using Meat.Application.Numeradores;
@@ -35,8 +35,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             // 1) LM en ejecucion de la empresa
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
             if (lm.EstadoListaMatanzaId != EstadosListaMatanza.EnEjecucion)
@@ -59,7 +58,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
             // 5) Unidad de faena de la especie -> numero de piezas esperado
             var uf = await this.context.UnidadesFaenas
-                .FirstOrDefaultAsync(u => u.Codigo == request.UnidadFaenaId, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.UnidadFaenaId, cancellationToken);
             if (uf == null)
                 throw new ValidationException("La unidad de faena indicada no existe.");
             if (uf.EspecieId != lm.EspecieId)
@@ -71,7 +70,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 throw new ValidationException($"Se esperaban {piezasEsperadas} pieza(s) para la unidad de faena '{uf.Nombre}' y se recibieron {piezas.Count}.");
             if (piezas.Any(p => p.Peso <= 0))
                 throw new ValidationException("El peso de cada pieza debe ser mayor a cero.");
-            if (piezas.Any(p => string.IsNullOrEmpty(p.TipificacionId)))
+            if (piezas.Any(p => !p.TipificacionId.HasValue))
                 throw new ValidationException("Cada pieza debe tener una tipificacion.");
 
             // 5b) Camara destino por pieza (default del renglon, editable en el puesto): obligatoria
@@ -100,19 +99,19 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 throw new ValidationException($"El garron {request.NumeroGarron} ya fue usado en esta jornada.");
 
             // 7) Tipificaciones validas (activas, de la empresa)
-            var codigos = piezas.Select(p => p.TipificacionId).Distinct().ToList();
+            var tipIds = piezas.Select(p => p.TipificacionId.Value).Distinct().ToList();
             var tipificaciones = await this.context.Tipificaciones
-                .Where(t => codigos.Contains(t.Codigo) && t.CodigoEmpresa == request.CodigoEmpresa && t.Activo)
+                .Where(t => tipIds.Contains(t.Id) && t.Activo)
                 .ToListAsync(cancellationToken);
-            if (tipificaciones.Count != codigos.Count)
+            if (tipificaciones.Count != tipIds.Count)
                 throw new ValidationException("Una tipificacion seleccionada no existe, no esta activa o no pertenece a la empresa.");
-            var tipPorCodigo = tipificaciones.ToDictionary(t => t.Codigo);
+            var tipPorId = tipificaciones.ToDictionary(t => t.Id);
 
             // 7b) Peso dentro del rango de su tipificacion. Fuera de rango no bloquea la linea:
             // se permite si el operario lo confirma (ForzarFueraRango) y queda registrado en la pieza.
             foreach (var p in piezas)
             {
-                var t = tipPorCodigo[p.TipificacionId];
+                var t = tipPorId[p.TipificacionId.Value];
                 if (p.Peso >= t.PesoDesde && p.Peso <= t.PesoHasta) continue;
                 if (!p.ForzarFueraRango)
                     throw new ValidationException($"El peso {p.Peso} kg esta fuera del rango {t.PesoDesde}-{t.PesoHasta} kg de la tipificacion '{t.Descripcion}'. Confirme el registro para forzarlo.");
@@ -133,7 +132,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             romaneo.ListaMatanzaDetalleId = renglon.Id;
             romaneo.TropaId = renglon.TropaId;
             romaneo.EspecieId = lm.EspecieId;
-            romaneo.UnidadFaenaId = uf.Codigo;
+            romaneo.UnidadFaenaId = uf.Id;
             romaneo.NumeroGarron = request.NumeroGarron;
             romaneo.NumeroRomaneo = numeroRomaneo;
             romaneo.UsuarioId = request.UsuarioId;
@@ -146,7 +145,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 pieza.AlmacenDestinoId = p.AlmacenDestinoId;
                 pieza.TipificacionId = p.TipificacionId;
                 pieza.Peso = p.Peso;
-                var tipPieza = tipPorCodigo[p.TipificacionId];
+                var tipPieza = tipPorId[p.TipificacionId.Value];
                 pieza.PesoFueraRango = p.Peso < tipPieza.PesoDesde || p.Peso > tipPieza.PesoHasta;
 
                 var medicion = RomaneoFactory.CreateMedicion();
@@ -166,7 +165,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             // 11) Puntos: +1 por cada tipificacion usada (cada pieza)
             foreach (var p in piezas)
             {
-                var tip = tipPorCodigo[p.TipificacionId];
+                var tip = tipPorId[p.TipificacionId.Value];
                 tip.Puntos += 1;
                 tip.FechaActualizacion = DateTime.Now;
             }

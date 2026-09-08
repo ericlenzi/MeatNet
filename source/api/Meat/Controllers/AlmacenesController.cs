@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.Almacenes.CreateAlmacen;
@@ -21,7 +21,7 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetAlmacenesRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -30,14 +30,14 @@ namespace Meat.Controllers
             await this.Handle(new GetAlmacenRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
 
         [HttpPost]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateAlmacenRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -46,7 +46,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateAlmacenRequest request)
         {
             request.Id = id;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -56,7 +56,7 @@ namespace Meat.Controllers
             await this.Handle(new DeleteAlmacenRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
     }
 }

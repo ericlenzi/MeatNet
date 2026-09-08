@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Meat.Application.Shared;
+using Meat.Domain.Shared;
 using Meat.Application.Shared.Settings;
 using Meat.Infrastructure;
 using Meat.Repositories;
@@ -15,6 +16,11 @@ builder.Host.UseDefaultServiceProvider(options => options.ValidateScopes = false
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+
+// Empresa activa de cada request: la lee del claim del JWT y la consumen los query
+// filters del MeatContext, que aislan los datos por empresa sin intervencion del handler.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
 
 builder.Services.AddDbContext<MeatContext>(options =>
     options.UseSqlServer(

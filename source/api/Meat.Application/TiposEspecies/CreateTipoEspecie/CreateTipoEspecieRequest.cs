@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System.ComponentModel.DataAnnotations;
 
 namespace Meat.Application.TiposEspecies.CreateTipoEspecie
@@ -6,7 +6,7 @@ namespace Meat.Application.TiposEspecies.CreateTipoEspecie
     public class CreateTipoEspecieRequest : IRequest<CreateTipoEspecieResponse>
     {
         [Required]
-        public string Id { get; set; }
+        public string Codigo { get; set; }
         [Required]
         public string Nombre { get; set; }
         [Required]

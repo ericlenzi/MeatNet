@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Meat.Domain.Shared;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,9 +73,36 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.TiposMovimientosCamaras.TipoMovimientoCamara> TiposMovimientosCamaras { get; set; }
         public virtual DbSet<Domain.MovimientosCamaras.MovimientoCamara> MovimientosCamaras { get; set; }
 
-        public MeatContext(DbContextOptions<MeatContext> options)
+        private readonly ITenantContext tenantContext;
+
+        public MeatContext(DbContextOptions<MeatContext> options, ITenantContext tenantContext)
             : base(options)
         {
+            this.tenantContext = tenantContext;
+        }
+
+        /// <summary>
+        /// Empresa activa de la request. La leen los query filters de las entidades ITenantScoped.
+        /// Es null cuando no hay usuario autenticado (login, migraciones al arrancar) y en ese
+        /// caso el filtro por empresa no aplica.
+        /// </summary>
+        public string EmpresaActivaId => this.tenantContext?.EmpresaId;
+
+        private static readonly MethodInfo AplicarFiltrosMethod = typeof(MeatContext)
+            .GetMethod(nameof(AplicarFiltrosTenant), BindingFlags.NonPublic | BindingFlags.Instance);
+
+        /// <summary>
+        /// Filtro de las entidades propias de una empresa: soft delete + empresa activa.
+        /// Se escribe como lambda de C# (no como arbol armado a mano) a proposito: asi EF
+        /// reconoce la referencia a la instancia del contexto y la parametriza en cada query,
+        /// en vez de hornear el valor de la primera empresa en el modelo cacheado.
+        /// </summary>
+        private void AplicarFiltrosTenant<TEntity>(ModelBuilder modelBuilder)
+            where TEntity : class, ITenantScoped
+        {
+            modelBuilder.Entity<TEntity>().HasQueryFilter(e =>
+                EF.Property<DateTime?>(e, "FechaBaja") == null
+                && (this.EmpresaActivaId == null || e.EmpresaId == this.EmpresaActivaId));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -90,6 +120,19 @@ namespace Meat.Repositories
 
                 entityType.AddProperty("FechaBaja", typeof(DateTime?));
 
+                if (typeof(ITenantScoped).IsAssignableFrom(entityType.ClrType))
+                {
+                    // Entidad propia de una empresa: soft delete + filtro por empresa activa.
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property(nameof(ITenantScoped.EmpresaId)).HasMaxLength(20).IsRequired();
+
+                    AplicarFiltrosMethod.MakeGenericMethod(entityType.ClrType)
+                        .Invoke(this, new object[] { modelBuilder });
+
+                    continue;
+                }
+
+                // Tabla comun a todas las empresas: solo soft delete.
                 var parameter = Expression.Parameter(entityType.ClrType);
 
                 var propertyMethodInfo = typeof(EF).GetMethod("Property").MakeGenericMethod(typeof(DateTime?));
@@ -101,6 +144,8 @@ namespace Meat.Repositories
 
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
             }
+
+            modelBuilder.Entity<Domain.Empresas.Empresa>().Property(x => x.Id).HasMaxLength(20);
 
             #endregion Soft Deleting
 
@@ -142,7 +187,7 @@ namespace Meat.Repositories
 
             // Codigos unicos (una columna)
             modelBuilder.Entity<Domain.Sucursales.Sucursal>()
-                .HasIndex(s => s.CodigoSucursal)
+                .HasIndex(s => new { s.EmpresaId, s.CodigoSucursal })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
@@ -152,12 +197,12 @@ namespace Meat.Repositories
                 .HasFilter("[FechaBaja] IS NULL");
 
             modelBuilder.Entity<Domain.Establecimientos.Establecimiento>()
-                .HasIndex(e => e.CodigoEstablecimiento)
+                .HasIndex(e => new { e.EmpresaId, e.CodigoEstablecimiento })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
             modelBuilder.Entity<Domain.Clientes.Cliente>()
-                .HasIndex(c => c.CodigoCliente)
+                .HasIndex(c => new { c.EmpresaId, c.CodigoCliente })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
@@ -200,19 +245,19 @@ namespace Meat.Repositories
 
             // Una sola unidad de faena por defecto por Especie
             modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
-                .HasIndex(u => u.EspecieId)
+                .HasIndex(u => new { u.EmpresaId, u.EspecieId })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
 
             // Un solo destino comercial favorito (default del Tipificador)
             modelBuilder.Entity<Domain.DestinosComerciales.DestinoComercial>()
-                .HasIndex(d => d.Favorito)
+                .HasIndex(d => new { d.EmpresaId, d.Favorito })
                 .IsUnique()
-                .HasFilter("[Favorito] = 1");
+                .HasFilter("[FechaBaja] IS NULL AND [Favorito] = 1");
 
             // Codigo de material unico (catalogo de productos terminados)
             modelBuilder.Entity<Domain.Materiales.Material>()
-                .HasIndex(m => m.CodigoMaterial)
+                .HasIndex(m => new { m.EmpresaId, m.CodigoMaterial })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
@@ -247,6 +292,33 @@ namespace Meat.Repositories
             // Numerador ROMANEO. Incluye los anulados a proposito: el numero no se reutiliza.
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.EstablecimientoId, r.EspecieId, r.NumeroRomaneo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Codigo de negocio unico por empresa en las entidades que pasaron de PK string a Guid Id.
+            // El codigo dejo de ser la PK pero sigue siendo el identificador que usa el usuario.
+            modelBuilder.Entity<Domain.Parametros.Parametro>()
+                .HasIndex(p => new { p.EmpresaId, p.Codigo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.DestinosComerciales.DestinoComercial>()
+                .HasIndex(d => new { d.EmpresaId, d.Codigo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
+                .HasIndex(u => new { u.EmpresaId, u.Codigo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.TiposEspecies.TipoEspecie>()
+                .HasIndex(te => new { te.EmpresaId, te.Codigo })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            modelBuilder.Entity<Domain.Tipificaciones.Tipificacion>()
+                .HasIndex(ti => new { ti.EmpresaId, ti.Codigo })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
@@ -432,6 +504,64 @@ namespace Meat.Repositories
             });
 
             #endregion Relaciones - Existencia de camara (Evaluacion de Faena)
+
+            // Restrict y no Cascade: borrar una empresa no puede arrastrar en cascada su
+            // operacion entera. El borrado del sistema es logico (FechaBaja) y el
+            // DeleteEmpresaHandler valida que no queden dependencias antes de dar de baja.
+            // Se ajusta la relacion que ya descubrio la convencion; configurarla con HasOne
+            // crearia una segunda FK en sombra (EmpresaId1).
+            foreach (var fk in modelBuilder.Model.GetEntityTypes()
+                .SelectMany(e => e.GetForeignKeys())
+                .Where(fk => fk.PrincipalEntityType.ClrType == typeof(Domain.Empresas.Empresa)))
+            {
+                fk.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+
+            ValidarReglaEstructural(modelBuilder);
+        }
+
+        /// <summary>
+        /// Regla estructural del modelo: una tabla propia de una empresa lleva EmpresaId y PK Guid;
+        /// una tabla comun a todas las empresas es un catalogo (PK string Codigo) y no lleva EmpresaId.
+        /// O sea: PK Guid si y solo si ITenantScoped.
+        ///
+        /// Se valida al construir el modelo para que una entidad mal clasificada haga fallar el
+        /// arranque de la aplicacion, en vez de filtrar datos entre empresas en silencio.
+        /// </summary>
+        private static void ValidarReglaEstructural(ModelBuilder modelBuilder)
+        {
+            var violaciones = new System.Collections.Generic.List<string>();
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (entityType.IsOwned())
+                {
+                    continue;
+                }
+
+                var esPropiaDeEmpresa = typeof(ITenantScoped).IsAssignableFrom(entityType.ClrType);
+
+                var pk = entityType.FindPrimaryKey();
+                var tienePkGuid = pk != null
+                    && pk.Properties.Count == 1
+                    && pk.Properties[0].ClrType == typeof(Guid);
+
+                if (esPropiaDeEmpresa && !tienePkGuid)
+                {
+                    violaciones.Add($"{entityType.ClrType.Name}: es ITenantScoped pero su PK no es un Guid simple.");
+                }
+                else if (!esPropiaDeEmpresa && tienePkGuid)
+                {
+                    violaciones.Add($"{entityType.ClrType.Name}: tiene PK Guid pero no es ITenantScoped (no lleva EmpresaId).");
+                }
+            }
+
+            if (violaciones.Any())
+            {
+                throw new InvalidOperationException(
+                    "El modelo viola la regla estructural (PK Guid <=> EmpresaId):"
+                    + Environment.NewLine + string.Join(Environment.NewLine, violaciones));
+            }
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -448,6 +578,8 @@ namespace Meat.Repositories
 
         private void OnBeforeSaving()
         {
+            var empresaActiva = this.EmpresaActivaId;
+
             foreach (var entry in ChangeTracker.Entries())
             {
                 switch (entry.State)
@@ -455,6 +587,31 @@ namespace Meat.Repositories
                     case EntityState.Deleted:
                         entry.State = EntityState.Modified;
                         entry.CurrentValues["FechaBaja"] = DateTime.Now;
+                        break;
+
+                    case EntityState.Added:
+                        // Contraparte de escritura del query filter: el alta hereda la empresa
+                        // activa, asi ningun handler necesita acordarse de asignarla.
+                        if (entry.Entity is ITenantScoped nueva && string.IsNullOrEmpty(nueva.EmpresaId))
+                        {
+                            if (string.IsNullOrEmpty(empresaActiva))
+                            {
+                                throw new InvalidOperationException(
+                                    $"No se puede dar de alta {entry.Entity.GetType().Name} sin empresa activa.");
+                            }
+
+                            nueva.EmpresaId = empresaActiva;
+                        }
+                        break;
+
+                    case EntityState.Modified:
+                        // Un registro no puede cambiar de empresa ni ser modificado desde otra.
+                        if (entry.Entity is ITenantScoped modificada && !string.IsNullOrEmpty(empresaActiva)
+                            && modificada.EmpresaId != empresaActiva)
+                        {
+                            throw new InvalidOperationException(
+                                $"Intento de modificar {entry.Entity.GetType().Name} de otra empresa.");
+                        }
                         break;
                 }
             }

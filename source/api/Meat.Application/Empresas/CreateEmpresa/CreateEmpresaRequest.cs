@@ -1,12 +1,13 @@
-using MediatR;
+﻿using MediatR;
 using System.ComponentModel.DataAnnotations;
 
 namespace Meat.Application.Empresas.CreateEmpresa
 {
     public class CreateEmpresaRequest : IRequest<CreateEmpresaResponse>
     {
+        /// <summary>Codigo de negocio de la empresa: es su clave primaria.</summary>
         [Required]
-        public string CodigoEmpresa { get; set; }
+        public string Id { get; set; }
 
         [Required]
         public string Nombre { get; set; }

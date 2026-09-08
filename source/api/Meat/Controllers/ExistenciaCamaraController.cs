@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.ExistenciaCamara.GetExistenciaCamara;
@@ -21,14 +21,14 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetExistenciaCamaraRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
         [HttpGet("movimientos")]
         public async Task<IActionResult> GetMovimientosAsync([FromQuery] GetMovimientosCamaraRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
     }

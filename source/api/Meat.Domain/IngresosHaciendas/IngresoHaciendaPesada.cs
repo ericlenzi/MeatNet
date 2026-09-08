@@ -1,11 +1,13 @@
-using Meat.Domain.TiposEspecies;
+﻿using Meat.Domain.TiposEspecies;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.IngresosHaciendas
 {
-    public class IngresoHaciendaPesada
+    public class IngresoHaciendaPesada : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -14,11 +16,15 @@ namespace Meat.Domain.IngresosHaciendas
         public Guid IngresoHaciendaId { get; set; }
         public virtual IngresoHacienda IngresoHacienda { get; set; }
 
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public double PesoIngreso { get; set; }            // kg
         public string UnidadMedida { get; set; }           // "KG"
         public string IdPesada { get; set; }               // numero de ticket de la balanza (string)
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

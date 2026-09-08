@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.IngresosHaciendas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -25,10 +25,9 @@ namespace Meat.Application.Tropas.GetTropasDisponibles
                 join esp in this.context.Especies on t.EspecieCodigo equals esp.Codigo
                 join c in this.context.Clientes on i.ClienteId equals c.Id
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 where t.EstadoTropaId == EstadosTropa.Recepcionada
                     && i.EstadoIngresoId == EstadosIngreso.Aprobado
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && (request.EstablecimientoId == null || est.Id == request.EstablecimientoId)
                 select new TropaDisponibleItem
                 {

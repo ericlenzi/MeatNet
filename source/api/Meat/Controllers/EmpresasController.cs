@@ -1,4 +1,4 @@
-using Meat.Application.Empresas.CreateEmpresa;
+﻿using Meat.Application.Empresas.CreateEmpresa;
 using Meat.Application.Empresas.DeleteEmpresa;
 using Meat.Application.Empresas.GetEmpresa;
 using Meat.Application.Empresas.GetEmpresas;
@@ -30,7 +30,7 @@ namespace Meat.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> GetEmpresaAsync([FromRoute] Guid id) => await this.Handle(
+        public async Task<IActionResult> GetEmpresaAsync([FromRoute] string id) => await this.Handle(
             new GetEmpresaRequest { Id = id }
         );
 
@@ -43,11 +43,10 @@ namespace Meat.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UpdateEmpresaAsync([FromRoute] Guid id, [FromBody] UpdateEmpresaRequestFromBody body) => await this.Handle(
+        public async Task<IActionResult> UpdateEmpresaAsync([FromRoute] string id, [FromBody] UpdateEmpresaRequestFromBody body) => await this.Handle(
             new UpdateEmpresaRequest()
             {
                 Id = id,
-                CodigoEmpresa = body.CodigoEmpresa,
                 Nombre = body.Nombre,
                 TipoEmpresaId = body.TipoEmpresaId,
                 NumeroCuit = body.NumeroCuit,
@@ -61,7 +60,7 @@ namespace Meat.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DeleteEmpresaByIdAsync([FromRoute] Guid id) => await this.Handle(
+        public async Task<IActionResult> DeleteEmpresaByIdAsync([FromRoute] string id) => await this.Handle(
             new DeleteEmpresaRequest { Id = id }
         );
     }

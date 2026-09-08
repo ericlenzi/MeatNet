@@ -1,4 +1,4 @@
-using Meat.Application.IngresosHaciendas;
+﻿using Meat.Application.IngresosHaciendas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,7 +20,7 @@ namespace Meat.Application.ListasMatanzas
         /// Animales En Pie por (Tropa, Corral, TipoEspecie) de tropas Recepcionadas de la especie
         /// en el establecimiento, ya descontado lo faenado historicamente (Romaneo → CantidadFaenada).
         /// </summary>
-        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetEnPieAsync(
+        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, Guid TipoEspecieId), int>> GetEnPieAsync(
             MeatContext context, Guid establecimientoId, string especieId, CancellationToken cancellationToken)
         {
             var rows = await (
@@ -39,8 +39,8 @@ namespace Meat.Application.ListasMatanzas
             var faenado = await GetFaenadoAsync(context, establecimientoId, especieId, cancellationToken);
 
             return rows.ToDictionary(
-                r => (r.TropaId, r.AlmacenId, r.TipoEspecieId),
-                r => r.Cantidad - (faenado.TryGetValue((r.TropaId, r.AlmacenId, r.TipoEspecieId), out var f) ? f : 0));
+                r => (r.TropaId, r.AlmacenId, r.TipoEspecieId ?? Guid.Empty),
+                r => r.Cantidad - (faenado.TryGetValue((r.TropaId, r.AlmacenId, r.TipoEspecieId ?? Guid.Empty), out var f) ? f : 0));
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Meat.Application.ListasMatanzas
         /// los renglones de la especie en el establecimiento (cualquier estado de LM: la faena es
         /// permanente). Es la "resta derivada" del consumo real de stock (Ejecucion de Faena).
         /// </summary>
-        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetFaenadoAsync(
+        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, Guid TipoEspecieId), int>> GetFaenadoAsync(
             MeatContext context, Guid establecimientoId, string especieId, CancellationToken cancellationToken)
         {
             var rows = await (
@@ -65,7 +65,7 @@ namespace Meat.Application.ListasMatanzas
         }
 
         /// <summary>Animales reservados por (Tropa, Corral, TipoEspecie) por LMs Confirmadas / En Ejecucion (excluyendo opcionalmente una LM).</summary>
-        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, string TipoEspecieId), int>> GetReservadoAsync(
+        public static async Task<Dictionary<(Guid TropaId, Guid AlmacenId, Guid TipoEspecieId), int>> GetReservadoAsync(
             MeatContext context, Guid establecimientoId, string especieId, Guid? excludeListaId, CancellationToken cancellationToken)
         {
             var rows = await (

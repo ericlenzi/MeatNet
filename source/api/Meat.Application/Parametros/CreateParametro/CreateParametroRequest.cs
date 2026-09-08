@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -12,6 +12,6 @@ namespace Meat.Application.Parametros.CreateParametro
         public string Nombre { get; set; }
         public string Valor { get; set; }
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 }

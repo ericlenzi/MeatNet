@@ -21,8 +21,7 @@ namespace Meat.Application.Sucursales.GetSucursales
         public async Task<GetSucursalesResponse> Handle(GetSucursalesRequest request, CancellationToken cancellationToken)
         {
             IQueryable<Sucursal> queryable = this.context.Sucursales
-                .Include(x => x.Empresa)
-                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .Include(x => x.Empresa);
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +22,7 @@ namespace Meat.Application.ListasMatanzas.DeleteListaMatanza
                 .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(lm => lm.Renglones)
                 .Include(lm => lm.Movimientos)
-                .FirstOrDefaultAsync(lm => lm.Id == request.Id
-                    && lm.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(lm => lm.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("La lista de matanza no existe.");

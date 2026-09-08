@@ -7,7 +7,7 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
     public class LiberarJornadaRequest : IRequest<LiberarJornadaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         [JsonIgnore]
         public Guid UsuarioId { get; set; }
 

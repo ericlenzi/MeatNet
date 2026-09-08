@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.Tropas.GetTropasDisponibles;
@@ -17,14 +17,14 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetTropasDisponiblesRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
         [HttpGet("trazabilidad")]
         public async Task<IActionResult> GetTrazabilidadAsync([FromQuery] GetTrazabilidadTropaRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
     }

@@ -75,7 +75,7 @@ namespace Meat.Controllers
             new RestaurarPasswordUsuarioRequest
             {
                 UsuarioId = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             }
         );
     }

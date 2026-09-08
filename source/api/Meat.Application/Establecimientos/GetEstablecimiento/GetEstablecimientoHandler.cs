@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Repositories;
@@ -24,7 +24,7 @@ namespace Meat.Application.Establecimientos.GetEstablecimiento
                 .Include(x => x.Empresa)
                 .Include(x => x.Sucursal)
                 .Include(x => x.Especies).ThenInclude(ee => ee.Especie)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             return this.mapper.Map<GetEstablecimientoResponse>(entity);
         }

@@ -10,7 +10,7 @@ namespace Meat.Application.Sucursales.GetSucursalByCodigo
         public GetSucursalByCodigoMapperProfile()
         {
             this.CreateMap<Sucursal, GetSucursalByCodigoResponse>()
-                .ForMember(dest => dest.CodigoEmpresa, opt => opt.MapFrom(src => src.Empresa.CodigoEmpresa));
+                .ForMember(dest => dest.EmpresaId, opt => opt.MapFrom(src => src.EmpresaId));
         }
     }
 }

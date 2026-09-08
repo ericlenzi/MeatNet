@@ -1,11 +1,10 @@
-using System;
+﻿using System;
 
 namespace Meat.Application.Empresas.GetEmpresa
 {
     public class GetEmpresaResponse
     {
-        public Guid Id { get; set; }
-        public string CodigoEmpresa { get; set; }
+        public string Id { get; set; }
         public string Nombre { get; set; }
         public string TipoEmpresaId { get; set; }
         public string NumeroCuit { get; set; }

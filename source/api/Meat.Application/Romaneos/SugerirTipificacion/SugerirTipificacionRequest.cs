@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,12 +8,12 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
     public class SugerirTipificacionRequest : IRequest<SugerirTipificacionResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public string EspecieId { get; set; }
-        public string TipoEspecieId { get; set; }
-        public string UnidadFaenaId { get; set; }
-        public string DestinoComercialId { get; set; }      // opcional (filtro)
+        public Guid? TipoEspecieId { get; set; }
+        public Guid? UnidadFaenaId { get; set; }
+        public Guid? DestinoComercialId { get; set; }      // opcional (filtro)
         public double? Peso { get; set; }                    // opcional; si viene, elige por rango
     }
 
@@ -27,7 +27,7 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
     {
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
-        public string DestinoComercialId { get; set; }
+        public Guid? DestinoComercialId { get; set; }
         public string DestinoComercialNombre { get; set; }
         public double PesoDesde { get; set; }
         public double PesoHasta { get; set; }

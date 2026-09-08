@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Clientes
 {
-    public class Cliente
+    public class Cliente : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -23,5 +25,9 @@ namespace Meat.Domain.Clientes
         public bool Activo { get; set; }
         public string ERP_Codigo { get; set; }
         public DateTime FechaActualizacion { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

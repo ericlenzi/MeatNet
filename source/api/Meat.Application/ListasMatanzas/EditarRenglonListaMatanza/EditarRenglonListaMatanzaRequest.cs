@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
@@ -11,7 +11,7 @@ namespace Meat.Application.ListasMatanzas.EditarRenglonListaMatanza
         [JsonIgnore]
         public Guid RenglonId { get; set; }
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         [JsonIgnore]
         public Guid UsuarioId { get; set; }
 

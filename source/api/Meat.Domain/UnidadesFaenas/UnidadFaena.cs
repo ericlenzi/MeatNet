@@ -1,8 +1,10 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.TiposMateriales;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.UnidadesFaenas
 {
@@ -13,10 +15,12 @@ namespace Meat.Domain.UnidadesFaenas
     /// CUARTO=4). Es lo que define cuantas piezas se capturan por romaneo.
     /// PorDefecto marca la unidad predeterminada de la especie (una sola por especie).
     /// </summary>
-    public class UnidadFaena
+    public class UnidadFaena : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public Guid Id { get; set; }
+        /// <summary>Codigo de negocio, unico dentro de la empresa.</summary>
         public string Codigo { get; set; }
 
         public string EspecieId { get; set; }
@@ -40,5 +44,9 @@ namespace Meat.Domain.UnidadesFaenas
         public string ERP_Codigo { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +23,7 @@ namespace Meat.Application.IngresosHaciendas.DeleteIngresoHacienda
                 .Include(i => i.Pesadas)
                 .Include(i => i.Ubicaciones)
                 .Include(i => i.Tropas)
-                .FirstOrDefaultAsync(i => i.Id == request.Id
-                    && i.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El ingreso de hacienda no existe.");

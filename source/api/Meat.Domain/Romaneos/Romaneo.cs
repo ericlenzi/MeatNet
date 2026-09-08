@@ -1,4 +1,4 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
 using Meat.Domain.ListasMatanzas;
 using Meat.Domain.Tropas;
@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Romaneos
 {
@@ -16,7 +18,7 @@ namespace Meat.Domain.Romaneos
     /// cuantas piezas tenga (VACUNO = 2 medias reses A/B; PORCINO = 1 res). Cuelga de la
     /// LM EN_EJECUCION (jornada) y del renglon elegido.
     /// </summary>
-    public class Romaneo
+    public class Romaneo : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -37,7 +39,7 @@ namespace Meat.Domain.Romaneos
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        public string UnidadFaenaId { get; set; }              // RES / MEDIA RES; define nro de piezas (FK a UnidadFaena.Codigo)
+        public Guid UnidadFaenaId { get; set; }              // RES / MEDIA RES; define nro de piezas (FK a UnidadFaena.Codigo)
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         public int NumeroGarron { get; set; }                  // nro fisico de gancho; unico por LM
@@ -55,5 +57,9 @@ namespace Meat.Domain.Romaneos
         public Guid? UsuarioLiberacionId { get; set; }
 
         public virtual ICollection<RomaneoPieza> Piezas { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

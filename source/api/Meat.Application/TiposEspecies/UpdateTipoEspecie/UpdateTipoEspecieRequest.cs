@@ -1,10 +1,11 @@
+﻿using System;
 using MediatR;
 
 namespace Meat.Application.TiposEspecies.UpdateTipoEspecie
 {
     public class UpdateTipoEspecieRequest : IRequest<UpdateTipoEspecieResponse>
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string Nombre { get; set; }
         public string EspecieId { get; set; }
         public string TipoSexoId { get; set; }

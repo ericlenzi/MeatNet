@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
@@ -8,6 +8,6 @@ namespace Meat.Application.Usuarios.RestaurarPasswordUsuario
     {
         public Guid UsuarioId { get; set; }
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 }

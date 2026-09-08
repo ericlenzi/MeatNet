@@ -1,7 +1,9 @@
-using Meat.Domain.TiposEstadosTropas;
+﻿using Meat.Domain.TiposEstadosTropas;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Tropas
 {
@@ -11,7 +13,7 @@ namespace Meat.Domain.Tropas
     /// registra aqui un evento. Es la fuente de verdad de la trazabilidad de la
     /// tropa; nunca se edita ni se borra.
     /// </summary>
-    public class TropaMovimiento
+    public class TropaMovimiento : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -36,5 +38,9 @@ namespace Meat.Domain.Tropas
         // Referencia opcional al documento que origino el evento
         public string ReferenciaTipo { get; set; }      // ej: "INGRESO", "LISTA_MATANZA"
         public Guid? ReferenciaId { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

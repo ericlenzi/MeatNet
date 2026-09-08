@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Domain.Empresas;
@@ -25,13 +25,13 @@ namespace Meat.Application.Empresas.GetEmpresas
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
                     x.Nombre.Contains(request.Filter) ||
-                    x.CodigoEmpresa.Contains(request.Filter) ||
+                    x.Id.Contains(request.Filter) ||
                     x.NumeroCuit.Contains(request.Filter));
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);
 
-            queryable = queryable.OrderBy(x => x.CodigoEmpresa);
+            queryable = queryable.OrderBy(x => x.Id);
 
             var totalRows = await queryable.CountAsync(cancellationToken);
 

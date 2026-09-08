@@ -1,3 +1,4 @@
+﻿using System;
 using MediatR;
 using Meat.Application.IngresosHaciendas;
 using Meat.Repositories;
@@ -28,11 +29,10 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                 join c in this.context.Clientes on i.ClienteId equals c.Id
                 join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Id
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 where i.EstadoIngresoId == EstadosIngreso.Aprobado
                     && t.EstadoTropaId == EstadosTropa.Recepcionada
                     && u.EstadoHaciendaId == EstadosHacienda.EnPie
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && est.Id == request.EstablecimientoId
                     && t.EspecieCodigo == request.EspecieId
                 group new { u, c } by new

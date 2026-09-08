@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
@@ -23,7 +23,7 @@ namespace Meat.Application.Parametros.UpdateParametro
         {
             var parametro = await this.context.Parametros
                 .Include(x => x.Empresa)
-                .FirstOrDefaultAsync(x => x.Codigo == request.Codigo && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .FirstOrDefaultAsync(x => x.Codigo == request.Codigo);
             if (parametro == null)
             {
                 throw new ValidationException("El parametro no existe");

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.IngresosHaciendas;
 using Meat.Application.Shared;
 using Meat.Application.Tropas;
@@ -36,8 +36,7 @@ namespace Meat.Application.Romaneos.AnularRomaneo
             // Verificar empresa via la LM
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == romaneo.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == romaneo.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("El romaneo no pertenece a la empresa.");
 
@@ -53,13 +52,13 @@ namespace Meat.Application.Romaneos.AnularRomaneo
                 renglon.CantidadFaenada = Math.Max(0, renglon.CantidadFaenada - 1);
 
             // Revertir Puntos de las tipificaciones usadas
-            var codigos = romaneo.Piezas.Select(p => p.TipificacionId).ToList();
+            var tipIds = romaneo.Piezas.Where(p => p.TipificacionId.HasValue).Select(p => p.TipificacionId.Value).ToList();
             var tipificaciones = await this.context.Tipificaciones
-                .Where(t => codigos.Contains(t.Codigo))
+                .Where(t => tipIds.Contains(t.Id))
                 .ToListAsync(cancellationToken);
             foreach (var pieza in romaneo.Piezas)
             {
-                var tip = tipificaciones.FirstOrDefault(t => t.Codigo == pieza.TipificacionId);
+                var tip = tipificaciones.FirstOrDefault(t => t.Id == pieza.TipificacionId);
                 if (tip != null)
                 {
                     tip.Puntos = Math.Max(0, tip.Puntos - 1);

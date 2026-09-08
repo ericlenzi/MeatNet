@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Application.Shared.GeneratePassword;
@@ -23,8 +23,7 @@ namespace Meat.Application.Usuarios.RestaurarPasswordUsuario
         public async Task<RestaurarPasswordUsuarioResponse> Handle(RestaurarPasswordUsuarioRequest request, CancellationToken cancellationToken)
         {
             var parametro = await this.context.Parametros
-                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL"
-                    && p.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL", cancellationToken);
 
             if (parametro == null || string.IsNullOrWhiteSpace(parametro.Valor))
                 throw new ValidationException("No se encontro el parametro PASSWORD_INICIAL para esta empresa.");

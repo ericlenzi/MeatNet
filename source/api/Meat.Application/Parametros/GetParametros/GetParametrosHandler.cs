@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Domain.Parametros;
@@ -22,7 +22,6 @@ namespace Meat.Application.Parametros.GetParametros
         {
             IQueryable<Parametro> queryable = this.context.Parametros
                 .Include(x => x.Empresa)
-                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa)
                 .OrderBy(x => x.Codigo)
                 .AsQueryable();
 

@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
@@ -22,10 +22,10 @@ namespace Meat.Application.TiposEspecies.CreateTipoEspecie
 
         public async Task<CreateTipoEspecieResponse> Handle(CreateTipoEspecieRequest request, CancellationToken cancellationToken)
         {
-            if (this.context.TiposEspecies.Any(x => x.Id == request.Id))
+            if (this.context.TiposEspecies.Any(x => x.Codigo == request.Codigo))
                 throw new ValidationException("Ya existe un tipo de especie con ese codigo.");
 
-            var entity = new Domain.TiposEspecies.TipoEspecie();
+            var entity = Domain.TiposEspecies.TipoEspecieFactory.Create();
             this.mapper.Map(request, entity);
             entity.Activo = true;
             entity.FechaActualizacion = DateTime.Now;

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Domain.ListasMatanzas;
 using Meat.Repositories;
@@ -28,8 +28,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
             var entity = await this.context.ListasMatanzas
                 .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(lm => lm.Renglones)
-                .FirstOrDefaultAsync(lm => lm.Id == request.Id
-                    && lm.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(lm => lm.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("La lista de matanza no existe.");
@@ -40,7 +39,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
             if (request.Cantidad <= 0)
                 throw new ValidationException("La cantidad debe ser mayor a cero.");
 
-            if (string.IsNullOrEmpty(request.TipoEspecieId))
+            if (!request.TipoEspecieId.HasValue)
                 throw new ValidationException("Debe indicar la categoria (tipo de especie).");
 
             // R-A3: la LM ya esta confirmada; el renglon nuevo debe traer destino valido
@@ -54,7 +53,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
                 .Where(r => r.TropaId == request.TropaId && r.AlmacenId == request.AlmacenId && r.TipoEspecieId == request.TipoEspecieId)
                 .Sum(r => r.Cantidad - r.CantidadFaenada);
             await ListaMatanzaValidacion.ValidateDisponibilidadAsync(
-                this.context, entity, request.TropaId, request.AlmacenId, request.TipoEspecieId,
+                this.context, entity, request.TropaId, request.AlmacenId, request.TipoEspecieId.Value,
                 pendienteActual + request.Cantidad, cancellationToken);
 
             var secuencia = request.Secuencia
@@ -67,7 +66,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
                 TropaId = request.TropaId,
                 AlmacenId = request.AlmacenId,
                 AlmacenDestinoId = request.AlmacenDestinoId,
-                TipoEspecieId = request.TipoEspecieId,
+                TipoEspecieId = request.TipoEspecieId.Value,
                 Secuencia = secuencia,
                 Cantidad = request.Cantidad,
                 CantidadFaenada = 0

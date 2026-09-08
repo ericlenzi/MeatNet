@@ -1,6 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.ListasMatanzas
 {
@@ -9,7 +11,7 @@ namespace Meat.Domain.ListasMatanzas
     /// de la confirmacion (no reemplaza datos). Es la fuente de verdad de la
     /// trazabilidad; nunca se edita ni se borra.
     /// </summary>
-    public class ListaMatanzaMovimiento
+    public class ListaMatanzaMovimiento : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -31,5 +33,9 @@ namespace Meat.Domain.ListasMatanzas
         public int? SecuenciaAnterior { get; set; }
         public int? SecuenciaNueva { get; set; }
         public string Motivo { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -26,14 +26,14 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
         {
             var candidatas = await (
                 from tip in this.context.Tipificaciones
-                join dc in this.context.DestinosComerciales on tip.DestinoComercialId equals dc.Codigo into dcj
+                join dc in this.context.DestinosComerciales on tip.DestinoComercialId equals dc.Id into dcj
                 from dc in dcj.DefaultIfEmpty()
                 where tip.Activo
-                    && tip.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && tip.EspecieId == request.EspecieId
                     && tip.TipoEspecieId == request.TipoEspecieId
                     && tip.UnidadFaenaId == request.UnidadFaenaId
-                    && (string.IsNullOrEmpty(request.DestinoComercialId) || tip.DestinoComercialId == request.DestinoComercialId)
+                    && (request.DestinoComercialId == null || tip.DestinoComercialId == request.DestinoComercialId)
                 orderby tip.Puntos descending, tip.Descripcion
                 select new TipificacionCandidata
                 {

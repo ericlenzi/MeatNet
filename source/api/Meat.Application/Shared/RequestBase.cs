@@ -5,7 +5,12 @@ namespace Meat.Application.Shared
 {
     public class RequestBase
     {
-        public string CodigoEmpresa { get; set; }
+        /// <summary>
+        /// Empresa activa. La inyecta el controller desde el JWT: nunca se confia en el body,
+        /// de ahi el JsonIgnore.
+        /// </summary>
+        [JsonIgnore]
+        public string EmpresaId { get; set; }
         //[JsonIgnore]
         public string NumeroSucursal { get; set; }
         //[JsonIgnore]

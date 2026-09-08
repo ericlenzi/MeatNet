@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Application.Tipificaciones.Shared;
 using Meat.Repositories;
@@ -25,7 +25,7 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
                 throw new ValidationException("Ya existe una tipificacion con ese codigo.");
 
             await TipificacionValidacion.ValidateAsync(
-                this.context, request.EspecieId, request.TipoEspecieId, request.UnidadFaenaId,
+                this.context, request.EspecieId, request.TipoEspecieId, request.UnidadFaenaId ?? Guid.Empty,
                 request.DestinoComercialId, request.TipificacionOficialId, request.UnidadMedidaId,
                 request.PesoDesde, request.PesoHasta, request.MaterialId, cancellationToken);
 
@@ -33,10 +33,10 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
             {
                 Codigo = request.Codigo,
                 Descripcion = request.Descripcion,
-                CodigoEmpresa = request.CodigoEmpresa,
+                EmpresaId = request.EmpresaId,
                 EspecieId = request.EspecieId,
                 TipoEspecieId = request.TipoEspecieId,
-                UnidadFaenaId = request.UnidadFaenaId,
+                UnidadFaenaId = request.UnidadFaenaId.Value,
                 DestinoComercialId = request.DestinoComercialId,
                 TipificacionOficialId = request.TipificacionOficialId,
                 PesoDesde = request.PesoDesde,

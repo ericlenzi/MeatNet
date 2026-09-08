@@ -1,8 +1,10 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Numeradores
 {
@@ -10,7 +12,7 @@ namespace Meat.Domain.Numeradores
     /// Numerador generico por Establecimiento + Especie + TipoNumerador.
     /// Ej. TipoNumerador = "ROMANEO" lleva la secuencia de los romaneos creados.
     /// </summary>
-    public class Numerador
+    public class Numerador : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -28,5 +30,9 @@ namespace Meat.Domain.Numeradores
         public int UltimoNumero { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

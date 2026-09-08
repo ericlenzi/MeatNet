@@ -1,4 +1,4 @@
-using Meat.Application.Shared;
+﻿using Meat.Application.Shared;
 using System;
 using System.Collections.Generic;
 
@@ -14,11 +14,11 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
         public string Descripcion { get; set; }
         public string EspecieId { get; set; }
         public string EspecieNombre { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
-        public string UnidadFaenaId { get; set; }
+        public Guid? UnidadFaenaId { get; set; }
         public string UnidadFaenaNombre { get; set; }
-        public string DestinoComercialId { get; set; }
+        public Guid? DestinoComercialId { get; set; }
         public string DestinoComercialNombre { get; set; }
         public string TipificacionOficialId { get; set; }
         public string TipificacionOficialNombre { get; set; }

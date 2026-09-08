@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +23,7 @@ namespace Meat.Application.Numeradores.UpdateNumerador
             var entity = await (
                 from n in this.context.Numeradores
                 join e in this.context.Establecimientos on n.EstablecimientoId equals e.Id
-                join emp in this.context.Empresas on e.EmpresaId equals emp.Id
-                where n.Id == request.Id && emp.CodigoEmpresa == request.CodigoEmpresa
+                where n.Id == request.Id
                 select n
             ).FirstOrDefaultAsync(cancellationToken);
             if (entity == null)

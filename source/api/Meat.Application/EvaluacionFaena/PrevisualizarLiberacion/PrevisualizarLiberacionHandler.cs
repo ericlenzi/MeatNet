@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.EvaluacionFaena.Shared;
 using Meat.Application.ListasMatanzas;
 using Meat.Application.Shared;
@@ -31,8 +31,7 @@ namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
         {
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
 

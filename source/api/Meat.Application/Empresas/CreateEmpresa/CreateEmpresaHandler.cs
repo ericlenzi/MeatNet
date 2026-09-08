@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -21,7 +21,14 @@ namespace Meat.Application.Empresas.CreateEmpresa
 
         public async Task<CreateEmpresaResponse> Handle(CreateEmpresaRequest request, CancellationToken cancellationToken)
         {
-            var empresa = Domain.Empresas.EmpresaFactory.Create();
+            if (string.IsNullOrWhiteSpace(request.Id))
+                throw new ValidationException("Debe indicar el codigo de la empresa.");
+
+            var yaExiste = await this.context.Empresas.AnyAsync(x => x.Id == request.Id, cancellationToken);
+            if (yaExiste)
+                throw new ValidationException("Ya existe una empresa con ese codigo.");
+
+            var empresa = Domain.Empresas.EmpresaFactory.Create(request.Id);
             this.mapper.Map(request, empresa);
 
             this.context.Empresas.Add(empresa);

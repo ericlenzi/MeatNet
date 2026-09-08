@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 
 namespace Meat.Application.Parametros.DeleteParametro
 {
@@ -6,6 +6,6 @@ namespace Meat.Application.Parametros.DeleteParametro
     {
         public string Codigo { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 }

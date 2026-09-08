@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Meat.Application.Usuarios.GetUsuarioEstablecimientos;
@@ -22,7 +22,7 @@ namespace Meat.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromRoute] Guid usuarioId) => await this.Handle(
-            new GetUsuarioEstablecimientosRequest { UsuarioId = usuarioId, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
+            new GetUsuarioEstablecimientosRequest { UsuarioId = usuarioId, EmpresaId = base.CurrentUser.EmpresaId }
         );
 
         [HttpPost]

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -32,8 +32,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
                 .Include(i => i.Ubicaciones).ThenInclude(u => u.Almacen)
                 .Include(i => i.Ubicaciones).ThenInclude(u => u.EstadoHacienda)
                 .Include(i => i.Tropas)
-                .FirstOrDefaultAsync(i => i.Id == request.Id
-                    && i.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 return null;

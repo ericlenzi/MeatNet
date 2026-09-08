@@ -1,12 +1,14 @@
-using Meat.Domain.Establecimientos;
+﻿using Meat.Domain.Establecimientos;
 using Meat.Domain.TiposPuestos;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Puestos
 {
-    public class Puesto
+    public class Puesto : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -20,5 +22,9 @@ namespace Meat.Domain.Puestos
         public virtual TipoPuesto TipoPuesto { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public bool Activo { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

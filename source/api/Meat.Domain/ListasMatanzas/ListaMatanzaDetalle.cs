@@ -1,9 +1,11 @@
-using Meat.Domain.Almacenes;
+﻿using Meat.Domain.Almacenes;
 using Meat.Domain.TiposEspecies;
 using Meat.Domain.Tropas;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.ListasMatanzas
 {
@@ -13,7 +15,7 @@ namespace Meat.Domain.ListasMatanzas
     /// TipoEspecie) puede aparecer en varios renglones (resultado de "dividir"); la
     /// secuencia solo ordena, no es clave.
     /// </summary>
-    public class ListaMatanzaDetalle
+    public class ListaMatanzaDetalle : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -31,11 +33,15 @@ namespace Meat.Domain.ListasMatanzas
         public Guid? AlmacenDestinoId { get; set; }        // camara de faena (destino); requerido al Confirmar
         public virtual Almacen AlmacenDestino { get; set; }
 
-        public string TipoEspecieId { get; set; }          // categoria a faenar
+        public Guid TipoEspecieId { get; set; }          // categoria a faenar
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public int Secuencia { get; set; }                 // orden de faena (reordenable)
         public int Cantidad { get; set; }                  // animales a faenar de esta tropa/corral
         public int CantidadFaenada { get; set; }           // lo actualiza el Monitor; congela el renglon
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

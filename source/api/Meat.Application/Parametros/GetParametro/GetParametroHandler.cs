@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Repositories;
@@ -22,7 +22,7 @@ namespace Meat.Application.Parametros.GetParametro
         {
             var parametro = await this.context.Parametros
                 .Include(p => p.Empresa)
-                .FirstOrDefaultAsync(p => p.Codigo == request.Codigo && p.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .FirstOrDefaultAsync(p => p.Codigo == request.Codigo);
 
             return this.mapper.Map<GetParametroResponse>(parametro);
         }

@@ -1,7 +1,9 @@
-using Meat.Domain.Materiales;
+﻿using Meat.Domain.Materiales;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.DespiecesMateriales
 {
@@ -10,7 +12,7 @@ namespace Meat.Domain.DespiecesMateriales
     /// Material destino (ej. CUARTO DELANTERO). Rendimiento = fraccion (0..1) del peso del origen
     /// que va a este destino; la suma por origen deberia ser ~1. La usa la Liberacion (Paso 4).
     /// </summary>
-    public class DespieceMaterial
+    public class DespieceMaterial : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -30,5 +32,9 @@ namespace Meat.Domain.DespiecesMateriales
 
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

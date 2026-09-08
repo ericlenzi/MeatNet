@@ -1,14 +1,16 @@
-using Meat.Domain.Almacenes;
+﻿using Meat.Domain.Almacenes;
 using Meat.Domain.TiposEspecies;
 using Meat.Domain.TiposEstadosHacienda;
 using Meat.Domain.Tropas;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.IngresosHaciendas
 {
-    public class IngresoHaciendaUbicacion
+    public class IngresoHaciendaUbicacion : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -20,7 +22,7 @@ namespace Meat.Domain.IngresosHaciendas
         public Guid? TropaId { get; set; }                 // null en Borrador; se liga al aprobar
         public virtual Tropa Tropa { get; set; }
 
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public Guid AlmacenId { get; set; }                // corral
@@ -31,5 +33,9 @@ namespace Meat.Domain.IngresosHaciendas
 
         public string EstadoHaciendaId { get; set; }
         public virtual TipoEstadoHacienda EstadoHacienda { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

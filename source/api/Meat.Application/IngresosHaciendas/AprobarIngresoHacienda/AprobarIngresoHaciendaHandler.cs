@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Application.Tropas;
 using Meat.Domain.NumeradoresTropas;
@@ -28,8 +28,7 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
                 .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(i => i.Pesadas)
                 .Include(i => i.Ubicaciones).ThenInclude(u => u.Almacen)
-                .FirstOrDefaultAsync(i => i.Id == request.Id
-                    && i.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El ingreso de hacienda no existe.");
@@ -97,7 +96,7 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
                 .ToDictionaryAsync(te => te.Id, te => te.EspecieId, cancellationToken);
 
             var especies = entity.Ubicaciones
-                .Select(u => especiePorTipo.TryGetValue(u.TipoEspecieId ?? string.Empty, out var esp) ? esp : null)
+                .Select(u => especiePorTipo.TryGetValue(u.TipoEspecieId ?? Guid.Empty, out var esp) ? esp : null)
                 .Where(esp => esp != null)
                 .Distinct()
                 .ToList();
@@ -145,7 +144,7 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
 
                 // Ligar las ubicaciones de esa especie a la tropa
                 foreach (var u in entity.Ubicaciones.Where(u =>
-                    especiePorTipo.TryGetValue(u.TipoEspecieId ?? string.Empty, out var esp) && esp == especieCodigo))
+                    especiePorTipo.TryGetValue(u.TipoEspecieId ?? Guid.Empty, out var esp) && esp == especieCodigo))
                 {
                     u.TropaId = tropa.Id;
                 }

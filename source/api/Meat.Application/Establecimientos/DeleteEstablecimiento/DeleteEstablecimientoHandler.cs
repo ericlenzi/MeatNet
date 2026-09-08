@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Repositories;
@@ -21,7 +21,7 @@ namespace Meat.Application.Establecimientos.DeleteEstablecimiento
         {
             var entity = await this.context.Establecimientos
                 .Include(x => x.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El establecimiento no existe");

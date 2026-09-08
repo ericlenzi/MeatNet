@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.Parametros.GetParametros;
@@ -24,7 +24,7 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetParametrosAsync([FromQuery] GetParametrosRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -34,7 +34,7 @@ namespace Meat.Controllers
             new GetParametroRequest
             {
                 Codigo = codigo,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             }
         );
 
@@ -42,7 +42,7 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateParametroAsync([FromBody] CreateParametroRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await Handle(request);
         }
 
@@ -52,7 +52,7 @@ namespace Meat.Controllers
             new UpdateParametroRequest()
             {
                 Codigo = codigo,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 Nombre = body.Nombre,
                 Valor = body.Valor,
                 Activo = body.Activo
@@ -65,7 +65,7 @@ namespace Meat.Controllers
             new DeleteParametroRequest
             {
                 Codigo = codigo,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             }
         );
     }

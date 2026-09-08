@@ -1,12 +1,14 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Meat.Domain.Roles;
 using Meat.Domain.Usuarios;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.UsuariosSucursales
 {
-    public class UsuarioSucursal
+    public class UsuarioSucursal : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -20,5 +22,9 @@ namespace Meat.Domain.UsuariosSucursales
         //ToDo: roles por sucursal
         //public string RolId { get; set; }
         //public virtual Rol Rol { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

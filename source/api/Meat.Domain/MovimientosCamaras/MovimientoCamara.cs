@@ -1,4 +1,4 @@
-using Meat.Domain.Almacenes;
+﻿using Meat.Domain.Almacenes;
 using Meat.Domain.Especies;
 using Meat.Domain.Materiales;
 using Meat.Domain.Romaneos;
@@ -8,6 +8,8 @@ using Meat.Domain.Tropas;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.MovimientosCamaras
 {
@@ -20,7 +22,7 @@ namespace Meat.Domain.MovimientosCamaras
     /// Nace en la Liberacion: cada RomaneoPieza no anulada genera un INGRESO (si su material
     /// no se cuartea) o un juego de TRANSF_BAJA + TRANSF_ALTA (si tiene despiece activo).
     /// </summary>
-    public class MovimientoCamara
+    public class MovimientoCamara : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -52,12 +54,16 @@ namespace Meat.Domain.MovimientosCamaras
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public DateTime Fecha { get; set; }
         public Guid? UsuarioId { get; set; }
 
         public string Referencia { get; set; }                  // texto legible del origen, ej. "Liberacion LM Nro 4"
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

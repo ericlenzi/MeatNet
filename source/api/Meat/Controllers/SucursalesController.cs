@@ -26,7 +26,7 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetSucursalesAsync([FromQuery] GetSucursalesRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -36,7 +36,7 @@ namespace Meat.Controllers
             new GetSucursalRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             }
         );
 
@@ -44,7 +44,7 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> CreateSucursalAsync([FromBody] CreateSucursalRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await Handle(request);
         }
 
@@ -54,9 +54,8 @@ namespace Meat.Controllers
             new UpdateSucursalRequest()
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 Nombre = body.Nombre,
-                EmpresaId = body.EmpresaId,
                 Activa = body.Activa,
                 Direccion = body.Direccion,
                 CodigoPostal = body.CodigoPostal,
@@ -75,7 +74,7 @@ namespace Meat.Controllers
             new DeleteSucursalRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             }
         );
 
@@ -87,7 +86,7 @@ namespace Meat.Controllers
                 new GetSucursalByCodigoRequest()
                 {
                     Codigo = codigo,
-                    CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                    EmpresaId = base.CurrentUser.EmpresaId
                 }
             );
         }

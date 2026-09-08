@@ -39,6 +39,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<Guid>("EstablecimientoId")
                         .HasColumnType("uniqueidentifier");
 
@@ -55,6 +60,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EstablecimientoId");
 
@@ -77,6 +84,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
@@ -97,11 +109,11 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoCliente")
+                    b.HasIndex("TipoClienteId");
+
+                    b.HasIndex("EmpresaId", "CodigoCliente")
                         .IsUnique()
                         .HasFilter("[FechaBaja] IS NULL");
-
-                    b.HasIndex("TipoClienteId");
 
                     b.ToTable("Clientes");
                 });
@@ -117,6 +129,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("CodigoRenspa")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<Guid>("EstablecimientoId")
                         .HasColumnType("uniqueidentifier");
 
@@ -127,6 +144,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EstablecimientoId");
 
@@ -177,6 +196,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
@@ -194,6 +218,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("MaterialDestinoId");
 
                     b.HasIndex("MaterialOrigenId", "MaterialDestinoId")
@@ -205,11 +231,19 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.DestinosComerciales.DestinoComercial", b =>
                 {
-                    b.Property<string>("Codigo")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("Favorito")
                         .HasColumnType("bit");
@@ -220,19 +254,24 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("Nombre")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Codigo");
+                    b.HasKey("Id");
 
-                    b.HasIndex("Favorito")
+                    b.HasIndex("EmpresaId", "Codigo")
                         .IsUnique()
-                        .HasFilter("[Favorito] = 1");
+                        .HasFilter("[FechaBaja] IS NULL");
+
+                    b.HasIndex("EmpresaId", "Favorito")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL AND [Favorito] = 1");
 
                     b.ToTable("DestinosComerciales");
                 });
 
             modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
@@ -240,7 +279,7 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("CodigoActividad")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CodigoEmpresa")
+                    b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ERP_Codigo")
@@ -251,6 +290,9 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Logo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nombre")
                         .HasColumnType("nvarchar(max)");
@@ -304,8 +346,10 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("CodigoEstablecimiento")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("EmpresaId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
@@ -327,13 +371,11 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoEstablecimiento")
+                    b.HasIndex("SucursalId");
+
+                    b.HasIndex("EmpresaId", "CodigoEstablecimiento")
                         .IsUnique()
                         .HasFilter("[FechaBaja] IS NULL");
-
-                    b.HasIndex("EmpresaId");
-
-                    b.HasIndex("SucursalId");
 
                     b.ToTable("Establecimientos");
                 });
@@ -342,6 +384,11 @@ namespace Meat.Repositories.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
@@ -356,6 +403,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EspecieId");
 
@@ -379,6 +428,11 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<Guid>("ClienteId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
@@ -443,6 +497,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasIndex("ClienteId");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("EspecieId");
 
                     b.HasIndex("EstadoIngresoId");
@@ -465,6 +521,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
@@ -477,13 +538,15 @@ namespace Meat.Repositories.Migrations
                     b.Property<double>("PesoIngreso")
                         .HasColumnType("float");
 
-                    b.Property<string>("TipoEspecieId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("TipoEspecieId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UnidadMedida")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("IngresoHaciendaId");
 
@@ -503,6 +566,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("EstadoHaciendaId")
                         .HasColumnType("nvarchar(450)");
 
@@ -515,8 +583,8 @@ namespace Meat.Repositories.Migrations
                     b.Property<double>("PesoPromedio")
                         .HasColumnType("float");
 
-                    b.Property<string>("TipoEspecieId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("TipoEspecieId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("TropaId")
                         .HasColumnType("uniqueidentifier");
@@ -524,6 +592,8 @@ namespace Meat.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AlmacenId");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EstadoHaciendaId");
 
@@ -540,6 +610,11 @@ namespace Meat.Repositories.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
@@ -582,6 +657,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("EspecieId");
 
                     b.HasIndex("EstadoListaMatanzaId");
@@ -616,6 +693,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("CantidadFaenada")
                         .HasColumnType("int");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
@@ -625,9 +707,8 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("Secuencia")
                         .HasColumnType("int");
 
-                    b.Property<string>("TipoEspecieId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("TipoEspecieId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("TropaId")
                         .HasColumnType("uniqueidentifier");
@@ -637,6 +718,8 @@ namespace Meat.Repositories.Migrations
                     b.HasIndex("AlmacenDestinoId");
 
                     b.HasIndex("AlmacenId");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("ListaMatanzaId");
 
@@ -660,6 +743,11 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<int?>("CantidadNueva")
                         .HasColumnType("int");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
@@ -693,6 +781,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("ListaMatanzaId");
 
                     b.ToTable("ListasMatanzasMovimientos");
@@ -711,6 +801,11 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
@@ -732,13 +827,13 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoMaterial")
-                        .IsUnique()
-                        .HasFilter("[FechaBaja] IS NULL");
-
                     b.HasIndex("TipoMaterialId");
 
                     b.HasIndex("UnidadMedidaId");
+
+                    b.HasIndex("EmpresaId", "CodigoMaterial")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
 
                     b.ToTable("Materiales");
                 });
@@ -778,6 +873,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
 
@@ -799,8 +899,8 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid?>("RomaneoPiezaOrigenId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("TipoEspecieId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("TipoEspecieId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TipoMovimientoId")
                         .HasColumnType("nvarchar(450)");
@@ -815,6 +915,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EspecieId");
 
@@ -849,6 +951,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("Descripcion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("EspecieCodigo")
                         .HasColumnType("nvarchar(450)");
 
@@ -869,6 +976,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("EspecieCodigo");
 
                     b.HasIndex("EstablecimientoId", "EspecieCodigo", "Codigo")
@@ -886,6 +995,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("ClienteEstablecimientoId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("EspecieCodigo")
                         .HasColumnType("nvarchar(450)");
 
@@ -896,6 +1010,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EspecieCodigo");
 
@@ -927,14 +1043,19 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Parametros.Parametro", b =>
                 {
-                    b.Property<string>("Codigo")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("EmpresaId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
@@ -945,9 +1066,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("Valor")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Codigo");
+                    b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId");
+                    b.HasIndex("EmpresaId", "Codigo")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
 
                     b.ToTable("Parametros");
                 });
@@ -982,6 +1105,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("CodigoPuesto")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Erp_Codigo")
                         .HasColumnType("nvarchar(max)");
 
@@ -1003,6 +1131,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EstablecimientoId");
 
@@ -1038,6 +1168,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<bool>("Anulado")
                         .HasColumnType("bit");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
 
@@ -1071,8 +1206,8 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("TropaId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("UnidadFaenaId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UnidadFaenaId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("UsuarioId")
                         .HasColumnType("uniqueidentifier");
@@ -1081,6 +1216,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EspecieId");
 
@@ -1112,6 +1249,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("AlmacenDestinoId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
 
@@ -1130,12 +1272,14 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("RomaneoId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("TipificacionId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("TipificacionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AlmacenDestinoId");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("RomaneoId");
 
@@ -1148,6 +1292,11 @@ namespace Meat.Repositories.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("FechaBaja")
                         .HasColumnType("datetime2");
@@ -1162,6 +1311,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("float");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("RomaneoPiezaId");
 
@@ -1190,8 +1341,10 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("Direccion")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("EmpresaId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Erp_Codigo")
                         .HasColumnType("nvarchar(max)");
@@ -1221,31 +1374,34 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoSucursal")
+                    b.HasIndex("EmpresaId", "CodigoSucursal")
                         .IsUnique()
                         .HasFilter("[FechaBaja] IS NULL");
-
-                    b.HasIndex("EmpresaId");
 
                     b.ToTable("Sucursales");
                 });
 
             modelBuilder.Entity("Meat.Domain.Tipificaciones.Tipificacion", b =>
                 {
-                    b.Property<string>("Codigo")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
-                    b.Property<string>("CodigoEmpresa")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DestinoComercialId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("DestinoComercialId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
@@ -1271,16 +1427,16 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("TipificacionOficialId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("TipoEspecieId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("TipoEspecieId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("UnidadFaenaId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UnidadFaenaId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UnidadMedidaId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Codigo");
+                    b.HasKey("Id");
 
                     b.HasIndex("DestinoComercialId");
 
@@ -1295,6 +1451,10 @@ namespace Meat.Repositories.Migrations
                     b.HasIndex("UnidadFaenaId");
 
                     b.HasIndex("UnidadMedidaId");
+
+                    b.HasIndex("EmpresaId", "Codigo")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
 
                     b.ToTable("Tipificaciones");
                 });
@@ -1433,14 +1593,22 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.TiposEspecies.TipoEspecie", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
@@ -1465,6 +1633,10 @@ namespace Meat.Repositories.Migrations
                     b.HasIndex("EspecieId");
 
                     b.HasIndex("TipoSexoId");
+
+                    b.HasIndex("EmpresaId", "Codigo")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
 
                     b.ToTable("TiposEspecies");
                 });
@@ -1648,6 +1820,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<Guid>("ClienteEstablecimientoId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("EspecieCodigo")
                         .HasColumnType("nvarchar(450)");
 
@@ -1667,6 +1844,8 @@ namespace Meat.Repositories.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("EspecieCodigo");
 
@@ -1688,6 +1867,11 @@ namespace Meat.Repositories.Migrations
 
                     b.Property<string>("Detalle")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EstadoResultanteId")
                         .HasColumnType("nvarchar(450)");
@@ -1718,6 +1902,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("EstadoResultanteId");
 
                     b.HasIndex("TropaId", "Secuencia")
@@ -1729,8 +1915,8 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.UnidadesFaenas.UnidadFaena", b =>
                 {
-                    b.Property<string>("Codigo")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
@@ -1738,8 +1924,16 @@ namespace Meat.Repositories.Migrations
                     b.Property<int>("CantidadCuartos")
                         .HasColumnType("int");
 
+                    b.Property<string>("Codigo")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("ERP_Codigo")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EspecieId")
                         .HasColumnType("nvarchar(450)");
@@ -1762,13 +1956,19 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("TipoMaterialId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Codigo");
+                    b.HasKey("Id");
 
-                    b.HasIndex("EspecieId")
-                        .IsUnique()
-                        .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+                    b.HasIndex("EspecieId");
 
                     b.HasIndex("TipoMaterialId");
+
+                    b.HasIndex("EmpresaId", "Codigo")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL");
+
+                    b.HasIndex("EmpresaId", "EspecieId")
+                        .IsUnique()
+                        .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
 
                     b.ToTable("UnidadesFaenas");
                 });
@@ -1825,6 +2025,11 @@ namespace Meat.Repositories.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
@@ -1848,6 +2053,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("RolId");
 
                     b.HasIndex("UserName")
@@ -1861,6 +2068,11 @@ namespace Meat.Repositories.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("EsMain")
                         .HasColumnType("bit");
@@ -1879,6 +2091,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("EstablecimientoId");
 
                     b.HasIndex("UsuarioId", "EstablecimientoId")
@@ -1892,6 +2106,11 @@ namespace Meat.Repositories.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmpresaId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("EsMain")
                         .HasColumnType("bit");
@@ -1910,6 +2129,8 @@ namespace Meat.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId");
+
                     b.HasIndex("UsuarioId", "SucursalId")
                         .IsUnique()
                         .HasFilter("[FechaBaja] IS NULL");
@@ -1919,6 +2140,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Almacenes.Almacen", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
                         .WithMany()
                         .HasForeignKey("EstablecimientoId")
@@ -1929,6 +2156,8 @@ namespace Meat.Repositories.Migrations
                         .WithMany()
                         .HasForeignKey("TipoAlmacenId");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Establecimiento");
 
                     b.Navigation("TipoAlmacen");
@@ -1936,9 +2165,17 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Clientes.Cliente", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.TiposClientes.TipoCliente", "TipoCliente")
                         .WithMany()
                         .HasForeignKey("TipoClienteId");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("TipoCliente");
                 });
@@ -1951,6 +2188,12 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
                         .WithMany()
                         .HasForeignKey("EstablecimientoId")
@@ -1958,6 +2201,8 @@ namespace Meat.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Establecimiento");
                 });
@@ -1981,6 +2226,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.DespiecesMateriales.DespieceMaterial", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Materiales.Material", "MaterialDestino")
                         .WithMany()
                         .HasForeignKey("MaterialDestinoId")
@@ -1993,9 +2244,22 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("MaterialDestino");
 
                     b.Navigation("MaterialOrigen");
+                });
+
+            modelBuilder.Entity("Meat.Domain.DestinosComerciales.DestinoComercial", b =>
+                {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("Meat.Domain.Empresas.Empresa", b =>
@@ -2012,7 +2276,7 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
                         .WithMany("Establecimientos")
                         .HasForeignKey("EmpresaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Meat.Domain.Sucursales.Sucursal", "Sucursal")
@@ -2028,6 +2292,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.EstablecimientosEspecies.EstablecimientoEspecie", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieId");
@@ -2037,6 +2307,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("EstablecimientoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Especie");
 
@@ -2054,6 +2326,12 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Clientes.Cliente", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2093,6 +2371,8 @@ namespace Meat.Repositories.Migrations
 
                     b.Navigation("ClienteEstablecimiento");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Especie");
 
                     b.Navigation("Establecimiento");
@@ -2108,6 +2388,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.IngresosHaciendas.IngresoHaciendaPesada", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.IngresosHaciendas.IngresoHacienda", "IngresoHacienda")
                         .WithMany("Pesadas")
                         .HasForeignKey("IngresoHaciendaId")
@@ -2119,6 +2405,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("TipoEspecieId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("IngresoHacienda");
 
                     b.Navigation("TipoEspecie");
@@ -2129,6 +2417,12 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Almacenes.Almacen", "Almacen")
                         .WithMany()
                         .HasForeignKey("AlmacenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2155,6 +2449,8 @@ namespace Meat.Repositories.Migrations
 
                     b.Navigation("Almacen");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("EstadoHacienda");
 
                     b.Navigation("IngresoHacienda");
@@ -2166,6 +2462,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.ListasMatanzas.ListaMatanza", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieId")
@@ -2187,6 +2489,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("PuestoId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Especie");
 
                     b.Navigation("Establecimiento");
@@ -2206,6 +2510,12 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Almacenes.Almacen", "Almacen")
                         .WithMany()
                         .HasForeignKey("AlmacenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2231,6 +2541,8 @@ namespace Meat.Repositories.Migrations
 
                     b.Navigation("AlmacenDestino");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("ListaMatanza");
 
                     b.Navigation("TipoEspecie");
@@ -2240,17 +2552,31 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.ListasMatanzas.ListaMatanzaMovimiento", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.ListasMatanzas.ListaMatanza", "ListaMatanza")
                         .WithMany("Movimientos")
                         .HasForeignKey("ListaMatanzaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("ListaMatanza");
                 });
 
             modelBuilder.Entity("Meat.Domain.Materiales.Material", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.TiposMateriales.TipoMaterial", "TipoMaterial")
                         .WithMany()
                         .HasForeignKey("TipoMaterialId");
@@ -2258,6 +2584,8 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.UnidadesMedidas.UnidadMedida", "UnidadMedida")
                         .WithMany()
                         .HasForeignKey("UnidadMedidaId");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("TipoMaterial");
 
@@ -2279,6 +2607,12 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Almacenes.Almacen", "Almacen")
                         .WithMany()
                         .HasForeignKey("AlmacenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2315,6 +2649,8 @@ namespace Meat.Repositories.Migrations
 
                     b.Navigation("Almacen");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Especie");
 
                     b.Navigation("Material");
@@ -2330,6 +2666,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Numeradores.Numerador", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieCodigo")
@@ -2340,6 +2682,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("EstablecimientoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Especie");
 
@@ -2354,11 +2698,19 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieCodigo");
 
                     b.Navigation("ClienteEstablecimiento");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Especie");
                 });
@@ -2368,7 +2720,7 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
                         .WithMany()
                         .HasForeignKey("EmpresaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Empresa");
@@ -2376,6 +2728,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Puestos.Puesto", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
                         .WithMany()
                         .HasForeignKey("EstablecimientoId")
@@ -2387,6 +2745,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("TipoPuestoId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Establecimiento");
 
                     b.Navigation("TipoPuesto");
@@ -2394,6 +2754,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Romaneos.Romaneo", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieId")
@@ -2426,7 +2792,10 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.UnidadesFaenas.UnidadFaena", "UnidadFaena")
                         .WithMany()
                         .HasForeignKey("UnidadFaenaId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Especie");
 
@@ -2449,6 +2818,12 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Romaneos.Romaneo", "Romaneo")
                         .WithMany("Piezas")
                         .HasForeignKey("RomaneoId")
@@ -2462,6 +2837,8 @@ namespace Meat.Repositories.Migrations
 
                     b.Navigation("AlmacenDestino");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Romaneo");
 
                     b.Navigation("Tipificacion");
@@ -2469,6 +2846,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Romaneos.RomaneoPiezaMedicion", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Romaneos.RomaneoPieza", "RomaneoPieza")
                         .WithMany("Mediciones")
                         .HasForeignKey("RomaneoPiezaId")
@@ -2480,6 +2863,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("TipoMedicionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("RomaneoPieza");
 
                     b.Navigation("TipoMedicion");
@@ -2490,7 +2875,7 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
                         .WithMany("Sucursales")
                         .HasForeignKey("EmpresaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Empresa");
@@ -2502,6 +2887,12 @@ namespace Meat.Repositories.Migrations
                         .WithMany()
                         .HasForeignKey("DestinoComercialId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
@@ -2526,7 +2917,8 @@ namespace Meat.Repositories.Migrations
                     b.HasOne("Meat.Domain.UnidadesFaenas.UnidadFaena", "UnidadFaena")
                         .WithMany()
                         .HasForeignKey("UnidadFaenaId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Meat.Domain.UnidadesMedidas.UnidadMedida", "UnidadMedida")
                         .WithMany()
@@ -2534,6 +2926,8 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("DestinoComercial");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Especie");
 
@@ -2580,6 +2974,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.TiposEspecies.TipoEspecie", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieId");
@@ -2588,6 +2988,8 @@ namespace Meat.Repositories.Migrations
                         .WithMany()
                         .HasForeignKey("TipoSexoId");
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Especie");
 
                     b.Navigation("TipoSexo");
@@ -2595,6 +2997,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Tropas.Tropa", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieCodigo")
@@ -2611,6 +3019,8 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Especie");
 
                     b.Navigation("EstadoTropa");
@@ -2620,6 +3030,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Tropas.TropaMovimiento", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.TiposEstadosTropas.TipoEstadoTropa", "EstadoResultante")
                         .WithMany()
                         .HasForeignKey("EstadoResultanteId")
@@ -2631,6 +3047,8 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("EstadoResultante");
 
                     b.Navigation("Tropa");
@@ -2638,6 +3056,12 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.UnidadesFaenas.UnidadFaena", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Especies.Especie", "Especie")
                         .WithMany()
                         .HasForeignKey("EspecieId")
@@ -2648,6 +3072,8 @@ namespace Meat.Repositories.Migrations
                         .HasForeignKey("TipoMaterialId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Especie");
 
                     b.Navigation("TipoMaterial");
@@ -2655,15 +3081,29 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.Usuarios.Usuario", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Roles.Rol", "Rol")
                         .WithMany()
                         .HasForeignKey("RolId");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Rol");
                 });
 
             modelBuilder.Entity("Meat.Domain.UsuariosEstablecimientos.UsuarioEstablecimiento", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Establecimientos.Establecimiento", "Establecimiento")
                         .WithMany()
                         .HasForeignKey("EstablecimientoId")
@@ -2676,6 +3116,8 @@ namespace Meat.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Establecimiento");
 
                     b.Navigation("Usuario");
@@ -2683,11 +3125,19 @@ namespace Meat.Repositories.Migrations
 
             modelBuilder.Entity("Meat.Domain.UsuariosSucursales.UsuarioSucursal", b =>
                 {
+                    b.HasOne("Meat.Domain.Empresas.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Meat.Domain.Usuarios.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Usuario");
                 });

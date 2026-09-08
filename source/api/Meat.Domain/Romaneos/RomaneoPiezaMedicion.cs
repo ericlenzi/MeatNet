@@ -1,7 +1,9 @@
-using Meat.Domain.TiposMediciones;
+﻿using Meat.Domain.TiposMediciones;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Romaneos
 {
@@ -10,7 +12,7 @@ namespace Meat.Domain.Romaneos
     /// En el MVP (Fase 2) la unica medicion es PESO; la tabla queda para extender a
     /// Fase 2b (mas mediciones) sin cambiar el esquema.
     /// </summary>
-    public class RomaneoPiezaMedicion
+    public class RomaneoPiezaMedicion : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -23,5 +25,9 @@ namespace Meat.Domain.Romaneos
         public virtual TipoMedicion TipoMedicion { get; set; }
 
         public double Valor { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

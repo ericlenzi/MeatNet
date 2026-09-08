@@ -1,12 +1,14 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.EstablecimientosEspecies
 {
-    public class EstablecimientoEspecie
+    public class EstablecimientoEspecie : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -16,5 +18,9 @@ namespace Meat.Domain.EstablecimientosEspecies
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
         public DateTime FechaActualizacion { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

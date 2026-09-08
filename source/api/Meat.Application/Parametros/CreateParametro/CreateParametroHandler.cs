@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -21,7 +21,7 @@ namespace Meat.Application.Parametros.CreateParametro
 
         public async Task<CreateParametroResponse> Handle(CreateParametroRequest request, CancellationToken cancellationToken)
         {
-            var empresa = await this.context.Empresas.FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+            var empresa = await this.context.Empresas.FirstOrDefaultAsync(e => e.Id == request.EmpresaId, cancellationToken);
             if (empresa == null)
                 throw new ValidationException("La empresa activa no es valida.");
 

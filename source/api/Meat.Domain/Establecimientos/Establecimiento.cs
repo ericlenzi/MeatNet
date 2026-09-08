@@ -5,10 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Establecimientos
 {
-    public class Establecimiento
+    public class Establecimiento : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -21,7 +22,7 @@ namespace Meat.Domain.Establecimientos
         public string NumeroRuca { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }
-        public Guid EmpresaId { get; set; }
+        public string EmpresaId { get; set; }
         public virtual Empresa Empresa { get; set; }
         public virtual ICollection<EstablecimientoEspecie> Especies { get; set; }
     }

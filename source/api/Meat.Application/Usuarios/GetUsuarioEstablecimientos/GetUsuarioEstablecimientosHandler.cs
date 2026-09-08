@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Repositories;
 using System.Linq;
@@ -22,8 +22,7 @@ namespace Meat.Application.Usuarios.GetUsuarioEstablecimientos
                 .Where(ue => ue.UsuarioId == request.UsuarioId)
                 .Join(
                     this.context.Establecimientos
-                        .Include(e => e.Sucursal)
-                        .Where(e => e.Empresa.CodigoEmpresa == request.CodigoEmpresa),
+                        .Include(e => e.Sucursal),
                     ue => ue.EstablecimientoId,
                     e => e.Id,
                     (ue, e) => new UsuarioEstablecimientoItem

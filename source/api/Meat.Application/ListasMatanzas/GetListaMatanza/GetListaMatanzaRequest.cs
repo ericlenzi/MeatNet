@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -10,7 +10,7 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
         public Guid Id { get; set; }
 
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 
     public class GetListaMatanzaResponse
@@ -50,7 +50,7 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
         public string AlmacenNombre { get; set; }
         public Guid? AlmacenDestinoId { get; set; }
         public string AlmacenDestinoNombre { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Secuencia { get; set; }
         public int Cantidad { get; set; }

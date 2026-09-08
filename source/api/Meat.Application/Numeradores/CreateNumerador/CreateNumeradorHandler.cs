@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Domain.Numeradores;
 using Meat.Repositories;
@@ -21,8 +21,7 @@ namespace Meat.Application.Numeradores.CreateNumerador
         {
             var establecimiento = await this.context.Establecimientos
                 .Include(e => e.Empresa)
-                .FirstOrDefaultAsync(e => e.Id == request.EstablecimientoId
-                    && e.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(e => e.Id == request.EstablecimientoId, cancellationToken);
             if (establecimiento == null)
                 throw new ValidationException("El establecimiento activo no es valido.");
 

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -21,11 +21,9 @@ namespace Meat.Application.Almacenes.GetAlmacenes
             var data = await (
                 from a in this.context.Almacenes
                 join est in this.context.Establecimientos on a.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 join ta in this.context.TiposAlmacenes on a.TipoAlmacenId equals ta.Codigo into taj
                 from ta in taj.DefaultIfEmpty()
-                where emp.CodigoEmpresa == request.CodigoEmpresa
-                    && (request.EstablecimientoId == null || a.EstablecimientoId == request.EstablecimientoId)
+                where (request.EstablecimientoId == null || a.EstablecimientoId == request.EstablecimientoId)
                     && (request.Estado == null || a.Activo == request.Estado)
                     && (request.Familia == null || (ta != null && ta.Familia == request.Familia))
                 orderby a.Nombre

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -29,10 +29,9 @@ namespace Meat.Application.Tropas.GetTrazabilidadTropa
                 join esp in this.context.Especies on t.EspecieCodigo equals esp.Codigo
                 join c in this.context.Clientes on i.ClienteId equals c.Id
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 join etr in this.context.TiposEstadosTropas on t.EstadoTropaId equals etr.Codigo
                 where t.NumeroTropa == request.NumeroTropa
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && (request.EstablecimientoId == null || est.Id == request.EstablecimientoId)
                 select new TrazabilidadTropaItem
                 {

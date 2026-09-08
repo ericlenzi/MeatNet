@@ -8,14 +8,13 @@ namespace Meat.Application.Sucursales.CreateSucursal
     public class CreateSucursalRequest : IRequest<CreateSucursalResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         [Required]
         public string CodigoSucursal { get; set; }
 
         [Required]
         public string Nombre { get; set; }
 
-        public Guid EmpresaId { get; set; }
         public string Direccion { get; set; }
         public string CodigoPostal { get; set; }
         public string Localidad { get; set; }

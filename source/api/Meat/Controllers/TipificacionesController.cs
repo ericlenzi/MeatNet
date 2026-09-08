@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.Tipificaciones.CreateTipificacion;
@@ -20,7 +20,7 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetTipificacionesRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -29,14 +29,14 @@ namespace Meat.Controllers
             await this.Handle(new GetTipificacionRequest
             {
                 Codigo = codigo,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
 
         [HttpPost]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateTipificacionRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -46,7 +46,7 @@ namespace Meat.Controllers
             await this.Handle(new UpdateTipificacionRequest
             {
                 Codigo = codigo,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 Descripcion = body.Descripcion,
                 EspecieId = body.EspecieId,
                 TipoEspecieId = body.TipoEspecieId,
@@ -66,7 +66,7 @@ namespace Meat.Controllers
             await this.Handle(new DeleteTipificacionRequest
             {
                 Codigo = codigo,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
     }
 }

@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -27,8 +27,7 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
             IQueryable<Establecimiento> queryable = this.context.Establecimientos
                 .Include(x => x.Empresa)
                 .Include(x => x.Sucursal)
-                .Include(x => x.Especies).ThenInclude(ee => ee.Especie)
-                .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .Include(x => x.Especies).ThenInclude(ee => ee.Especie);
 
             if (request.SucursalId.HasValue)
                 queryable = queryable.Where(x => x.SucursalId == request.SucursalId.Value);

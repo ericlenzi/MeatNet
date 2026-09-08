@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Application.Tropas;
 using Meat.Repositories;
@@ -23,8 +23,7 @@ namespace Meat.Application.IngresosHaciendas.AnularIngresoHacienda
             var entity = await this.context.IngresosHaciendas
                 .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(i => i.Tropas)
-                .FirstOrDefaultAsync(i => i.Id == request.Id
-                    && i.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El ingreso de hacienda no existe.");

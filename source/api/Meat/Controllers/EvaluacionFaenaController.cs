@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.EvaluacionFaena.ActualizarPieza;
@@ -24,7 +24,7 @@ namespace Meat.Controllers
         [HttpGet("romaneos")]
         public async Task<IActionResult> GetRomaneosAsync([FromQuery] GetRomaneosEvaluacionRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -34,7 +34,7 @@ namespace Meat.Controllers
             await this.Handle(new ActualizarPiezaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 Peso = body.Peso,
                 TipificacionId = body.TipificacionId,
                 AlmacenDestinoId = body.AlmacenDestinoId,
@@ -44,14 +44,14 @@ namespace Meat.Controllers
         [HttpGet("previsualizar")]
         public async Task<IActionResult> PrevisualizarAsync([FromQuery] PrevisualizarLiberacionRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
         [HttpPost("liberar")]
         public async Task<IActionResult> LiberarAsync([FromBody] LiberarJornadaRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             request.UsuarioId = base.CurrentUser.Id;
             return await this.Handle(request);
         }

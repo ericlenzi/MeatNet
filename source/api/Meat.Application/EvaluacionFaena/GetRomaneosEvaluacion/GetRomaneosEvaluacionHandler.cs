@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.IngresosHaciendas; // FamiliaAlmacen
 using Meat.Application.Shared;
 using Meat.Repositories;
@@ -30,15 +30,14 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         {
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
 
             var data = await (
                 from r in this.context.Romaneos
                 join t in this.context.Tropas on r.TropaId equals t.Id
-                join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Codigo
+                join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Id
                 join d in this.context.ListasMatanzasDetalles on r.ListaMatanzaDetalleId equals d.Id
                 join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
                 where r.ListaMatanzaId == lm.Id

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
     public class GetMonitorFaenaRequest : IRequest<GetMonitorFaenaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }

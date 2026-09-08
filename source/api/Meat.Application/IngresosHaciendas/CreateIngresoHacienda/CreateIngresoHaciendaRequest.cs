@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.IngresosHaciendas.CreateIngresoHacienda
     public class CreateIngresoHaciendaRequest : IRequest<CreateIngresoHaciendaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid EstablecimientoId { get; set; }
         public DateTime FechaHoraIngreso { get; set; }

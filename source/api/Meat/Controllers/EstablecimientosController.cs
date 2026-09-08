@@ -1,4 +1,4 @@
-using Meat.Application.Establecimientos.GetEstablecimientos;
+﻿using Meat.Application.Establecimientos.GetEstablecimientos;
 using Meat.Application.Establecimientos.GetEstablecimiento;
 using Meat.Application.Establecimientos.CreateEstablecimiento;
 using Meat.Application.Establecimientos.UpdateEstablecimiento;
@@ -25,21 +25,21 @@ namespace Meat.Controllers
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetEstablecimientosAsync([FromQuery] GetEstablecimientosRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
         [HttpGet("{id}")]
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> GetEstablecimientoAsync([FromRoute] Guid id) => await this.Handle(
-            new GetEstablecimientoRequest { Id = id, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
+            new GetEstablecimientoRequest { Id = id, EmpresaId = base.CurrentUser.EmpresaId }
         );
 
         [HttpPost]
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> CreateEstablecimientoAsync([FromBody] CreateEstablecimientoRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await Handle(request);
         }
 
@@ -49,7 +49,7 @@ namespace Meat.Controllers
             new UpdateEstablecimientoRequest()
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 Nombre = body.Nombre,
                 SucursalId = body.SucursalId,
                 EspecieIds = body.EspecieIds,
@@ -62,7 +62,7 @@ namespace Meat.Controllers
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN, ABAST")]
         public async Task<IActionResult> DeleteEstablecimientoByIdAsync([FromRoute] Guid id) => await this.Handle(
-            new DeleteEstablecimientoRequest { Id = id, CodigoEmpresa = base.CurrentUser.CodigoEmpresa }
+            new DeleteEstablecimientoRequest { Id = id, EmpresaId = base.CurrentUser.EmpresaId }
         );
     }
 }

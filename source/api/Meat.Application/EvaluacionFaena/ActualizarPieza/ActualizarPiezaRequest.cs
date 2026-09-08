@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
@@ -7,12 +7,12 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
     public class ActualizarPiezaRequest : IRequest<ActualizarPiezaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         [JsonIgnore]
         public Guid Id { get; set; }
 
         public double Peso { get; set; }
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public Guid AlmacenDestinoId { get; set; }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
     public class ActualizarPiezaBody
     {
         public double Peso { get; set; }
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public Guid AlmacenDestinoId { get; set; }
         public bool ForzarFueraRango { get; set; }
     }
@@ -36,7 +36,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
         public Guid Id { get; set; }
         public double Peso { get; set; }
         public bool PesoFueraRango { get; set; }
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public Guid AlmacenDestinoId { get; set; }
     }
 }

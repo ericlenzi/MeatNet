@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
@@ -7,7 +7,7 @@ namespace Meat.Application.Tropas.GetTrazabilidadTropa
     public class GetTrazabilidadTropaRequest : IRequest<GetTrazabilidadTropaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public long NumeroTropa { get; set; }
 

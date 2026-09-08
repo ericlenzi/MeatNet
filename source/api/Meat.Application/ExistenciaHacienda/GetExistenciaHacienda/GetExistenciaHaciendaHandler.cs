@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.IngresosHaciendas;
 using Meat.Application.ListasMatanzas;
 using Meat.Repositories;
@@ -30,11 +30,10 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Id
                 join c in this.context.Clientes on i.ClienteId equals c.Id
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 where i.EstadoIngresoId == EstadosIngreso.Aprobado
                     && t.EstadoTropaId == EstadosTropa.Recepcionada
                     && u.EstadoHaciendaId == EstadosHacienda.EnPie
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && (request.EstablecimientoId == null || est.Id == request.EstablecimientoId)
                 select new { u, t, a, te, c };
 
@@ -73,10 +72,9 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 from d in this.context.ListasMatanzasDetalles
                 join lm in this.context.ListasMatanzas on d.ListaMatanzaId equals lm.Id
                 join est in this.context.Establecimientos on lm.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 where (lm.EstadoListaMatanzaId == EstadosListaMatanza.Confirmada
                         || lm.EstadoListaMatanzaId == EstadosListaMatanza.EnEjecucion)
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && (request.EstablecimientoId == null || lm.EstablecimientoId == request.EstablecimientoId)
                 group d by new { d.TropaId, d.AlmacenId, d.TipoEspecieId } into g
                 select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Reservado = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
@@ -91,9 +89,8 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 from d in this.context.ListasMatanzasDetalles
                 join lm in this.context.ListasMatanzas on d.ListaMatanzaId equals lm.Id
                 join est in this.context.Establecimientos on lm.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 where d.CantidadFaenada > 0
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                     && (request.EstablecimientoId == null || lm.EstablecimientoId == request.EstablecimientoId)
                 group d by new { d.TropaId, d.AlmacenId, d.TipoEspecieId } into g
                 select new { g.Key.TropaId, g.Key.AlmacenId, g.Key.TipoEspecieId, Faenado = g.Sum(x => x.CantidadFaenada) })
@@ -109,11 +106,11 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
 
                 // En Pie efectivo = recibido - faenado (consumo real).
-                var fae = faenadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId), out var ff) ? ff : 0;
+                var fae = faenadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId ?? Guid.Empty), out var ff) ? ff : 0;
                 item.CantidadUN = Math.Max(0, item.CantidadUN - fae);
                 item.PesoKG = item.CantidadUN * pesoPromedio;
 
-                var res = reservadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId), out var rr)
+                var res = reservadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId ?? Guid.Empty), out var rr)
                     ? Math.Min(rr, item.CantidadUN)
                     : 0;
                 item.Reservado = res;

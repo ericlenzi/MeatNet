@@ -13,7 +13,7 @@ namespace Meat.Domain.Sucursales
             };
         }
 
-        public static Sucursal Create(string nombre, Guid empresaId)
+        public static Sucursal Create(string nombre, string empresaId)
         {
             return new Sucursal()
             {

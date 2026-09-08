@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System.Text.Json.Serialization;
 
 namespace Meat.Application.Tipificaciones.DeleteTipificacion
@@ -8,6 +8,6 @@ namespace Meat.Application.Tipificaciones.DeleteTipificacion
         public string Codigo { get; set; }
 
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 }

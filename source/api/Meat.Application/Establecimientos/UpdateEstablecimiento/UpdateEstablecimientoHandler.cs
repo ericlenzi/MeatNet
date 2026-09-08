@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
@@ -31,7 +31,7 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
             var entity = await this.context.Establecimientos
                 .Include(x => x.Empresa)
                 .Include(x => x.Especies)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El establecimiento no existe");

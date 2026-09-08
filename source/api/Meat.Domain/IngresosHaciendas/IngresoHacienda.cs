@@ -1,4 +1,4 @@
-using Meat.Domain.Clientes;
+﻿using Meat.Domain.Clientes;
 using Meat.Domain.ClientesEstablecimientos;
 using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
@@ -11,10 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.IngresosHaciendas
 {
-    public class IngresoHacienda
+    public class IngresoHacienda : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -75,5 +77,9 @@ namespace Meat.Domain.IngresosHaciendas
         public virtual ICollection<IngresoHaciendaPesada> Pesadas { get; set; }
         public virtual ICollection<IngresoHaciendaUbicacion> Ubicaciones { get; set; }
         public virtual ICollection<Tropa> Tropas { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

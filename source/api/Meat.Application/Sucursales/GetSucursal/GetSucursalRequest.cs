@@ -8,6 +8,6 @@ namespace Meat.Application.Sucursales.GetSucursal
     {
         public Guid Id { get; set; }
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
     }
 }

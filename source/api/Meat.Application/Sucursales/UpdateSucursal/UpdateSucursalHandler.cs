@@ -25,7 +25,7 @@ namespace Meat.Application.Sucursales.UpdateSucursal
         {
             var sucursal = await this.context.Sucursales
                 .Include(s => s.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.Id && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .FirstOrDefaultAsync(x => x.Id == request.Id);
             if (sucursal == null)
             {
                 throw new ValidationException("La sucursal no existe");

@@ -7,7 +7,6 @@ namespace Meat.Application.Sucursales.UpdateSucursal
     {
         [Required]
         public string Nombre { get; set; }
-        public Guid EmpresaId { get; set; }
         public bool Activa { get; set; }
         public string Direccion { get; set; }
         public string CodigoPostal { get; set; }

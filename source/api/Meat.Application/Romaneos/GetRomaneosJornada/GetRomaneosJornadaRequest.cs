@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
     public class GetRomaneosJornadaRequest : IRequest<GetRomaneosJornadaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }
@@ -37,7 +37,7 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
         public string Letra { get; set; }
         public double Peso { get; set; }
         public string AlmacenDestinoNombre { get; set; }
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public string TipificacionDescripcion { get; set; }
         public bool PesoFueraRango { get; set; }
     }

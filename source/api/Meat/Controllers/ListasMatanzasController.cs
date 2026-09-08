@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza;
@@ -31,14 +31,14 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetListasMatanzasRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
         [HttpGet("disponibilidad")]
         public async Task<IActionResult> GetDisponibilidadAsync([FromQuery] GetDisponibilidadFaenaRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -47,13 +47,13 @@ namespace Meat.Controllers
             await this.Handle(new GetListaMatanzaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
 
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CreateListaMatanzaRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -61,7 +61,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateListaMatanzaRequest request)
         {
             request.Id = id;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -70,7 +70,7 @@ namespace Meat.Controllers
             await this.Handle(new DeleteListaMatanzaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
 
         // --- Edicion controlada post-confirmacion (auditada) ---
@@ -79,7 +79,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> AgregarRenglonAsync([FromRoute] Guid id, [FromBody] AgregarRenglonListaMatanzaRequest request)
         {
             request.Id = id;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             request.UsuarioId = base.CurrentUser.Id;
             return await this.Handle(request);
         }
@@ -89,7 +89,7 @@ namespace Meat.Controllers
         {
             request.Id = id;
             request.RenglonId = renglonId;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             request.UsuarioId = base.CurrentUser.Id;
             return await this.Handle(request);
         }
@@ -100,7 +100,7 @@ namespace Meat.Controllers
             {
                 Id = id,
                 RenglonId = renglonId,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 UsuarioId = base.CurrentUser.Id
             });
 
@@ -108,7 +108,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> FaenaEmergenciaAsync([FromRoute] Guid id, [FromBody] FaenaEmergenciaListaMatanzaRequest request)
         {
             request.Id = id;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             request.UsuarioId = base.CurrentUser.Id;
             return await this.Handle(request);
         }
@@ -120,7 +120,7 @@ namespace Meat.Controllers
             await this.Handle(new ConfirmarListaMatanzaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 UsuarioId = base.CurrentUser.Id
             });
 
@@ -129,7 +129,7 @@ namespace Meat.Controllers
             await this.Handle(new DesconfirmarListaMatanzaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 UsuarioId = base.CurrentUser.Id
             });
 
@@ -138,7 +138,7 @@ namespace Meat.Controllers
             await this.Handle(new IniciarListaMatanzaRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 UsuarioId = base.CurrentUser.Id
             });
 
@@ -146,7 +146,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> FinalizarAsync([FromRoute] Guid id, [FromBody] FinalizarListaMatanzaRequest request)
         {
             request.Id = id;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             request.UsuarioId = base.CurrentUser.Id;
             return await this.Handle(request);
         }
@@ -155,7 +155,7 @@ namespace Meat.Controllers
         public async Task<IActionResult> CancelarAsync([FromRoute] Guid id, [FromBody] CancelarListaMatanzaRequest request)
         {
             request.Id = id;
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             request.UsuarioId = base.CurrentUser.Id;
             return await this.Handle(request);
         }

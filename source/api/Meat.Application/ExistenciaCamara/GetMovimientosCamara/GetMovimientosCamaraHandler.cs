@@ -1,3 +1,4 @@
+﻿using System;
 using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,6 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
                 from mc in this.context.MovimientosCamaras
                 join a in this.context.Almacenes on mc.AlmacenId equals a.Id
                 join est in this.context.Establecimientos on a.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 join m in this.context.Materiales on mc.MaterialId equals m.Id
                 join tmc in this.context.TiposMovimientosCamaras on mc.TipoMovimientoId equals tmc.Codigo into tmcj
                 from tmc in tmcj.DefaultIfEmpty()
@@ -40,8 +40,7 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
                 from ih in ihj.DefaultIfEmpty()
                 join cli in this.context.Clientes on ih.ClienteId equals cli.Id into clij
                 from cli in clij.DefaultIfEmpty()
-                where emp.CodigoEmpresa == request.CodigoEmpresa
-                    && (request.AlmacenId == null || a.Id == request.AlmacenId)
+                where (request.AlmacenId == null || a.Id == request.AlmacenId)
                     && (request.MaterialId == null || m.Id == request.MaterialId)
                     && (request.TropaId == null || mc.TropaId == request.TropaId)
                     && (request.ClienteId == null || (cli != null && cli.Id == request.ClienteId))

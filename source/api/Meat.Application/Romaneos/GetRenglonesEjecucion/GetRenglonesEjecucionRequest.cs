@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
     public class GetRenglonesEjecucionRequest : IRequest<GetRenglonesEjecucionResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }
@@ -43,7 +43,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
         public string AlmacenNombre { get; set; }
         public Guid? AlmacenDestinoId { get; set; }         // camara destino planificada en la LM (default del puesto)
         public string AlmacenDestinoNombre { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Secuencia { get; set; }
         public int Cantidad { get; set; }

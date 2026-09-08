@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
     public class GetAnalisisFaenaRequest : IRequest<GetAnalisisFaenaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }
@@ -78,7 +78,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
 
     public class TipificacionConsolidadaItem
     {
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public string Descripcion { get; set; }
         public string MaterialNombre { get; set; }
         public int Piezas { get; set; }
@@ -90,7 +90,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
 
     public class DispersionPesoItem
     {
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Piezas { get; set; }
         public double PesoPromedio { get; set; }

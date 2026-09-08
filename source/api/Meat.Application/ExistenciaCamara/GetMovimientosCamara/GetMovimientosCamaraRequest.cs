@@ -8,7 +8,7 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
     public class GetMovimientosCamaraRequest : IRequest<GetMovimientosCamaraResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid? AlmacenId { get; set; }
         public Guid? MaterialId { get; set; }
@@ -61,7 +61,7 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
         public Guid? ClienteId { get; set; }
         public string ClienteNombre { get; set; }
         public string EspecieId { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
 
         public string Referencia { get; set; }
     }

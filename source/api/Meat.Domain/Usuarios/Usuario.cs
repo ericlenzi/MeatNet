@@ -2,9 +2,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Meat.Domain.Roles;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
+
 namespace Meat.Domain.Usuarios
 {
-    public class Usuario
+    public class Usuario : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -19,5 +22,9 @@ namespace Meat.Domain.Usuarios
         public virtual Rol Rol { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public bool Activo { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

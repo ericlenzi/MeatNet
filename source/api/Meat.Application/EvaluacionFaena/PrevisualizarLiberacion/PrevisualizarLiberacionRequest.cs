@@ -8,7 +8,7 @@ namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
     public class PrevisualizarLiberacionRequest : IRequest<PrevisualizarLiberacionResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }

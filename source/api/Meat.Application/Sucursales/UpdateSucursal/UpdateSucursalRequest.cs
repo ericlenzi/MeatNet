@@ -9,9 +9,8 @@ namespace Meat.Application.Sucursales.UpdateSucursal
     {
         public Guid Id { get; set; }
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         public string Nombre { get; set; }
-        public Guid EmpresaId { get; set; }
         public bool Activa { get; set; }
         public string Direccion { get; set; }
         public string CodigoPostal { get; set; }

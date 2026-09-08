@@ -26,7 +26,7 @@ namespace Meat.Application.Sucursales.CreateSucursal
             if (existe)
                 throw new ValidationException("Ya existe una sucursal con ese codigo.");
 
-            var empresa = await this.context.Empresas.FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+            var empresa = await this.context.Empresas.FirstOrDefaultAsync(e => e.Id == request.EmpresaId, cancellationToken);
             if (empresa == null)
                 throw new ValidationException("La empresa activa no es valida.");
 

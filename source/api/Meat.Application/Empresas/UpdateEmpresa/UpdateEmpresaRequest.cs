@@ -1,12 +1,11 @@
-using MediatR;
+﻿using MediatR;
 using System;
 
 namespace Meat.Application.Empresas.UpdateEmpresa
 {
     public class UpdateEmpresaRequest : IRequest<UpdateEmpresaResponse>
     {
-        public Guid Id { get; set; }
-        public string CodigoEmpresa { get; set; }
+        public string Id { get; set; }
         public string Nombre { get; set; }
         public string TipoEmpresaId { get; set; }
         public string NumeroCuit { get; set; }

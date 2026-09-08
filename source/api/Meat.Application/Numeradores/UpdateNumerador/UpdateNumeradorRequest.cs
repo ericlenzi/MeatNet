@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Text.Json.Serialization;
 
@@ -10,7 +10,7 @@ namespace Meat.Application.Numeradores.UpdateNumerador
         public Guid Id { get; set; }
 
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public string Descripcion { get; set; }
         public string TipoNumerador { get; set; }

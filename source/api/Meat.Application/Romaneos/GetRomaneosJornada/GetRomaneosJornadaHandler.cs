@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -23,13 +23,12 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                 from r in this.context.Romaneos
                 join lm in this.context.ListasMatanzas on r.ListaMatanzaId equals lm.Id
                 join est in this.context.Establecimientos on lm.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 join t in this.context.Tropas on r.TropaId equals t.Id
-                join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Codigo
+                join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Id
                 join d in this.context.ListasMatanzasDetalles on r.ListaMatanzaDetalleId equals d.Id
                 join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
                 where r.ListaMatanzaId == request.ListaMatanzaId
-                    && emp.CodigoEmpresa == request.CodigoEmpresa
+                   
                 orderby r.NumeroRomaneo descending
                 select new RomaneoJornadaItem
                 {

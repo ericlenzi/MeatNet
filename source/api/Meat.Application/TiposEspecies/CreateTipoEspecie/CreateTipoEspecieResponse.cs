@@ -1,7 +1,9 @@
+﻿using System;
+
 namespace Meat.Application.TiposEspecies.CreateTipoEspecie
 {
     public class CreateTipoEspecieResponse
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 }

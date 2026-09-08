@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
     public class GetRomaneosEvaluacionRequest : IRequest<GetRomaneosEvaluacionResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid ListaMatanzaId { get; set; }
     }
@@ -41,7 +41,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public int NumeroGarron { get; set; }
         public Guid TropaId { get; set; }
         public long NumeroTropa { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public string UnidadFaenaNombre { get; set; }
         public DateTime Fecha { get; set; }
@@ -66,7 +66,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public Guid AlmacenDestinoId { get; set; }
         public string AlmacenDestinoNombre { get; set; }
 
-        public string TipificacionId { get; set; }
+        public Guid? TipificacionId { get; set; }
         public string TipificacionDescripcion { get; set; }
 
         // Material que produciria esta pieza al liberar. Vacio = la liberacion se va a bloquear.

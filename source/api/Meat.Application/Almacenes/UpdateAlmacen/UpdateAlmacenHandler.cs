@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +21,7 @@ namespace Meat.Application.Almacenes.UpdateAlmacen
         {
             var entity = await this.context.Almacenes
                 .Include(a => a.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(a => a.Id == request.Id
-                    && a.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
 
             if (entity == null)
                 throw new ValidationException("El corral no existe.");

@@ -1,4 +1,4 @@
-using Meat.Application.IngresosHaciendas;
+﻿using Meat.Application.IngresosHaciendas;
 using Meat.Application.Shared;
 using Meat.Domain.ListasMatanzas;
 using Meat.Repositories;
@@ -27,7 +27,7 @@ namespace Meat.Application.ListasMatanzas
             if (lista.Any(r => r.Cantidad <= 0))
                 throw new ValidationException("La cantidad de cada renglon debe ser mayor a cero.");
 
-            if (lista.Any(r => string.IsNullOrEmpty(r.TipoEspecieId)))
+            if (lista.Any(r => !r.TipoEspecieId.HasValue || r.TipoEspecieId.Value == Guid.Empty))
                 throw new ValidationException("Cada renglon debe indicar la categoria (tipo de especie).");
 
             if (!lista.Any())
@@ -35,7 +35,7 @@ namespace Meat.Application.ListasMatanzas
 
             var enPie = await ListaMatanzaStock.GetEnPieAsync(context, establecimientoId, especieId, cancellationToken);
 
-            foreach (var grupo in lista.GroupBy(r => (r.TropaId, r.AlmacenId, r.TipoEspecieId)))
+            foreach (var grupo in lista.GroupBy(r => (r.TropaId, r.AlmacenId, TipoEspecieId: r.TipoEspecieId.Value)))
             {
                 if (!enPie.TryGetValue(grupo.Key, out var disponibleEnPie))
                     throw new ValidationException("Una tropa/corral/categoria seleccionado no tiene hacienda En Pie disponible para faena.");
@@ -58,7 +58,7 @@ namespace Meat.Application.ListasMatanzas
         /// </para>
         /// </summary>
         public static async Task ValidateDisponibilidadAsync(
-            MeatContext context, ListaMatanza lm, Guid tropaId, Guid almacenId, string tipoEspecieId,
+            MeatContext context, ListaMatanza lm, Guid tropaId, Guid almacenId, Guid tipoEspecieId,
             int nuevoPendienteLista, CancellationToken cancellationToken)
         {
             var enPie = await ListaMatanzaStock.GetEnPieAsync(

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Domain.ListasMatanzas;
 using Meat.Repositories;
@@ -24,8 +24,7 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
                 .Include(lm => lm.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(lm => lm.Especie)
                 .Include(lm => lm.EstadoListaMatanza)
-                .Include(lm => lm.Renglones)
-                .Where(lm => lm.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .Include(lm => lm.Renglones);
 
             if (request.EstablecimientoId.HasValue)
                 queryable = queryable.Where(lm => lm.EstablecimientoId == request.EstablecimientoId.Value);

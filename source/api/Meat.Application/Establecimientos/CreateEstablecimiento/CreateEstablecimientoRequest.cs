@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +9,7 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
     public class CreateEstablecimientoRequest : IRequest<CreateEstablecimientoResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
         [Required]
         public string CodigoEstablecimiento { get; set; }
 

@@ -71,7 +71,7 @@ namespace Meat.Controllers
                         Id = new Guid(Identity.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).SingleOrDefault()),
                         UserName = Identity.Claims.Where(c => c.Type == ClaimTypes.Name).Select(c => c.Value).SingleOrDefault(),
                         RolId = Identity.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).SingleOrDefault(),
-                        CodigoEmpresa = Identity.Claims.Where(c => c.Type == ClaimTypes.PrimarySid).Select(c => c.Value).SingleOrDefault()
+                        EmpresaId = Identity.Claims.Where(c => c.Type == LoginHandler.EmpresaClaimType).Select(c => c.Value).SingleOrDefault()
                     };
                 }
 

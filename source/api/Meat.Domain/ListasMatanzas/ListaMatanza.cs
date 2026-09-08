@@ -1,4 +1,4 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.Establecimientos;
 using Meat.Domain.Puestos;
 using Meat.Domain.TiposEstadosListasMatanzas;
@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.ListasMatanzas
 {
@@ -13,7 +15,7 @@ namespace Meat.Domain.ListasMatanzas
     /// Lista de Matanza (LM): programacion diaria de faena de un Establecimiento
     /// para una Especie. Cabecera del proceso de Planificacion de Faena (Ciclo I paso 2).
     /// </summary>
-    public class ListaMatanza
+    public class ListaMatanza : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -49,5 +51,9 @@ namespace Meat.Domain.ListasMatanzas
 
         public virtual ICollection<ListaMatanzaDetalle> Renglones { get; set; }
         public virtual ICollection<ListaMatanzaMovimiento> Movimientos { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

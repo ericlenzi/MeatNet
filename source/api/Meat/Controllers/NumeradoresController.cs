@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.Numeradores.CreateNumerador;
@@ -21,7 +21,7 @@ namespace Meat.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetNumeradoresRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -30,14 +30,14 @@ namespace Meat.Controllers
             await this.Handle(new GetNumeradorRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
 
         [HttpPost]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateNumeradorRequest request)
         {
-            request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+            request.EmpresaId = base.CurrentUser.EmpresaId;
             return await this.Handle(request);
         }
 
@@ -47,7 +47,7 @@ namespace Meat.Controllers
             await this.Handle(new UpdateNumeradorRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+                EmpresaId = base.CurrentUser.EmpresaId,
                 Descripcion = body.Descripcion,
                 TipoNumerador = body.TipoNumerador,
                 UltimoNumero = body.UltimoNumero,
@@ -60,7 +60,7 @@ namespace Meat.Controllers
             await this.Handle(new DeleteNumeradorRequest
             {
                 Id = id,
-                CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+                EmpresaId = base.CurrentUser.EmpresaId
             });
     }
 }

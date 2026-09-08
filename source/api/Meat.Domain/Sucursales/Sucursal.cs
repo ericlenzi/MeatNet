@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Sucursales
 {
-    public class Sucursal
+    public class Sucursal : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -15,7 +16,7 @@ namespace Meat.Domain.Sucursales
         public string CodigoSucursal { get; set; }
         public string Nombre { get; set; }
         public string Erp_Codigo { get; set; }
-        public Guid EmpresaId { get; set; }
+        public string EmpresaId { get; set; }
         public virtual Empresa Empresa { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaActualizacion { get; set; }

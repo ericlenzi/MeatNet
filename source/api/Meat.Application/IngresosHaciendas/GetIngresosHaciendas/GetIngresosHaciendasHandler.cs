@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Domain.IngresosHaciendas;
 using Meat.Repositories;
@@ -24,8 +24,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresosHaciendas
                 .Include(i => i.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(i => i.Cliente)
                 .Include(i => i.EstadoIngreso)
-                .Include(i => i.Ubicaciones)
-                .Where(i => i.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa);
+                .Include(i => i.Ubicaciones);
 
             if (request.EstablecimientoId.HasValue)
                 queryable = queryable.Where(i => i.EstablecimientoId == request.EstablecimientoId.Value);

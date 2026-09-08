@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -21,11 +21,9 @@ namespace Meat.Application.Numeradores.GetNumeradores
             var data = await (
                 from n in this.context.Numeradores
                 join e in this.context.Establecimientos on n.EstablecimientoId equals e.Id
-                join emp in this.context.Empresas on e.EmpresaId equals emp.Id
                 join esp in this.context.Especies on n.EspecieCodigo equals esp.Codigo into espj
                 from esp in espj.DefaultIfEmpty()
-                where emp.CodigoEmpresa == request.CodigoEmpresa
-                    && (request.EstablecimientoId == null || n.EstablecimientoId == request.EstablecimientoId)
+                where (request.EstablecimientoId == null || n.EstablecimientoId == request.EstablecimientoId)
                     && (request.Estado == null || n.Activo == request.Estado)
                 orderby e.Nombre, n.Codigo
                 select new NumeradorItem

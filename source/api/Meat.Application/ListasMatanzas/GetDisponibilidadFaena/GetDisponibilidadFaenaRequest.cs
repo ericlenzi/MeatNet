@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
     public class GetDisponibilidadFaenaRequest : IRequest<GetDisponibilidadFaenaResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public Guid EstablecimientoId { get; set; }
         public string EspecieId { get; set; }
@@ -28,7 +28,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
         public string AlmacenNombre { get; set; }
         public Guid ClienteId { get; set; }
         public string ClienteNombre { get; set; }
-        public string TipoEspecieId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int EnPie { get; set; }
         public int Reservado { get; set; }

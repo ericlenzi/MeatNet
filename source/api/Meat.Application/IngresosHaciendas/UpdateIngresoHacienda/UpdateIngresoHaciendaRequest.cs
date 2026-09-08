@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -11,7 +11,7 @@ namespace Meat.Application.IngresosHaciendas.UpdateIngresoHacienda
         public Guid Id { get; set; }
 
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         public DateTime FechaHoraIngreso { get; set; }
 

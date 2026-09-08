@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Repositories;
 using System.Linq;
@@ -21,8 +21,7 @@ namespace Meat.Application.Usuarios.GetUsuarioSucursales
             var usuarioSucursales = await this.context.UsuariosSucursales
                 .Where(us => us.UsuarioId == request.UsuarioId)
                 .Join(
-                    this.context.Sucursales
-                        .Where(s => s.Empresa.CodigoEmpresa == request.CodigoEmpresa),
+                    this.context.Sucursales,
                     us => us.SucursalId,
                     s => s.Id,
                     (us, s) => new UsuarioSucursalItem

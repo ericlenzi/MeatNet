@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Numeradores;
 using Meat.Application.Shared;
 using Meat.Domain.ListasMatanzas;
@@ -25,8 +25,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
             // Establecimiento activo dentro de la empresa
             var establecimiento = await this.context.Establecimientos
                 .Include(e => e.Empresa)
-                .FirstOrDefaultAsync(e => e.Id == request.EstablecimientoId
-                    && e.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(e => e.Id == request.EstablecimientoId, cancellationToken);
             if (establecimiento == null)
                 throw new ValidationException("El establecimiento activo no es valido.");
 
@@ -90,7 +89,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
                     TropaId = r.TropaId,
                     AlmacenId = r.AlmacenId,
                     AlmacenDestinoId = r.AlmacenDestinoId,
-                    TipoEspecieId = r.TipoEspecieId,
+                    TipoEspecieId = r.TipoEspecieId.Value,
                     Secuencia = r.Secuencia,
                     Cantidad = r.Cantidad,
                     CantidadFaenada = 0

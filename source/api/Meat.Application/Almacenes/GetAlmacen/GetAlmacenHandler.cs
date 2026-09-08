@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -21,10 +21,9 @@ namespace Meat.Application.Almacenes.GetAlmacen
             var data = await (
                 from a in this.context.Almacenes
                 join est in this.context.Establecimientos on a.EstablecimientoId equals est.Id
-                join emp in this.context.Empresas on est.EmpresaId equals emp.Id
                 join ta in this.context.TiposAlmacenes on a.TipoAlmacenId equals ta.Codigo into taj
                 from ta in taj.DefaultIfEmpty()
-                where a.Id == request.Id && emp.CodigoEmpresa == request.CodigoEmpresa
+                where a.Id == request.Id
                 select new GetAlmacenResponse
                 {
                     Id = a.Id,

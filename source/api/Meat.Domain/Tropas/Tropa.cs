@@ -1,13 +1,15 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using Meat.Domain.IngresosHaciendas;
 using Meat.Domain.TiposEstadosTropas;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Meat.Domain.Empresas;
+using Meat.Domain.Shared;
 
 namespace Meat.Domain.Tropas
 {
-    public class Tropa
+    public class Tropa : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -27,5 +29,9 @@ namespace Meat.Domain.Tropas
         public virtual TipoEstadoTropa EstadoTropa { get; set; }
 
         public DateTime FechaRecepcion { get; set; }
+
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
+        public virtual Empresa Empresa { get; set; }
     }
 }

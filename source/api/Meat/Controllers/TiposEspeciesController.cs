@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.TiposEspecies.CreateTipoEspecie;
 using Meat.Application.TiposEspecies.DeleteTipoEspecie;
 using Meat.Application.TiposEspecies.GetTipoEspecie;
@@ -25,7 +25,7 @@ namespace Meat.Controllers
             => await this.Handle(request);
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTipoEspecieAsync([FromRoute] string id) =>
+        public async Task<IActionResult> GetTipoEspecieAsync([FromRoute] Guid id) =>
             await this.Handle(new GetTipoEspecieRequest { Id = id });
 
         [HttpPost]
@@ -33,7 +33,7 @@ namespace Meat.Controllers
             await this.Handle(request);
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTipoEspecieAsync([FromRoute] string id, [FromBody] UpdateTipoEspecieRequestFromBody body) =>
+        public async Task<IActionResult> UpdateTipoEspecieAsync([FromRoute] Guid id, [FromBody] UpdateTipoEspecieRequestFromBody body) =>
             await this.Handle(new UpdateTipoEspecieRequest
             {
                 Id = id,
@@ -46,7 +46,7 @@ namespace Meat.Controllers
             });
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTipoEspecieAsync([FromRoute] string id) =>
+        public async Task<IActionResult> DeleteTipoEspecieAsync([FromRoute] Guid id) =>
             await this.Handle(new DeleteTipoEspecieRequest { Id = id });
     }
 }

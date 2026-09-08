@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -32,8 +32,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         {
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
-                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
 
@@ -176,7 +175,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                     return new TipificacionConsolidadaItem
                     {
                         TipificacionId = g.Key.TipificacionId,
-                        Descripcion = g.Key.TipificacionDescripcion ?? g.Key.TipificacionId,
+                        Descripcion = g.Key.TipificacionDescripcion ?? g.Key.TipificacionId?.ToString(),
                         MaterialNombre = g.Key.MaterialNombre,
                         Piezas = g.Count(),
                         KgFaena = kg,

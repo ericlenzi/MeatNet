@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +24,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento).ThenInclude(e => e.Empresa)
                 .Include(x => x.Especie)
-                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId
-                    && x.Establecimiento.Empresa.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
 

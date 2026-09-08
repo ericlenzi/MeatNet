@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -8,7 +8,7 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
     public class CreateTipificacionRequest : IRequest<CreateTipificacionResponse>
     {
         [JsonIgnore]
-        public string CodigoEmpresa { get; set; }
+        public string EmpresaId { get; set; }
 
         [Required]
         public string Codigo { get; set; }
@@ -17,9 +17,9 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
 
         [Required]
         public string EspecieId { get; set; }
-        public string TipoEspecieId { get; set; }
-        public string UnidadFaenaId { get; set; }
-        public string DestinoComercialId { get; set; }
+        public Guid? TipoEspecieId { get; set; }
+        public Guid? UnidadFaenaId { get; set; }
+        public Guid? DestinoComercialId { get; set; }
         public string TipificacionOficialId { get; set; }
         public double PesoDesde { get; set; }
         public double PesoHasta { get; set; }
