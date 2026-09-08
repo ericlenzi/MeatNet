@@ -1,8 +1,11 @@
+﻿using System;
+
 namespace Meat.Application.TiposEspecies.GetTiposEspecies
 {
     public class GetTiposEspeciesItem
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
+        public string Codigo { get; set; }
         public string Nombre { get; set; }
         public string EspecieId { get; set; }
         public string EspecieNombre { get; set; }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getTipoEspecie, createTipoEspecie, updateTipoEspecie, getTiposSexos } from '@/services/tiposEspecies.service'
@@ -22,7 +22,7 @@ export default function TipoEspecieFormPage() {
   const [especies, setEspecies] = useState<Especie[]>([])
   const [tiposSexos, setTiposSexos] = useState<TipoSexo[]>([])
   const [form, setForm] = useState({
-    Id: '',
+    Codigo: '',
     Nombre: '',
     EspecieId: '',
     TipoSexoId: '',
@@ -45,7 +45,7 @@ export default function TipoEspecieFormPage() {
         if (isEdit && id) {
           const entity = await getTipoEspecie(id)
           setForm({
-            Id: entity.id || '',
+            Codigo: entity.codigo || '',
             Nombre: entity.nombre || '',
             EspecieId: entity.especieId || '',
             TipoSexoId: entity.tipoSexoId || '',
@@ -65,7 +65,7 @@ export default function TipoEspecieFormPage() {
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
-    if (!form.Id.trim()) newErrors['Id'] = 'Requerido'
+    if (!form.Codigo.trim()) newErrors['Codigo'] = 'Requerido'
     if (!form.Nombre.trim()) newErrors['Nombre'] = 'Requerido'
     if (!form.EspecieId) newErrors['EspecieId'] = 'Requerido'
     setErrors(newErrors)
@@ -90,7 +90,7 @@ export default function TipoEspecieFormPage() {
         toast('success', 'Tipo de especie actualizado')
       } else {
         await createTipoEspecie({
-          Id: form.Id,
+          Codigo: form.Codigo,
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
@@ -129,9 +129,9 @@ export default function TipoEspecieFormPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Codigo"
-              value={form.Id}
-              onChange={(e) => updateField('Id', e.target.value)}
-              error={errors['Id']}
+              value={form.Codigo}
+              onChange={(e) => updateField('Codigo', e.target.value)}
+              error={errors['Codigo']}
               disabled={isEdit}
             />
             <Input

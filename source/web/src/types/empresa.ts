@@ -1,12 +1,12 @@
-export interface TipoEmpresa {
+﻿export interface TipoEmpresa {
   codigo: string
   nombre: string
   activo: boolean
 }
 
 export interface Empresa {
+  /** Codigo de negocio de la empresa: es su clave primaria. */
   id: string
-  codigoEmpresa: string
   nombre: string
   tipoEmpresaId: string
   numeroCuit: string
@@ -14,11 +14,13 @@ export interface Empresa {
   numeroInscripcionRuca: string
   codigoActividad: string
   erP_Codigo: string
+  color: string | null
+  logo: string | null
   activo: boolean
 }
 
 export interface CreateEmpresaRequest {
-  CodigoEmpresa: string
+  Id: string
   Nombre: string
   TipoEmpresaId: string
   NumeroCuit?: string
@@ -29,7 +31,6 @@ export interface CreateEmpresaRequest {
 }
 
 export interface UpdateEmpresaRequest {
-  CodigoEmpresa: string
   Nombre: string
   TipoEmpresaId: string
   NumeroCuit?: string

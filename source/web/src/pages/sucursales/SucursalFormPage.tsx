@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getSucursal, createSucursal, updateSucursal } from '@/services/sucursales.service'
@@ -46,8 +46,8 @@ export default function SucursalFormPage() {
         const empList = empResponse.data || []
         setEmpresas(empList)
 
-        if (!isEdit && user?.codigoEmpresa) {
-          const empresaActiva = empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
+        if (!isEdit && user?.empresaId) {
+          const empresaActiva = empList.find((e) => e.id === user.empresaId)
           if (empresaActiva) {
             setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
           }
@@ -171,7 +171,7 @@ export default function SucursalFormPage() {
               onChange={(e) => updateField('EmpresaId', e.target.value)}
               options={empresas.map((emp) => ({
                 value: emp.id,
-                label: `${emp.codigoEmpresa} - ${emp.nombre}`,
+                label: `${emp.id} - ${emp.nombre}`,
               }))}
               placeholder="Seleccionar..."
               disabled

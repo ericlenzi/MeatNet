@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { getTiposEspecies, deleteTipoEspecie } from '@/services/tiposEspecies.service'
 import { getEspecies } from '@/services/especies.service'
@@ -85,7 +85,7 @@ export default function TiposEspeciesListPage() {
   }
 
   const columns: Column<TipoEspecie>[] = [
-    { key: 'id', header: 'Codigo', width: '120px', sortable: true },
+    { key: 'codigo', header: 'Codigo', width: '120px', sortable: true },
     { key: 'nombre', header: 'Nombre', sortable: true },
     { key: 'especieNombre', header: 'Especie', width: '130px', sortable: true },
     { key: 'tipoSexoNombre', header: 'Sexo', width: '110px', sortable: true },

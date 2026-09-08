@@ -1,5 +1,6 @@
-export interface TipoEspecie {
+﻿export interface TipoEspecie {
   id: string
+  codigo: string
   nombre: string
   especieId: string
   especieNombre: string
@@ -11,7 +12,7 @@ export interface TipoEspecie {
 }
 
 export interface CreateTipoEspecieRequest {
-  Id: string
+  Codigo: string
   Nombre: string
   EspecieId: string
   TipoSexoId?: string

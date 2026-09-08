@@ -9,7 +9,7 @@ namespace Meat.Application.Sucursales.GetSucursal
         public string CodigoSucursal { get; set; }
         public string Nombre { get; set; }
         public string Erp_Codigo { get; set; }
-        public Guid EmpresaId { get; set; }
+        public string EmpresaId { get; set; }
         public bool Activo { get; set; }
         public string Direccion { get; set; }
         public string CodigoPostal { get; set; }

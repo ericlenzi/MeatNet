@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext'
+﻿import { useAuth } from '@/contexts/AuthContext'
 import Modal from '@/components/ui/Modal'
 
 interface DatosPersonalesModalProps {
@@ -26,7 +26,7 @@ export default function DatosPersonalesModal({ isOpen, onClose }: DatosPersonale
         </div>
         <div>
           <p className="text-xs font-medium uppercase text-text-light">Empresa</p>
-          <p className="mt-1 text-sm text-text">{user?.nombreEmpresa} ({user?.codigoEmpresa})</p>
+          <p className="mt-1 text-sm text-text">{user?.nombreEmpresa} ({user?.empresaId})</p>
         </div>
         <div>
           <p className="text-xs font-medium uppercase text-text-light">Sucursal</p>

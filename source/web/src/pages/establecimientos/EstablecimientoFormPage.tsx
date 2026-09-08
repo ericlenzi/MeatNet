@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getEstablecimiento, createEstablecimiento, updateEstablecimiento } from '@/services/establecimientos.service'
@@ -54,8 +54,8 @@ export default function EstablecimientoFormPage() {
         const empList = empRes.data || []
         setEmpresas(empList)
 
-        const empresaActiva = user?.codigoEmpresa
-          ? empList.find((e) => e.codigoEmpresa === user.codigoEmpresa)
+        const empresaActiva = user?.empresaId
+          ? empList.find((e) => e.id === user.empresaId)
           : undefined
 
         if (empresaActiva) {
@@ -194,7 +194,7 @@ export default function EstablecimientoFormPage() {
               onChange={(e) => updateField('EmpresaId', e.target.value)}
               options={empresas.map((emp) => ({
                 value: emp.id,
-                label: `${emp.codigoEmpresa} - ${emp.nombre}`,
+                label: `${emp.id} - ${emp.nombre}`,
               }))}
               placeholder="Seleccionar..."
               disabled

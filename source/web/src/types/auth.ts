@@ -1,4 +1,4 @@
-export interface LoginRequest {
+﻿export interface LoginRequest {
   Usuario: string
   Contraseña: string
 }
@@ -8,8 +8,10 @@ export interface CurrentUser {
   userName: string
   nombreCompleto: string
   rolId: string
-  codigoEmpresa: string
+  empresaId: string
   nombreEmpresa: string
+  colorEmpresa: string | null
+  logoEmpresa: string | null
   codigoSucursal: string
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { getEmpresas, deleteEmpresa } from '@/services/empresas.service'
 import { usePagination } from '@/hooks/usePagination'
@@ -69,7 +69,7 @@ export default function EmpresasListPage() {
   }
 
   const columns: Column<Empresa>[] = [
-    { key: 'codigoEmpresa', header: 'Codigo', width: '120px', sortable: true },
+    { key: 'id', header: 'Codigo', width: '120px', sortable: true },
     { key: 'nombre', header: 'Nombre', sortable: true },
     { key: 'tipoEmpresaId', header: 'Tipo', width: '100px', sortable: true },
     { key: 'numeroCuit', header: 'CUIT', width: '150px', sortable: true },

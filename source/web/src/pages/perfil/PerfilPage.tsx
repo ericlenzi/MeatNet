@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext'
+﻿import { useAuth } from '@/contexts/AuthContext'
 import PageHeader from '@/components/ui/PageHeader'
 
 export default function PerfilPage() {
@@ -25,7 +25,7 @@ export default function PerfilPage() {
             </div>
             <div>
               <p className="text-xs font-medium uppercase text-text-light">Empresa</p>
-              <p className="mt-1 text-sm text-text">{user?.nombreEmpresa} ({user?.codigoEmpresa})</p>
+              <p className="mt-1 text-sm text-text">{user?.nombreEmpresa} ({user?.empresaId})</p>
             </div>
           </div>
         </div>

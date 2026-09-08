@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getEmpresa, createEmpresa, updateEmpresa } from '@/services/empresas.service'
@@ -21,7 +21,7 @@ export default function EmpresaFormPage() {
   const [fetching, setFetching] = useState(true)
   const [tiposEmpresa, setTiposEmpresa] = useState<TipoEmpresa[]>([])
   const [form, setForm] = useState({
-    CodigoEmpresa: '',
+    Id: '',
     Nombre: '',
     TipoEmpresaId: '',
     NumeroCuit: '',
@@ -41,7 +41,7 @@ export default function EmpresaFormPage() {
         if (isEdit && id) {
           const data = await getEmpresa(id)
           setForm({
-            CodigoEmpresa: data.codigoEmpresa || '',
+            Id: data.id || '',
             Nombre: data.nombre || '',
             TipoEmpresaId: data.tipoEmpresaId || '',
             NumeroCuit: data.numeroCuit || '',
@@ -63,7 +63,7 @@ export default function EmpresaFormPage() {
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
-    if (!form.CodigoEmpresa.trim()) newErrors['CodigoEmpresa'] = 'Requerido'
+    if (!form.Id.trim()) newErrors['Id'] = 'Requerido'
     if (!form.Nombre.trim()) newErrors['Nombre'] = 'Requerido'
     if (!form.TipoEmpresaId) newErrors['TipoEmpresaId'] = 'Requerido'
     setErrors(newErrors)
@@ -113,9 +113,9 @@ export default function EmpresaFormPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Codigo"
-              value={form.CodigoEmpresa}
-              onChange={(e) => updateField('CodigoEmpresa', e.target.value)}
-              error={errors['CodigoEmpresa']}
+              value={form.Id}
+              onChange={(e) => updateField('Id', e.target.value)}
+              error={errors['Id']}
               disabled={isEdit}
             />
             <Input
