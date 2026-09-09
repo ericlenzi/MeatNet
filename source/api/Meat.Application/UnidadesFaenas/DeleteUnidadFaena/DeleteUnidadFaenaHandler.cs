@@ -1,7 +1,8 @@
-﻿using MediatR;
+using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,18 +24,31 @@ namespace Meat.Application.UnidadesFaenas.DeleteUnidadFaena
             if (entity == null)
                 throw new ValidationException("La unidad de faena no existe.");
 
-            var enUsoTipificacion = await this.context.Tipificaciones
-                .AnyAsync(t => t.UnidadFaenaId == entity.Id, cancellationToken);
-            if (enUsoTipificacion)
-                throw new ValidationException("No se puede eliminar la unidad de faena porque esta en uso en tipificaciones.");
+            // Las dos dependencias se cuentan siempre y se informan juntas. Cortar en la primera
+            // hacia que el usuario resolviera las tipificaciones para recien ahi enterarse de que
+            // ademas habia romaneos: dos vueltas para una respuesta que ya se sabia entera.
+            var tipificaciones = await this.context.Tipificaciones
+                .CountAsync(t => t.UnidadFaenaId == entity.Id, cancellationToken);
 
             // El romaneo guarda con que unidad se faeno cada animal: es historico y no se puede
-            // dejar colgado. Antes solo se miraba Tipificaciones, asi que una unidad ya usada en
-            // la faena se podia dar de baja igual.
-            var enUsoRomaneo = await this.context.Romaneos
-                .AnyAsync(r => r.UnidadFaenaId == entity.Id, cancellationToken);
-            if (enUsoRomaneo)
-                throw new ValidationException("No se puede eliminar la unidad de faena porque tiene romaneos registrados.");
+            // dejar colgado.
+            var romaneos = await this.context.Romaneos
+                .CountAsync(r => r.UnidadFaenaId == entity.Id, cancellationToken);
+
+            if (tipificaciones > 0 || romaneos > 0)
+            {
+                var motivos = new List<string>();
+
+                if (tipificaciones > 0)
+                    motivos.Add($"{tipificaciones} {(tipificaciones == 1 ? "tipificacion" : "tipificaciones")}");
+
+                if (romaneos > 0)
+                    motivos.Add($"{romaneos} {(romaneos == 1 ? "romaneo" : "romaneos")}");
+
+                throw new ValidationException(
+                    $"No se puede eliminar la unidad de faena porque tiene {string.Join(" y ", motivos)}. "
+                    + "Si ya no se usa, desactivela en lugar de eliminarla.");
+            }
 
             this.context.Remove(entity);
             await this.context.SaveChangesAsync(cancellationToken);
