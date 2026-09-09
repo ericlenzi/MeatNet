@@ -3,7 +3,9 @@
 Este documento describe los patrones establecidos en el proyecto MeatNet para implementar un CRUD completo (Create, Read, Update, Delete) de una nueva entidad, tanto en el backend (API .NET 8) como en el frontend (React + Vite + TypeScript).
 
 > **Alcance:** esta guía aplica a las **tablas de proceso/negocio** con PK `Guid Id` (el patrón completo: Entity con Factory, Handlers CQRS, Controller, migraciones, frontend).
-> **No** aplica a las **tablas de catálogo** (PK `string Codigo` + `Nombre` + `Activo`, equivalentes a enums; ej: `TipoAlmacen`, `TipoEstadoIngreso`, `TipoEstadoHacienda`). Ver la sección "Patrones de Tablas" en `CLAUDE.md` para la distinción entre ambos tipos.
+> **No** aplica a las **tablas de catálogo** (PK `string Codigo` + `Nombre` + `Activo`, equivalentes a enums; ej: `TipoAlmacen`, `TipoEstadoIngreso`, `TipoEstadoHacienda`), que tienen su propio patrón, más chico, descrito en la sección 4.
+> Hay además un tercer caso, **catálogo global + configuración por empresa** (ej: `TipoEspecie` / `EmpresaTipoEspecie`), donde conviven las dos tablas. También en la sección 4.
+> Ver la sección "Patrones de Tablas" en `CLAUDE.md` para la distinción entre los tres tipos.
 
 ---
 
@@ -23,7 +25,9 @@ Este documento describe los patrones establecidos en el proyecto MeatNet para im
    - [3.4 Form Page](#34-form-page)
    - [3.5 Rutas (App.tsx)](#35-rutas-apptsx)
    - [3.6 Sidebar](#36-sidebar)
-4. [Regla de Empresa Activa](#4-regla-de-empresa-activa)
+4. [Aislamiento por Empresa](#4-aislamiento-por-empresa)
+   - [Catalogo global: el patron chico](#catalogo-global-el-patron-chico)
+   - [Catalogo global + configuracion por empresa](#catalogo-global--configuracion-por-empresa)
 5. [Validaciones comunes](#5-validaciones-comunes)
 6. [Checklist de implementacion](#6-checklist-de-implementacion)
 
@@ -780,11 +784,129 @@ construir el modelo, asi que una entidad mal clasificada no arranca.
 | Autorizacion del controller | escritura `SUPERADMIN`, lectura abierta | rol operativo segun el caso |
 | Sidebar | `superAdminOnly: true` | como el resto de Datos Maestros |
 
-**Esta guia describe el segundo tipo.** Para un catalogo global el patron es mucho mas chico
-(entity con `Codigo`/`Nombre`/`Activo`, CRUD sin `EmpresaId`); mirar `EspeciesController` o
-`RolesController` como referencia, sobre todo por como separan lectura de escritura: la lectura
-queda abierta a cualquier usuario autenticado porque estos catalogos son FKs que aparecen en
-pantallas operativas, y restringirlas deja combos vacios.
+**Esta guia describe el segundo tipo.** Los otros dos van en las dos subsecciones que siguen.
+
+### Catalogo global: el patron chico
+
+La entity es plana y no lleva Factory:
+
+```csharp
+public class TipoEspecie
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public string Codigo { get; set; }
+    public string Nombre { get; set; }
+    public bool Activo { get; set; }
+}
+```
+
+Diferencias con el patron de esta guia:
+
+- Sin `ITenantScoped`, sin `EmpresaId`, sin Factory y sin indice unico por codigo: la PK ya lo es.
+- Los handlers buscan por `Codigo`, no por `Id`; el `Create` devuelve el codigo. Las rutas del
+  controller son `{codigo}`.
+- **Escritura `[Authorize(Roles = "SUPERADMIN")]`, lectura abierta a cualquier autenticado.** La
+  lectura queda abierta porque estos catalogos son FKs que aparecen en pantallas operativas, y
+  restringirlas deja combos vacios. Ver `EspeciesController`, `RolesController` y
+  `TiposEspeciesController`.
+- Las filas iniciales se siembran **en la migracion**, no en el `EmpresaSeeder`: son comunes a
+  todas las empresas y no nacen con cada una.
+- El `Delete` valida dependencias **salteando el query filter**. Es el punto que mas se olvida: el
+  SUPERADMIN borra parado en la empresa ADM, que no tiene operacion propia, asi que un `AnyAsync`
+  normal siempre da cero y deja borrar un catalogo que esta en uso en otra empresa. Como
+  `IgnoreQueryFilters` apaga todos los filtros de una vez, hay que reponer a mano el de soft
+  delete (mismo criterio que `DeleteEmpresaHandler`):
+
+```csharp
+var usado = await this.context.Set<TEntity>()
+    .IgnoreQueryFilters()
+    .AnyAsync(x => EF.Property<string>(x, "TipoEspecieId") == codigo
+        && EF.Property<DateTime?>(x, "FechaBaja") == null,
+        cancellationToken);
+```
+
+En el frontend, el identificador de las rutas y del service es el codigo, y el item del `Sidebar`
+va con `superAdminOnly: true`.
+
+### Catalogo global + configuracion por empresa
+
+A veces la entidad **es** un nomenclador del rubro pero cada empresa le cuelga parametros propios.
+Ahi no hay que elegir entre los dos tipos: van las dos tablas, el catalogo del tipo 1 y una tabla
+puente del tipo 2 que le apunta por su codigo.
+
+El caso de referencia es `TipoEspecie` / `EmpresaTipoEspecie` (categorias de hacienda). El otro
+precedente en el proyecto es `EstablecimientoEspecie`, que hace lo mismo sobre `Especie`.
+
+```csharp
+// Tipo 1: la categoria en si, igual para todas las empresas.
+public class TipoEspecie
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public string Codigo { get; set; }
+    public string Nombre { get; set; }
+    public string EspecieId { get; set; }
+    public double PesoTeoricoReferencia { get; set; }   // sugerido; no lo usa ningun calculo
+    public bool Activo { get; set; }
+}
+
+// Tipo 2: lo que ajusta cada empresa.
+public class EmpresaTipoEspecie : ITenantScoped
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public Guid Id { get; set; }
+    public string TipoEspecieId { get; set; }           // FK al codigo del catalogo
+    public virtual TipoEspecie TipoEspecie { get; set; }
+    public double PesoTeorico { get; set; }             // el que usan los calculos
+    public string ERP_Codigo { get; set; }
+    public bool Activo { get; set; }
+    public DateTime FechaActualizacion { get; set; }
+    public string EmpresaId { get; set; }
+    public virtual Empresa Empresa { get; set; }
+}
+```
+
+Como repartir los campos: en el catalogo va lo que **identifica** a la fila y es igual en todas las
+empresas; en la configuracion va lo que **cada empresa ajusta**. Si un campo aparece en las dos
+(el peso teorico, arriba), el del catalogo es de referencia y el de la empresa es el que manda.
+
+Cuatro reglas que salen de ahi:
+
+1. **Indice unico `(EmpresaId, <FK al catalogo>)`** con `HasFilter("[FechaBaja] IS NULL")`, en la
+   region `Indices Unicos`. Es lo que impide configurar dos veces la misma fila del catalogo.
+2. **Las tablas de operacion guardan el codigo del catalogo**, no el `Id` de la fila de
+   configuracion. Un romaneo registra que la pieza fue un NOVILLO; el peso teorico es un parametro
+   de calculo, no un hecho del registro historico. Asi el historico se sigue leyendo aunque la
+   empresa despues deje de operar con esa categoria.
+3. **Una pantalla operativa pide siempre la configuracion**, nunca el catalogo: el catalogo lista
+   todas las opciones del rubro, la configuracion las de esta empresa. Pedirle el catalogo llena el
+   combo con opciones que la empresa no usa.
+4. **Los valores de referencia se copian al dar de alta**, no se leen en vivo. La copia va en un
+   solo lugar, el handler de `Create` de la tabla puente, asi vale igual desde la pantalla y desde
+   el `EmpresaSeeder`. Editar el catalogo despues no pisa lo que la empresa ya ajusto.
+
+```csharp
+// CreateEmpresaTipoEspecieHandler: el unico lugar donde se copia el valor de referencia.
+entity.TipoEspecieId = tipoEspecie.Codigo;
+entity.PesoTeorico = request.PesoTeorico ?? tipoEspecie.PesoTeoricoReferencia;
+```
+
+El estado efectivo necesita las dos puntas: una fila dada de baja en el catalogo no se puede usar
+aunque la empresa la tenga activa.
+
+```csharp
+queryable = queryable.Where(x => (x.Activo && x.TipoEspecie.Activo) == activo);
+```
+
+En el `Delete` de la tabla puente, la fila se puede quitar sin romper ninguna FK, porque las FK de
+operacion apuntan al catalogo. Lo que se rompe es la lectura: los combos y listados de la empresa
+salen de ahi. Por eso el handler bloquea el borrado si la categoria ya se uso y sugiere
+desactivarla. Ver `DeleteEmpresaTipoEspecieHandler`.
+
+En el frontend son **dos pantallas**: el catalogo con `superAdminOnly: true` y la configuracion
+como un item normal de Datos Maestros. Ver `pages/tiposEspecies/` y `pages/categoriasHacienda/`.
 
 ### Que hay que hacer al crear una entidad propia de una empresa
 
@@ -872,7 +994,16 @@ Excepciones personalizadas:
 
 ### Paso cero
 
-- [ ] **Decidir el tipo**: los datos son comunes a todas las empresas (catalogo global, PK `string Codigo`, lo administra ADM) o propios de una (PK `Guid Id` + `EmpresaId`, lo administra cada empresa). Ver seccion 4. El resto del checklist asume el segundo caso.
+**Decidir el tipo** antes de escribir nada (ver seccion 4). Son tres salidas:
+
+- [ ] Datos **comunes a todas las empresas**: catalogo global, PK `string Codigo`, lo administra el
+      SUPERADMIN desde ADM. Patron chico, no sigue el resto de este checklist.
+- [ ] Datos **propios de una empresa**: PK `Guid Id` + `EmpresaId`, lo administra el ADMIN de cada
+      empresa. Es lo que sigue.
+- [ ] **Las dos cosas**: la identidad es del rubro y los parametros son de cada empresa. Van las dos
+      tablas, y la puente sigue este checklist con tres agregados: indice unico
+      `(EmpresaId, <FK al catalogo>)`, la copia de los valores de referencia en el handler de
+      `Create`, y el `EmpresaSeeder` sembrando filas de configuracion en vez de copiar el catalogo.
 
 ### Backend
 
