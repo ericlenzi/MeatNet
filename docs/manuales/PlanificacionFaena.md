@@ -146,7 +146,7 @@ Tres entidades de proceso (PK `Guid Id`, Factory) + un catálogo (PK `string Cod
 PK: Guid Id
 
 Contexto:
-- EstablecimientoId (FK)            [da el filtro por empresa]
+- EstablecimientoId (Guid, FK)      [da el filtro por empresa]
 - EspecieId (string, FK a Especie)
 - Fecha (date)                      [dia de faena]
 - NumeroLista (long)                [correlativo por (Establecimiento, Especie); Numerador LISTAMATANZA (R-02)]

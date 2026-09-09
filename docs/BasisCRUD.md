@@ -91,7 +91,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Meat.Domain.{Entidades}
 {
-    public class {Entidad}
+    public class {Entidad} : ITenantScoped
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -102,14 +102,14 @@ namespace Meat.Domain.{Entidades}
         public string Nombre { get; set; }
         public bool Activo { get; set; }
         
-        // FK a Empresa (OBLIGATORIO para filtro de empresa activa)
-        public Guid EmpresaId { get; set; }
+        /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>
+        public string EmpresaId { get; set; }
         public virtual Empresa Empresa { get; set; }
     }
 }
 ```
 
-**Con PK string (como Parametro, Rol):**
+**Con PK string (los catalogos globales, como `Rol` o `Especie`):**
 
 ```csharp
 [Key]
