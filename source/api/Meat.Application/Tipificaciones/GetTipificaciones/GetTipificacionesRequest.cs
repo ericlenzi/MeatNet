@@ -9,6 +9,6 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
     {
         public bool? Estado { get; set; }
         public string EspecieId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
     }
 }

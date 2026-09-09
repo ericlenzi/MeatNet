@@ -23,7 +23,7 @@ namespace Meat.Application.TiposEspecies.GetTipoEspecie
             var entity = await this.context.TiposEspecies
                 .Include(x => x.Especie)
                 .Include(x => x.TipoSexo)
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Codigo == request.Codigo, cancellationToken);
 
             return this.mapper.Map<GetTipoEspecieResponse>(entity);
         }

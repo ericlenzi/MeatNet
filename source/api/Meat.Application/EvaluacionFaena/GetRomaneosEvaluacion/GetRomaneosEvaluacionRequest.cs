@@ -39,7 +39,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public int NumeroGarron { get; set; }
         public Guid TropaId { get; set; }
         public long NumeroTropa { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public string UnidadFaenaNombre { get; set; }
         public DateTime Fecha { get; set; }

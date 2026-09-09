@@ -22,19 +22,26 @@
     { "codigo": "ZZ", "nombre": "CONSUMO", "favorito": true }
   ],
 
+  "_comentarioTiposEspecies": [
+    "Categorias con las que arranca una empresa nueva. Solo cuenta el codigo: la categoria en si",
+    "(nombre, especie, sexo, peso teorico de referencia) vive en el catalogo global TiposEspecies,",
+    "que administra la empresa ADM. El peso propio de cada empresa se copia del de referencia y",
+    "despues se ajusta desde la pantalla de Categorias de la empresa."
+  ],
+
   "tiposEspecies": [
-    { "codigo": "CA", "nombre": "CAPONES / HEMBRAS SIN SERVICIO", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 90 },
-    { "codigo": "CH", "nombre": "CHANCHAS", "especieId": "P", "tipoSexoId": "H", "pesoTeorico": 100 },
-    { "codigo": "CO", "nombre": "CACHORRO", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 85 },
-    { "codigo": "LE", "nombre": "LECHONES", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 120 },
-    { "codigo": "ME", "nombre": "MACHO ENTERO INMUNOLOGICAMENTE CASTRADO", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 110 },
-    { "codigo": "PA", "nombre": "PADRILLOS", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 100 },
-    { "codigo": "MJ", "nombre": "MEJ", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 90 },
-    { "codigo": "NO", "nombre": "NOVILLO", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 90 },
-    { "codigo": "NT", "nombre": "NOVILLITO", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 85 },
-    { "codigo": "TO", "nombre": "TORO", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 94 },
-    { "codigo": "VA", "nombre": "VACA", "especieId": "V", "tipoSexoId": "H", "pesoTeorico": 92 },
-    { "codigo": "VQ", "nombre": "VAQUILLONA", "especieId": "V", "tipoSexoId": "H", "pesoTeorico": 98 }
+    { "codigo": "CA", "nombre": "CAPONES / HEMBRAS SIN SERVICIO" },
+    { "codigo": "CH", "nombre": "CHANCHAS" },
+    { "codigo": "CO", "nombre": "CACHORRO" },
+    { "codigo": "LE", "nombre": "LECHONES" },
+    { "codigo": "ME", "nombre": "MACHO ENTERO INMUNOLOGICAMENTE CASTRADO" },
+    { "codigo": "PA", "nombre": "PADRILLOS" },
+    { "codigo": "MJ", "nombre": "MEJ" },
+    { "codigo": "NO", "nombre": "NOVILLO" },
+    { "codigo": "NT", "nombre": "NOVILLITO" },
+    { "codigo": "TO", "nombre": "TORO" },
+    { "codigo": "VA", "nombre": "VACA" },
+    { "codigo": "VQ", "nombre": "VAQUILLONA" }
   ],
 
   "unidadesFaenas": [

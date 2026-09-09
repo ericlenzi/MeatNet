@@ -88,7 +88,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
 
     public class DispersionPesoItem
     {
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Piezas { get; set; }
         public double PesoPromedio { get; set; }

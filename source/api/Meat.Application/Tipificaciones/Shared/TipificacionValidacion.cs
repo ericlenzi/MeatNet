@@ -13,7 +13,7 @@ namespace Meat.Application.Tipificaciones.Shared
         public static async Task ValidateAsync(
             MeatContext context,
             string especieId,
-            Guid? tipoEspecieId,
+            string tipoEspecieId,
             Guid unidadFaenaId,
             Guid? destinoComercialId,
             string tipificacionOficialId,
@@ -26,8 +26,8 @@ namespace Meat.Application.Tipificaciones.Shared
             if (!await context.Especies.AnyAsync(e => e.Codigo == especieId, cancellationToken))
                 throw new ValidationException("La especie indicada no existe.");
 
-            if (tipoEspecieId.HasValue
-                && !await context.TiposEspecies.AnyAsync(t => t.Id == tipoEspecieId.Value && t.EspecieId == especieId, cancellationToken))
+            if (!string.IsNullOrEmpty(tipoEspecieId)
+                && !await context.TiposEspecies.AnyAsync(t => t.Codigo == tipoEspecieId && t.EspecieId == especieId, cancellationToken))
                 throw new ValidationException("La categoria (tipo de especie) no es valida para la especie.");
 
             if (unidadFaenaId == Guid.Empty

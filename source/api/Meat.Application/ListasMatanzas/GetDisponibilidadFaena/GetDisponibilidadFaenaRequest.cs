@@ -26,7 +26,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
         public string AlmacenNombre { get; set; }
         public Guid ClienteId { get; set; }
         public string ClienteNombre { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int EnPie { get; set; }
         public int Reservado { get; set; }

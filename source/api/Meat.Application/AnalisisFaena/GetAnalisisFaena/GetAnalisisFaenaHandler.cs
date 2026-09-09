@@ -41,7 +41,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 from p in this.context.RomaneosPiezas
                 join r in this.context.Romaneos on p.RomaneoId equals r.Id
                 join d in this.context.ListasMatanzasDetalles on r.ListaMatanzaDetalleId equals d.Id
-                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Codigo
                 join t in this.context.Tropas on r.TropaId equals t.Id
                 join i in this.context.IngresosHaciendas on t.IngresoHaciendaId equals i.Id
                 join c in this.context.Clientes on i.ClienteId equals c.Id
@@ -56,7 +56,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                     p.TipificacionId,
                     TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null,
                     MaterialNombre = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.Nombre : null,
-                    TipoEspecieId = te.Id,
+                    TipoEspecieId = te.Codigo,
                     TipoEspecieNombre = te.Nombre,
                     ClienteId = c.Id,
                     ClienteNombre = c.Nombre,
@@ -71,7 +71,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 join i in this.context.IngresosHaciendas on t.IngresoHaciendaId equals i.Id
                 join c in this.context.Clientes on i.ClienteId equals c.Id
                 join a in this.context.Almacenes on d.AlmacenId equals a.Id
-                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Codigo
                 where d.ListaMatanzaId == lm.Id
                 select new
                 {

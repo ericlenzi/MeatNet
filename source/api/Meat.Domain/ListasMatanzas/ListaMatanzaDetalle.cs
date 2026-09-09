@@ -33,7 +33,7 @@ namespace Meat.Domain.ListasMatanzas
         public Guid? AlmacenDestinoId { get; set; }        // camara de faena (destino); requerido al Confirmar
         public virtual Almacen AlmacenDestino { get; set; }
 
-        public Guid TipoEspecieId { get; set; }          // categoria a faenar
+        public string TipoEspecieId { get; set; }        // categoria a faenar
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public int Secuencia { get; set; }                 // orden de faena (reordenable)

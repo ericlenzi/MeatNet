@@ -27,7 +27,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                 join i in this.context.IngresosHaciendas on u.IngresoHaciendaId equals i.Id
                 join a in this.context.Almacenes on u.AlmacenId equals a.Id
                 join c in this.context.Clientes on i.ClienteId equals c.Id
-                join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Codigo
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
                 where i.EstadoIngresoId == EstadosIngreso.Aprobado
                     && t.EstadoTropaId == EstadosTropa.Recepcionada
@@ -43,7 +43,7 @@ namespace Meat.Application.ListasMatanzas.GetDisponibilidadFaena
                     AlmacenNombre = a.Nombre,
                     ClienteId = c.Id,
                     ClienteNombre = c.Nombre,
-                    TipoEspecieId = te.Id,
+                    TipoEspecieId = te.Codigo,
                     TipoEspecieNombre = te.Nombre
                 } into g
                 select new

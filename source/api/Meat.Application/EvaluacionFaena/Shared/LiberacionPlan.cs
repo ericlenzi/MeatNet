@@ -47,7 +47,7 @@ namespace Meat.Application.EvaluacionFaena.Shared
 
         public Guid? TropaId { get; set; }
         public string EspecieId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string Referencia { get; set; }
     }
 
@@ -83,7 +83,7 @@ namespace Meat.Application.EvaluacionFaena.Shared
         public Guid? MaterialId { get; set; }
         public Guid? TropaId { get; set; }
         public string EspecieId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public bool YaLiberada { get; set; }
     }
 

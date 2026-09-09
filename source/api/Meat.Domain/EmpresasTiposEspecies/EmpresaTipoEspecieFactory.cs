@@ -1,12 +1,12 @@
 using System;
 
-namespace Meat.Domain.TiposEspecies
+namespace Meat.Domain.EmpresasTiposEspecies
 {
-    public static class TipoEspecieFactory
+    public static class EmpresaTipoEspecieFactory
     {
-        public static TipoEspecie Create()
+        public static EmpresaTipoEspecie Create()
         {
-            return new TipoEspecie
+            return new EmpresaTipoEspecie
             {
                 Id = Guid.NewGuid(),
                 FechaActualizacion = DateTime.Now,

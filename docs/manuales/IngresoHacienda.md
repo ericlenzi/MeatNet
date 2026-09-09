@@ -1,4 +1,4 @@
-# Manual de Proceso — Ingreso de Hacienda
+﻿# Manual de Proceso — Ingreso de Hacienda
 
 > Proceso del Ciclo I (Recepción de hacienda). Cubre desde el arribo del camión jaula
 > hasta la ubicación de la hacienda en los corrales y su disponibilidad como stock para
@@ -56,7 +56,7 @@ romaneo. Estos consumen las **tropas disponibles en corrales** que genera este p
 | **CUIG** | Clave Única de Identificación Ganadera. Vive en `ClienteEstablecimiento.NumeroCUIG`. |
 | **Tropa** | Lote de animales de un mismo cliente y especie que ingresa. Unidad de **trazabilidad** aguas abajo (faena/romaneo). Lleva número correlativo por Cliente-Establecimiento + Especie. |
 | **Procedencia** | Establecimiento de origen de la hacienda, modelado como `ClienteEstablecimiento` (aporta RENSPA y CUIG). |
-| **Peso teórico** | Peso de referencia de una categoría (`TipoEspecie.PesoTeorico`). Se usa para estimar la cantidad de animales a partir del peso pesado. |
+| **Peso teórico** | Peso de referencia de una categoría (`EmpresaTipoEspecie.PesoTeorico`, el que configura cada empresa). Se usa para estimar la cantidad de animales a partir del peso pesado. |
 | **Corral** | `Almacen` de tipo Corral. Tiene capacidad máxima de animales (`CantidadAnimales`). |
 
 ---
@@ -87,7 +87,7 @@ disponibles están **filtrados por la Especie** del ingreso. Cada línea:
 cantidad de animales:
 
 ```
-CantidadEstimada = PesoIngreso / TipoEspecie.PesoTeorico   (ajustable por el operador)
+CantidadEstimada = PesoIngreso / EmpresaTipoEspecie.PesoTeorico   (ajustable por el operador)
 PesoNeto          = Σ PesoIngreso   (kg, suma de las pesadas)
 ```
 
@@ -389,7 +389,7 @@ Registrar cada DbSet en `MeatContext` y **sembrar los códigos iniciales** en la
 | R4 | Numeración de tropa vía `NumeradorTropa` (Cliente-Establecimiento + Especie): tomar `UltimoNumeroTropa`, incrementar y persistir. Si no existe el numerador, crearlo. **El número nunca se reutiliza** (ni tras anulación). | Handler de aprobación (transaccional) |
 | R5 | `PesoNeto = Σ PesoIngreso` (suma de las pesadas del registro). No se carga bruto ni tara del camión. | Cálculo en cabecera |
 | R6 | **Guardar borrador** no exige ubicaciones en corral; solo se ubican en corral los **tipos de especie del registro de pesadas**, y las ubicaciones son obligatorias al **enviar a aprobación**. | Validación de carga |
-| R7 | Cantidad estimada por categoría = `PesoIngreso / TipoEspecie.PesoTeorico`, **ajustable** por el operador. | Cálculo en registro de pesadas |
+| R7 | Cantidad estimada por categoría = `PesoIngreso / EmpresaTipoEspecie.PesoTeorico`, **ajustable** por el operador. | Cálculo en registro de pesadas |
 | R8 | **Capacidad de corral**: `ocupación actual + cantidad a ubicar ≤ Almacen.CantidadAnimales`. **Tope duro** (bloquea). | Validación al aprobar |
 | R9 | Una tropa que **no entra** en un corral se **reparte** en otro(s) corral(es) (múltiples líneas de ubicación). | Ubicación |
 | R10 | Solo la hacienda **En Pie** de tropas **Recepcionadas** cuenta como **stock de faena**. | Consulta de stock |
@@ -405,7 +405,7 @@ Registrar cada DbSet en `MeatContext` y **sembrar los códigos iniciales** en la
 ```
 PesoNeto (ingreso)       = Σ PesoIngreso                                    // suma de las pesadas
 
-CantidadEstimada (cat.)  = round( PesoIngreso / TipoEspecie.PesoTeorico )   // ajustable
+CantidadEstimada (cat.)  = round( PesoIngreso / EmpresaTipoEspecie.PesoTeorico )   // ajustable
 
 PesoPromedio (ubicación) = PesoIngreso(cat.) / Σ Cantidad(cat.)             // por tipo especie
 ```

@@ -9,7 +9,7 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
     {
 
         public string EspecieId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public Guid? UnidadFaenaId { get; set; }
         public Guid? DestinoComercialId { get; set; }      // opcional (filtro)
         public double? Peso { get; set; }                    // opcional; si viene, elige por rango

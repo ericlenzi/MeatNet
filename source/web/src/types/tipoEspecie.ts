@@ -1,13 +1,13 @@
-﻿export interface TipoEspecie {
-  id: string
+// Catalogo global de categorias de hacienda: lo administra el SUPERADMIN desde la empresa ADM.
+// La identidad es el codigo, no un Guid. Lo que cada empresa ajusta esta en empresaTipoEspecie.
+export interface TipoEspecie {
   codigo: string
   nombre: string
   especieId: string
   especieNombre: string
   tipoSexoId: string
   tipoSexoNombre: string
-  erP_Codigo: string
-  pesoTeorico: number
+  pesoTeoricoReferencia: number
   activo: boolean
 }
 
@@ -16,16 +16,14 @@ export interface CreateTipoEspecieRequest {
   Nombre: string
   EspecieId: string
   TipoSexoId?: string
-  ERP_Codigo?: string
-  PesoTeorico?: number
+  PesoTeoricoReferencia?: number
 }
 
 export interface UpdateTipoEspecieRequest {
   Nombre: string
   EspecieId: string
   TipoSexoId?: string
-  ERP_Codigo?: string
-  PesoTeorico?: number
+  PesoTeoricoReferencia?: number
   Activo: boolean
 }
 

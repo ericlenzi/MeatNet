@@ -48,7 +48,7 @@ namespace Meat.Application.ListasMatanzas.GetListaMatanza
         public string AlmacenNombre { get; set; }
         public Guid? AlmacenDestinoId { get; set; }
         public string AlmacenDestinoNombre { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Secuencia { get; set; }
         public int Cantidad { get; set; }

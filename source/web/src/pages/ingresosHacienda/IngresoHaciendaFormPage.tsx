@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router'
 import {
@@ -16,11 +16,11 @@ import type { AlmacenItem } from '@/services/almacenes.service'
 import { getEstablecimiento } from '@/services/establecimientos.service'
 import { getOrigenesHaciendas } from '@/services/origenesHaciendas.service'
 import { getUsosHaciendas } from '@/services/usosHaciendas.service'
-import { getTiposEspecies } from '@/services/tiposEspecies.service'
+import { getEmpresasTiposEspecies } from '@/services/empresasTiposEspecies.service'
 import { useApp } from '@/contexts/AppContext'
 import { useToast } from '@/components/ui/Toast'
 import { EstadoIngreso, EstadoHacienda } from '@/types'
-import type { Cliente, OrigenHacienda, UsoHacienda, TipoEspecie, EspecieItem } from '@/types'
+import type { Cliente, OrigenHacienda, UsoHacienda, EmpresaTipoEspecie, EspecieItem } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import EspecieSelect from '@/components/ui/EspecieSelect'
@@ -70,7 +70,7 @@ export default function IngresoHaciendaFormPage() {
   const [provincias, setProvincias] = useState<ProvinciaItem[]>([])
   const [origenes, setOrigenes] = useState<OrigenHacienda[]>([])
   const [usos, setUsos] = useState<UsoHacienda[]>([])
-  const [tiposEspecies, setTiposEspecies] = useState<TipoEspecie[]>([])
+  const [tiposEspecies, setTiposEspecies] = useState<EmpresaTipoEspecie[]>([])
   const [almacenes, setAlmacenes] = useState<AlmacenItem[]>([])
   const [especies, setEspecies] = useState<EspecieItem[]>([])
 
@@ -104,7 +104,7 @@ export default function IngresoHaciendaFormPage() {
           getProvincias(),
           getOrigenesHaciendas(),
           getUsosHaciendas(),
-          getTiposEspecies({ PageSize: 1000, Estado: true }),
+          getEmpresasTiposEspecies({ PageSize: 1000, Estado: true }),
           getAlmacenes({ EstablecimientoId: currentEstablecimiento?.id, Estado: true, Familia: FamiliaAlmacen.Corral }),
           currentEstablecimiento?.id ? getEstablecimiento(currentEstablecimiento.id) : Promise.resolve(null),
         ])
@@ -186,7 +186,7 @@ export default function IngresoHaciendaFormPage() {
   }
 
   // --- Calculos ---
-  const pesoTeoricoById = new Map(tiposEspecies.map((t) => [t.id, t.pesoTeorico]))
+  const pesoTeoricoById = new Map(tiposEspecies.map((t) => [t.tipoEspecieId, t.pesoTeorico]))
   const pesoPorTipo = new Map<string, number>()
   pesadas.forEach((p) => pesoPorTipo.set(p.TipoEspecieId, (pesoPorTipo.get(p.TipoEspecieId) ?? 0) + num(p.PesoIngreso)))
   const cantidadPorTipo = new Map<string, number>()
@@ -213,7 +213,7 @@ export default function IngresoHaciendaFormPage() {
   // Los tipos de especie a pesar se limitan a la Especie elegida en el ingreso
   const tipoEspecieOptions = tiposEspecies
     .filter((t) => !form.EspecieId || t.especieId === form.EspecieId)
-    .map((t) => ({ value: t.id, label: t.nombre }))
+    .map((t) => ({ value: t.tipoEspecieId, label: t.nombre }))
 
   // En Corrales solo se pueden ubicar los tipos de especie cargados en el registro de pesadas
   const tipoEspecieIdsPesadas = new Set(pesadas.map((p) => p.TipoEspecieId).filter(Boolean))

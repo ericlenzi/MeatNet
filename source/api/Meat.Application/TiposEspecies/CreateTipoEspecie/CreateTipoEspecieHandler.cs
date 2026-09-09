@@ -1,9 +1,8 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
 using Meat.Repositories;
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,18 +21,29 @@ namespace Meat.Application.TiposEspecies.CreateTipoEspecie
 
         public async Task<CreateTipoEspecieResponse> Handle(CreateTipoEspecieRequest request, CancellationToken cancellationToken)
         {
-            if (this.context.TiposEspecies.Any(x => x.Codigo == request.Codigo))
+            var codigo = (request.Codigo ?? string.Empty).Trim();
+
+            if (string.IsNullOrEmpty(codigo))
+                throw new ValidationException("El codigo es obligatorio.");
+
+            if (await this.context.TiposEspecies.AnyAsync(x => x.Codigo == codigo, cancellationToken))
                 throw new ValidationException("Ya existe un tipo de especie con ese codigo.");
 
-            var entity = Domain.TiposEspecies.TipoEspecieFactory.Create();
+            if (!await this.context.Especies.AnyAsync(x => x.Codigo == request.EspecieId, cancellationToken))
+                throw new ValidationException("La especie indicada no existe.");
+
+            if (!string.IsNullOrEmpty(request.TipoSexoId)
+                && !await this.context.TiposSexos.AnyAsync(x => x.Codigo == request.TipoSexoId, cancellationToken))
+                throw new ValidationException("El tipo de sexo indicado no existe.");
+
+            var entity = new Domain.TiposEspecies.TipoEspecie { Activo = true };
             this.mapper.Map(request, entity);
-            entity.Activo = true;
-            entity.FechaActualizacion = DateTime.Now;
+            entity.Codigo = codigo;
 
             this.context.TiposEspecies.Add(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CreateTipoEspecieResponse { Id = entity.Id };
+            return new CreateTipoEspecieResponse { Codigo = entity.Codigo };
         }
     }
 }

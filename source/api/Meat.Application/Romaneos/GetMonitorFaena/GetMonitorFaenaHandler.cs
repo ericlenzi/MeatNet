@@ -32,7 +32,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
                 from d in this.context.ListasMatanzasDetalles
                 join t in this.context.Tropas on d.TropaId equals t.Id
                 join a in this.context.Almacenes on d.AlmacenId equals a.Id
-                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Codigo
                 where d.ListaMatanzaId == lm.Id
                 orderby d.Secuencia
                 select new RenglonMonitorItem

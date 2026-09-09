@@ -16,7 +16,7 @@ namespace Meat.Domain.IngresosHaciendas
         public Guid IngresoHaciendaId { get; set; }
         public virtual IngresoHacienda IngresoHacienda { get; set; }
 
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public double PesoIngreso { get; set; }            // kg

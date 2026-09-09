@@ -1,4 +1,4 @@
-# Ciclo I - Paso 2: Planificación de Faena (Lista de Matanza)
+﻿# Ciclo I - Paso 2: Planificación de Faena (Lista de Matanza)
 
 ## 1. Objetivo y alcance
 
@@ -21,7 +21,7 @@ al confirmar, historial/versionado de cambios, faena de emergencia, máquina de 
 |---|---|
 | **LM / Lista de Matanza** | Programación diaria de faena de un Establecimiento para una Especie. |
 | **Renglón** | Línea de la LM: una tropa, en un corral, de una categoría (TipoEspecie), con cantidad y secuencia. |
-| **TipoEspecie / Categoría** | Subclasificación del animal En Pie (ej. PADRILLOS, CAPONES, CACHORRO). Una misma tropa/corral puede tener varias; se planifican por separado. |
+| **TipoEspecie / Categoría** | Subclasificación del animal En Pie (ej. PADRILLOS, CAPONES, CACHORRO). Catálogo global; cada empresa elige con cuáles opera en `EmpresaTipoEspecie`. Una misma tropa/corral puede tener varias; se planifican por separado. |
 | **Secuencia** | Orden en que se faenan los renglones. **No** es clave ni identificador; es reordenable. |
 | **Dividir** | Partir un renglón en dos (misma tropa/corral/categoría, distinta secuencia y cantidad). |
 | **Fusionar** | Unir dos renglones de la misma tropa/corral/categoría en uno. |
@@ -162,7 +162,7 @@ PK: Guid Id
 - ListaMatanzaId (Guid, FK, cascade delete)
 - TropaId (Guid, FK)
 - AlmacenId (Guid, FK)              [corral de origen]
-- TipoEspecieId (string, FK, requerido) [categoria a faenar]
+- TipoEspecieId (string, FK al codigo del catalogo global, requerido) [categoria a faenar]
 - Secuencia (int)                   [orden de faena; reordenable; no es clave]
 - Cantidad (int)                    [animales a faenar de esta tropa/corral/categoria]
 - CantidadFaenada (int, default 0)  [lo actualiza el Monitor; congela el renglon]

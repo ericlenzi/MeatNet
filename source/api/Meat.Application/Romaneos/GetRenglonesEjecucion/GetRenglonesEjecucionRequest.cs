@@ -41,7 +41,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
         public string AlmacenNombre { get; set; }
         public Guid? AlmacenDestinoId { get; set; }         // camara destino planificada en la LM (default del puesto)
         public string AlmacenDestinoNombre { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public int Secuencia { get; set; }
         public int Cantidad { get; set; }
