@@ -1,4 +1,4 @@
-# Ciclo I - Paso 3: Ejecución de Faena (Romaneo y Tipificador)
+﻿# Ciclo I - Paso 3: Ejecución de Faena (Romaneo y Tipificador)
 
 ## 1. Objetivo y alcance
 
@@ -33,6 +33,7 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 | **Pieza / Romaneo Pieza** | Cada unidad física pesada del animal. **PORCINO:** 1 (RES). **VACUNO:** 2 (MEDIA RES, letras A y B). |
 | **Garrón** | Número físico de gancho del que cuelga la pieza. En vacuno, las 2 medias reses del animal comparten el nº de garrón (se distinguen por letra A/B). |
 | **Unidad de Faena (UF)** | `UnidadFaena` (RES / MEDIA RES / …). Define **cuántas piezas** tiene el romaneo por especie. |
+| **Categoría / TipoEspecie** | Categoría de hacienda del animal (NOVILLO, VAQUILLONA, CAPÓN…). **Catálogo global** (`TiposEspecies`, PK `Codigo`) que mantiene el SUPERADMIN; cada empresa declara con cuáles opera y con qué parámetros en `EmpresasTiposEspecies`. En este paso la categoría **no se elige**: viene del renglón de la LM. |
 | **Tipificación** | `Tipificacion` (parametrizable por empresa): clasifica la pieza por especie, categoría, UF, destino, tipificación oficial y **rango de peso**. |
 | **Medición** | Valor capturado de un `TipoMedicion` del catálogo. En MVP la única medición es **`PESO`**. |
 | **Tipificador** | Puesto/pantalla donde se captura el romaneo res por res. |
@@ -51,6 +52,10 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 - Master data cargado (Fase 1): `UnidadesFaenas`, `Tipificaciones` (con rango de peso),
   `Numeradores` (con un `ROMANEO` por Establecimiento+Especie), catálogo `TiposMediciones` con
   el código **`PESO`**.
+
+> **La categoría no se elige en este paso.** Sale del renglón de la LM que el tipificador
+> selecciona, y el renglón la trae del stock que dejó el Ingreso. El Tipificador no tiene combo de
+> categoría: elegir el renglón ya la determina.
 
 ## 4. Decisiones de diseño
 
@@ -176,6 +181,12 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   Destino` no hay **ninguna** candidata activa, el Tipificador lo avisa **explícitamente antes de
   pedir el peso** y bloquea el registro. Antes este caso se veía igual que un error de conexión
   (combo vacío, sin explicación), lo que hacía perder tiempo diagnosticando.
+
+  El filtro compara el **código del catálogo global**, no la configuración de la empresa. Es
+  deliberado: si la empresa desactiva una categoría con la que todavía tiene animales en corral,
+  esos animales se siguen faenando y sus tipificaciones siguen apareciendo. Desactivar una
+  categoría corta el **ingreso** de hacienda nueva, no la faena de lo que ya entró (ver
+  `docs/manuales/IngresoHacienda.md` §3 y `PlanificacionFaena.md` §3).
 - **R-E15 (peso fuera de rango — override registrado).** Si el peso cae fuera del rango de su
   tipificación, **no se bloquea la línea**: se advierte mostrando el rango esperado y se permite
   registrar con **confirmación explícita** del operador. La pieza queda marcada con
@@ -341,7 +352,9 @@ El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por r
 - **Medición `PESO`:** debe existir el `TipoMedicion` con código `PESO` (Fase 1 lo siembra por
   script; validar su presencia).
 - **Tipificaciones cargadas:** tiene que haber al menos una `Tipificacion` activa por combinación
-  `Especie + TipoEspecie + UF + Destino`; si no hay ninguna, el Tipificador lo avisa y **bloquea** el
+  `Especie + TipoEspecie + UF + Destino` (el ABM de `Tipificaciones` ofrece en ese combo las
+  categorías **configuradas por la empresa**, no el catálogo entero); si no hay ninguna, el
+  Tipificador lo avisa y **bloquea** el
   registro (R-E14). Que el peso caiga fuera del rango de la que corresponde **no** bloquea: se
   registra con confirmación y queda marcado (R-E15).
 - **Balanza:** integración de hardware de puesto fuera de MVP (peso manual).
