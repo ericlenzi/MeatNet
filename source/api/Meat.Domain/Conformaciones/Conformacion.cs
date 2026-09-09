@@ -1,4 +1,4 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,7 +20,8 @@ namespace Meat.Domain.Conformaciones
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        /// <summary>Posicion en la escala, de mejor a peor. Es el orden con el que se listan.</summary>
+        /// <summary>Posicion en la escala, de mejor a peor (A superior, E inferior). Es el orden
+        /// con el que se listan.</summary>
         public int Orden { get; set; }
         public bool Activo { get; set; }
     }

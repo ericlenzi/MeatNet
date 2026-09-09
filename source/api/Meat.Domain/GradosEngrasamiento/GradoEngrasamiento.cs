@@ -1,4 +1,4 @@
-using Meat.Domain.Especies;
+﻿using Meat.Domain.Especies;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,7 +19,8 @@ namespace Meat.Domain.GradosEngrasamiento
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        /// <summary>Posicion en la escala. Es el orden con el que se listan.</summary>
+        /// <summary>Posicion en la escala, no un ranking de calidad: el optimo esta en el medio
+        /// (grado 2), y tanto el 0 como el 4 son extremos indeseados. Es el orden con el que se listan.</summary>
         public int Orden { get; set; }
         public bool Activo { get; set; }
     }

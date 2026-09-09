@@ -147,8 +147,9 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
           </div>
 
           <p className="mt-4 text-sm text-text-light">
-            El orden es la posicion en la escala, de mejor a peor. Se usa para listar: los codigos
-            ordenados alfabeticamente no dicen nada.
+            El orden es la posicion en la escala, no un ranking de calidad. Se usa para listar, porque
+            los codigos ordenados alfabeticamente no dicen nada. En conformacion la escala va de
+            mejor a peor; en engrasamiento va de menos a mas grasa, y el optimo esta en el medio.
           </p>
 
           {isEdit && (
