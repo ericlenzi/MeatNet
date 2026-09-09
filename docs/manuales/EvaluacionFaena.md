@@ -134,6 +134,12 @@ RomaneoPieza ──(Tipificacion.MaterialId)──► Material de entrada (ej. "
 - **Qué material es cada pieza** lo resuelve la **Tipificación** (`Tipificacion.MaterialId`), no la
   Unidad de Faena. La tipificación distingue categoría + destino + tipificación oficial, que es lo
   que el ERP y el Ciclo II necesitan.
+- **Pero la Unidad de Faena acota cuál puede ser.** `UnidadFaena.TipoMaterialId` es el eje de
+  **forma**, y la Tipificación valida que su `Material` sea de ese mismo `TipoMaterial`. Es lo que
+  impide que la Liberación materialice un cuarto a partir de una media res. La validación estaba
+  escrita como *"si la unidad tiene TipoMaterial"*, así que hasta la migración 64 no corría para
+  vacuno: cuatro de sus cinco unidades tenían la columna vacía, incluida la unidad por defecto.
+  Hoy el campo es requerido (ver `EjecucionFaena.md`, R-E17).
 - **El cuarteo ocurre al cerrar (dentro del Ciclo I).** Lo que el Ciclo I deja en cámara ya está en
   los materiales finales, con trazabilidad al garrón/romaneo de origen. Si un material no tiene
   despiece activo (ej. media res de exportación que sale entera), entra a cámara tal cual.

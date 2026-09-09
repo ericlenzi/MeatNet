@@ -34,6 +34,13 @@ Rinde caliente (%) = (kg de romaneo / kg vivos de los animales faenados) × 100
 jornada. Es el peso de la media res / res al salir de la playa de faena, capturado por el
 Tipificador. Es un peso **caliente**: todavía no perdió la merma del oreo.
 
+> **Cuántas piezas entran en esa suma lo decide la Unidad de Faena.** El Tipificador exige
+> exactamente `UnidadFaena.PiezasPorAnimal` piezas por animal, así que una unidad mal parametrizada
+> infla el numerador con piezas que el operador tuvo que inventar para poder cerrar la captura.
+> Desde la validación de aritmética de la UF eso ya no puede pasar (ver `EjecucionFaena.md`,
+> R-E16). Es el espejo del punto 5 de más abajo: el denominador depende de un parámetro que la
+> empresa configura, el numerador dependía de otro.
+
 **Denominador — kg vivos.** No existe pesada individual del animal vivo. Lo que hay es el peso de
 ingreso, y de ahí sale el promedio por ubicación:
 
