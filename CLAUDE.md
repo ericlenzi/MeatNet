@@ -49,6 +49,7 @@ MeatNet/
 ├── docs/           # Documentación: arquitectura, decisiones, guías
 │   ├── rules/      # api.md, web.md
 │   └── manuales/   # Detalles de los procesos 
+├── tools/          # Scripts de verificacion (no son parte de la aplicacion)
 ├── source/
 │   ├── api/        # Backend C# .NET (ver /docs/rules/api.md)
 │   └── web/        # Frontend React / Next.js (ver docs/rules/web.md)

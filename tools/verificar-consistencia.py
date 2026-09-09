@@ -15,7 +15,7 @@ Correr esto despues de cualquier migracion que toque claves primarias.
 
 Uso
 ---
-    python docs/verificar-consistencia.py
+    python tools/verificar-consistencia.py
 
 Devuelve 1 si hay desajustes duros (chequeos A o B). El chequeo C es heuristico: lista
 candidatos para revisar a ojo, no falla la corrida.

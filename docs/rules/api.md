@@ -121,7 +121,7 @@ TiposMovimientosCamaras, MovimientosCamaras
 Despues de cualquier migracion que toque **claves primarias**, correr:
 
 ```bash
-python docs/verificar-consistencia.py
+python tools/verificar-consistencia.py
 ```
 
 Compara los manuales y los DTO contra los tipos reales del dominio. Las migraciones 49 y 59
