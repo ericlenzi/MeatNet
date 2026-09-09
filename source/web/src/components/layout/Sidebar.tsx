@@ -164,7 +164,7 @@ const navGroups: NavGroup[] = [
           { label: 'Sucursales', path: '/sucursales', icon: icons.locationMarker },
           { label: 'Establecimientos', path: '/establecimientos', icon: icons.library },
           { label: 'Almacenes', path: '/almacenes', icon: icons.database },
-          { label: 'Especies', path: '/especies', icon: icons.tag },
+          { label: 'Especies', path: '/especies', icon: icons.tag, superAdminOnly: true },
           { label: 'Tipos de Especies', path: '/tipos-especies', icon: icons.tag },
           { label: 'Unidades de Faena', path: '/unidades-faenas', icon: icons.adjustments },
           { label: 'Tipificaciones', path: '/tipificaciones', icon: icons.tag },
