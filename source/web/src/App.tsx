@@ -25,6 +25,8 @@ import ClientesListPage from '@/pages/clientes/ClientesListPage'
 import ClienteFormPage from '@/pages/clientes/ClienteFormPage'
 import TiposEspeciesListPage from '@/pages/tiposEspecies/TiposEspeciesListPage'
 import TipoEspecieFormPage from '@/pages/tiposEspecies/TipoEspecieFormPage'
+import CategoriasHaciendaListPage from '@/pages/categoriasHacienda/CategoriasHaciendaListPage'
+import CategoriaHaciendaFormPage from '@/pages/categoriasHacienda/CategoriaHaciendaFormPage'
 import UnidadesFaenasListPage from '@/pages/unidadesFaenas/UnidadesFaenasListPage'
 import UnidadFaenaFormPage from '@/pages/unidadesFaenas/UnidadFaenaFormPage'
 import TipificacionesListPage from '@/pages/tipificaciones/TipificacionesListPage'
@@ -118,7 +120,10 @@ function AppRoutes() {
                   <Route path="almacenes/:id/edit" element={<AlmacenFormPage />} />
                   <Route path="tipos-especies" element={<TiposEspeciesListPage />} />
                   <Route path="tipos-especies/create" element={<TipoEspecieFormPage />} />
-                  <Route path="tipos-especies/:id/edit" element={<TipoEspecieFormPage />} />
+                  <Route path="tipos-especies/:codigo/edit" element={<TipoEspecieFormPage />} />
+                  <Route path="categorias-hacienda" element={<CategoriasHaciendaListPage />} />
+                  <Route path="categorias-hacienda/create" element={<CategoriaHaciendaFormPage />} />
+                  <Route path="categorias-hacienda/:id/edit" element={<CategoriaHaciendaFormPage />} />
                   <Route path="unidades-faenas" element={<UnidadesFaenasListPage />} />
                   <Route path="unidades-faenas/create" element={<UnidadFaenaFormPage />} />
                   <Route path="unidades-faenas/:id/edit" element={<UnidadFaenaFormPage />} />

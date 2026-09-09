@@ -9,8 +9,7 @@ namespace Meat.Application.TiposEspecies.UpdateTipoEspecie
         [Required]
         public string EspecieId { get; set; }
         public string TipoSexoId { get; set; }
-        public string ERP_Codigo { get; set; }
-        public double PesoTeorico { get; set; }
+        public double PesoTeoricoReferencia { get; set; }
         public bool Activo { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
         public string AlmacenNombre { get; set; }
         public int CapacidadCorral { get; set; }
 
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
 
         public Guid ClienteId { get; set; }

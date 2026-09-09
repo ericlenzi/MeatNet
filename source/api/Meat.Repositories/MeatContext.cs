@@ -32,6 +32,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.TiposAlmacenes.TipoAlmacen> TiposAlmacenes { get; set; }
         public virtual DbSet<Domain.TiposSexos.TipoSexo> TiposSexos { get; set; }
         public virtual DbSet<Domain.TiposEspecies.TipoEspecie> TiposEspecies { get; set; }
+        public virtual DbSet<Domain.EmpresasTiposEspecies.EmpresaTipoEspecie> EmpresasTiposEspecies { get; set; }
         public virtual DbSet<Domain.OrigenesHaciendas.OrigenHacienda> OrigenesHaciendas { get; set; }
         public virtual DbSet<Domain.UsosHaciendas.UsoHacienda> UsosHaciendas { get; set; }
         public virtual DbSet<Domain.TiposMateriales.TipoMaterial> TiposMateriales { get; set; }
@@ -185,6 +186,11 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            modelBuilder.Entity<Domain.EmpresasTiposEspecies.EmpresaTipoEspecie>()
+                .HasIndex(ete => new { ete.EmpresaId, ete.TipoEspecieId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             // Codigos unicos (una columna)
             modelBuilder.Entity<Domain.Sucursales.Sucursal>()
                 .HasIndex(s => new { s.EmpresaId, s.CodigoSucursal })
@@ -309,11 +315,6 @@ namespace Meat.Repositories
 
             modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
                 .HasIndex(u => new { u.EmpresaId, u.Codigo })
-                .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
-
-            modelBuilder.Entity<Domain.TiposEspecies.TipoEspecie>()
-                .HasIndex(te => new { te.EmpresaId, te.Codigo })
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
@@ -442,6 +443,17 @@ namespace Meat.Repositories
             {
                 e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.TipoMaterial).WithMany().HasForeignKey(x => x.TipoMaterialId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.TiposEspecies.TipoEspecie>(e =>
+            {
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoSexo).WithMany().HasForeignKey(x => x.TipoSexoId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.EmpresasTiposEspecies.EmpresaTipoEspecie>(e =>
+            {
+                e.HasOne(x => x.TipoEspecie).WithMany().HasForeignKey(x => x.TipoEspecieId).OnDelete(DeleteBehavior.Restrict).IsRequired();
             });
 
             modelBuilder.Entity<Domain.Tipificaciones.Tipificacion>(e =>

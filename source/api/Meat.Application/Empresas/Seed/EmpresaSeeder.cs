@@ -3,6 +3,7 @@ using Meat.Repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace Meat.Application.Empresas.Seed
@@ -64,16 +65,25 @@ namespace Meat.Application.Empresas.Seed
                 this.context.DestinosComerciales.Add(destino);
             }
 
+            // Las categorias son un catalogo comun a todas las empresas: la empresa nueva no
+            // las copia, solo declara con cuales opera y con que parametros. El peso arranca en
+            // el de referencia del catalogo y desde ahi cada empresa lo ajusta por su cuenta.
+            var codigos = baseDatos.TiposEspecies.Select(t => t.Codigo).ToList();
+            var catalogo = this.context.TiposEspecies
+                .Where(t => codigos.Contains(t.Codigo))
+                .ToDictionary(t => t.Codigo);
+
             foreach (var te in baseDatos.TiposEspecies)
             {
-                var tipo = Domain.TiposEspecies.TipoEspecieFactory.Create();
-                tipo.EmpresaId = empresaId;
-                tipo.Codigo = te.Codigo;
-                tipo.Nombre = te.Nombre;
-                tipo.EspecieId = te.EspecieId;
-                tipo.TipoSexoId = te.TipoSexoId;
-                tipo.PesoTeorico = te.PesoTeorico;
-                this.context.TiposEspecies.Add(tipo);
+                // Si el codigo no esta en el catalogo no se inventa: lo da de alta el SUPERADMIN.
+                if (!catalogo.TryGetValue(te.Codigo, out var tipoEspecie))
+                    continue;
+
+                var configuracion = Domain.EmpresasTiposEspecies.EmpresaTipoEspecieFactory.Create();
+                configuracion.EmpresaId = empresaId;
+                configuracion.TipoEspecieId = tipoEspecie.Codigo;
+                configuracion.PesoTeorico = tipoEspecie.PesoTeoricoReferencia;
+                this.context.EmpresasTiposEspecies.Add(configuracion);
             }
 
             foreach (var uf in baseDatos.UnidadesFaenas)

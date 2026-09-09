@@ -88,7 +88,7 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
                     TropaId = r.TropaId,
                     AlmacenId = r.AlmacenId,
                     AlmacenDestinoId = r.AlmacenDestinoId,
-                    TipoEspecieId = r.TipoEspecieId.Value,
+                    TipoEspecieId = r.TipoEspecieId,
                     Secuencia = r.Secuencia,
                     Cantidad = r.Cantidad,
                     CantidadFaenada = 0

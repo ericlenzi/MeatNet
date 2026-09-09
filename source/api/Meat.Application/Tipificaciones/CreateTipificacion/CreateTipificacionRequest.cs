@@ -15,7 +15,7 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
 
         [Required]
         public string EspecieId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public Guid? UnidadFaenaId { get; set; }
         public Guid? DestinoComercialId { get; set; }
         public string TipificacionOficialId { get; set; }

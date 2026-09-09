@@ -39,7 +39,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                 join t in this.context.Tropas on r.TropaId equals t.Id
                 join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Id
                 join d in this.context.ListasMatanzasDetalles on r.ListaMatanzaDetalleId equals d.Id
-                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Codigo
                 where r.ListaMatanzaId == lm.Id
                 orderby r.NumeroRomaneo
                 select new RomaneoEvaluacionItem
@@ -49,7 +49,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                     NumeroGarron = r.NumeroGarron,
                     TropaId = t.Id,
                     NumeroTropa = t.NumeroTropa,
-                    TipoEspecieId = te.Id,
+                    TipoEspecieId = te.Codigo,
                     TipoEspecieNombre = te.Nombre,
                     UnidadFaenaNombre = uf.Nombre,
                     Fecha = r.Fecha,

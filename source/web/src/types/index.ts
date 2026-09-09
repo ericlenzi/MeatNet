@@ -8,6 +8,7 @@ export type { Parametro, CreateParametroRequest, UpdateParametroRequest } from '
 export type { Especie, CreateEspecieRequest, UpdateEspecieRequest } from './especie'
 export type { Cliente, CreateClienteRequest, UpdateClienteRequest, TipoCliente } from './cliente'
 export type { TipoEspecie, CreateTipoEspecieRequest, UpdateTipoEspecieRequest, TipoSexo } from './tipoEspecie'
+export type { EmpresaTipoEspecie, CreateEmpresaTipoEspecieRequest, UpdateEmpresaTipoEspecieRequest } from './empresaTipoEspecie'
 export type { OrigenHacienda, UsoHacienda } from './hacienda'
 export type { NumeradorTropa, CreateNumeradorTropaRequest, UpdateNumeradorTropaRequest } from './numeradorTropa'
 export type {

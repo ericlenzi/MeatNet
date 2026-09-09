@@ -35,7 +35,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                 from d in this.context.ListasMatanzasDetalles
                 join t in this.context.Tropas on d.TropaId equals t.Id
                 join a in this.context.Almacenes on d.AlmacenId equals a.Id
-                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Codigo
                 join adj in this.context.Almacenes on d.AlmacenDestinoId equals adj.Id into ad
                 from destino in ad.DefaultIfEmpty()
                 where d.ListaMatanzaId == lm.Id
@@ -49,7 +49,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                     AlmacenNombre = a.Nombre,
                     AlmacenDestinoId = d.AlmacenDestinoId,
                     AlmacenDestinoNombre = destino != null ? destino.Nombre : null,
-                    TipoEspecieId = te.Id,
+                    TipoEspecieId = te.Codigo,
                     TipoEspecieNombre = te.Nombre,
                     Secuencia = d.Secuencia,
                     Cantidad = d.Cantidad,

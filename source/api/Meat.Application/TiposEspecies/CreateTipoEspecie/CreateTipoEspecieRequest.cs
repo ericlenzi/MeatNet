@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.ComponentModel.DataAnnotations;
 
 namespace Meat.Application.TiposEspecies.CreateTipoEspecie
@@ -12,7 +12,6 @@ namespace Meat.Application.TiposEspecies.CreateTipoEspecie
         [Required]
         public string EspecieId { get; set; }
         public string TipoSexoId { get; set; }
-        public string ERP_Codigo { get; set; }
-        public double PesoTeorico { get; set; }
+        public double PesoTeoricoReferencia { get; set; }
     }
 }

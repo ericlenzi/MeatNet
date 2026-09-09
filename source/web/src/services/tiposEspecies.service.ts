@@ -13,6 +13,8 @@ interface GetTiposEspeciesParams extends PaginatedRequest {
   EspecieId?: string
 }
 
+// Catalogo global: la lectura es abierta (aparece en combos), la escritura es del SUPERADMIN.
+// Para las categorias con las que opera la empresa, ver empresasTiposEspecies.service.
 export async function getTiposEspecies(
   params?: GetTiposEspeciesParams,
 ): Promise<PaginatedResponse<TipoEspecie>> {
@@ -20,27 +22,27 @@ export async function getTiposEspecies(
   return response.data
 }
 
-export async function getTipoEspecie(id: string): Promise<TipoEspecie> {
-  const response = await api.get<TipoEspecie>(`/TiposEspecies/${id}`)
+export async function getTipoEspecie(codigo: string): Promise<TipoEspecie> {
+  const response = await api.get<TipoEspecie>(`/TiposEspecies/${codigo}`)
   return response.data
 }
 
 export async function createTipoEspecie(
   data: CreateTipoEspecieRequest,
-): Promise<{ id: string }> {
-  const response = await api.post<{ id: string }>('/TiposEspecies', data)
+): Promise<{ codigo: string }> {
+  const response = await api.post<{ codigo: string }>('/TiposEspecies', data)
   return response.data
 }
 
 export async function updateTipoEspecie(
-  id: string,
+  codigo: string,
   data: UpdateTipoEspecieRequest,
 ): Promise<void> {
-  await api.put(`/TiposEspecies/${id}`, data)
+  await api.put(`/TiposEspecies/${codigo}`, data)
 }
 
-export async function deleteTipoEspecie(id: string): Promise<void> {
-  await api.delete(`/TiposEspecies/${id}`)
+export async function deleteTipoEspecie(codigo: string): Promise<void> {
+  await api.delete(`/TiposEspecies/${codigo}`)
 }
 
 export async function getTiposSexos(): Promise<TipoSexo[]> {

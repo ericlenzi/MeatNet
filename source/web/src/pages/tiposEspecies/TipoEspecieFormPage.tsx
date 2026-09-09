@@ -12,10 +12,10 @@ import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
 
 export default function TipoEspecieFormPage() {
-  const { id } = useParams()
+  const { codigo } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const isEdit = !!id
+  const isEdit = !!codigo
 
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -26,8 +26,7 @@ export default function TipoEspecieFormPage() {
     Nombre: '',
     EspecieId: '',
     TipoSexoId: '',
-    ERP_Codigo: '',
-    PesoTeorico: '',
+    PesoTeoricoReferencia: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -42,15 +41,15 @@ export default function TipoEspecieFormPage() {
         setEspecies(especiesRes.data || [])
         setTiposSexos(sexosRes)
 
-        if (isEdit && id) {
-          const entity = await getTipoEspecie(id)
+        if (isEdit && codigo) {
+          const entity = await getTipoEspecie(codigo)
           setForm({
             Codigo: entity.codigo || '',
             Nombre: entity.nombre || '',
             EspecieId: entity.especieId || '',
             TipoSexoId: entity.tipoSexoId || '',
-            ERP_Codigo: entity.erP_Codigo || '',
-            PesoTeorico: entity.pesoTeorico != null ? String(entity.pesoTeorico) : '',
+            PesoTeoricoReferencia:
+              entity.pesoTeoricoReferencia != null ? String(entity.pesoTeoricoReferencia) : '',
             Activo: entity.activo,
           })
         }
@@ -61,7 +60,7 @@ export default function TipoEspecieFormPage() {
       }
     }
     void loadData()
-  }, [id, isEdit, toast])
+  }, [codigo, isEdit, toast])
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -78,13 +77,14 @@ export default function TipoEspecieFormPage() {
 
     setLoading(true)
     try {
-      if (isEdit && id) {
-        await updateTipoEspecie(id, {
+      if (isEdit && codigo) {
+        await updateTipoEspecie(codigo, {
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
-          ERP_Codigo: form.ERP_Codigo || undefined,
-          PesoTeorico: form.PesoTeorico ? Number(form.PesoTeorico) : undefined,
+          PesoTeoricoReferencia: form.PesoTeoricoReferencia
+            ? Number(form.PesoTeoricoReferencia)
+            : undefined,
           Activo: form.Activo,
         })
         toast('success', 'Tipo de especie actualizado')
@@ -94,8 +94,9 @@ export default function TipoEspecieFormPage() {
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           TipoSexoId: form.TipoSexoId || undefined,
-          ERP_Codigo: form.ERP_Codigo || undefined,
-          PesoTeorico: form.PesoTeorico ? Number(form.PesoTeorico) : undefined,
+          PesoTeoricoReferencia: form.PesoTeoricoReferencia
+            ? Number(form.PesoTeoricoReferencia)
+            : undefined,
         })
         toast('success', 'Tipo de especie creado')
       }
@@ -156,15 +157,10 @@ export default function TipoEspecieFormPage() {
               placeholder="Seleccionar sexo..."
             />
             <Input
-              label="Codigo ERP"
-              value={form.ERP_Codigo}
-              onChange={(e) => updateField('ERP_Codigo', e.target.value)}
-            />
-            <Input
-              label="Peso Teorico"
+              label="Peso Teorico de Referencia"
               type="number"
-              value={form.PesoTeorico}
-              onChange={(e) => updateField('PesoTeorico', e.target.value)}
+              value={form.PesoTeoricoReferencia}
+              onChange={(e) => updateField('PesoTeoricoReferencia', e.target.value)}
             />
           </div>
 
@@ -181,6 +177,12 @@ export default function TipoEspecieFormPage() {
               </label>
             </div>
           )}
+
+          <p className="mt-4 text-sm text-text-light">
+            El peso de referencia es el sugerido del rubro: se propone cuando una empresa da de
+            alta la categoria. El peso que usan los calculos es el que cada empresa configura en
+            Categorias de la Empresa.
+          </p>
 
           <div className="mt-6 flex justify-end gap-3">
             <Button variant="secondary" type="button" onClick={() => navigate('/tipos-especies')}>

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Meat.Application.Empresas.Seed
 {
@@ -25,13 +25,16 @@ namespace Meat.Application.Empresas.Seed
         public bool Favorito { get; set; }
     }
 
+    /// <summary>
+    /// Categoria con la que arranca una empresa nueva. Solo se usa el Codigo: los datos de la
+    /// categoria (nombre, especie, sexo, peso de referencia) viven en el catalogo global
+    /// TiposEspecies, que administra la empresa ADM. El Nombre queda como etiqueta para que el
+    /// archivo se lea.
+    /// </summary>
     public class TipoEspecieBase
     {
         public string Codigo { get; set; }
         public string Nombre { get; set; }
-        public string EspecieId { get; set; }
-        public string TipoSexoId { get; set; }
-        public double PesoTeorico { get; set; }
     }
 
     public class UnidadFaenaBase

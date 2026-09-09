@@ -10,12 +10,12 @@ import {
   getUnidadesMedidas,
 } from '@/services/tipificaciones.service'
 import { getEspecies } from '@/services/especies.service'
-import { getTiposEspecies } from '@/services/tiposEspecies.service'
+import { getEmpresasTiposEspecies } from '@/services/empresasTiposEspecies.service'
 import { getUnidadesFaenasOptions } from '@/services/unidadesFaenas.service'
 import { getMateriales } from '@/services/materiales.service'
 import type {
   Especie,
-  TipoEspecie,
+  EmpresaTipoEspecie,
   UnidadFaena,
   Material,
   CatalogoFaenaOption,
@@ -39,7 +39,7 @@ export default function TipificacionFormPage() {
   const [fetching, setFetching] = useState(true)
   const [loading, setLoading] = useState(false)
   const [especies, setEspecies] = useState<Especie[]>([])
-  const [tiposEspecies, setTiposEspecies] = useState<TipoEspecie[]>([])
+  const [tiposEspecies, setTiposEspecies] = useState<EmpresaTipoEspecie[]>([])
   const [unidadesFaenas, setUnidadesFaenas] = useState<UnidadFaena[]>([])
   const [destinos, setDestinos] = useState<CatalogoFaenaOption[]>([])
   const [oficiales, setOficiales] = useState<TipificacionOficialOption[]>([])
@@ -114,7 +114,7 @@ export default function TipificacionFormPage() {
       }
       try {
         const [te, uf, of] = await Promise.all([
-          getTiposEspecies({ Estado: true, EspecieId: form.EspecieId, PageSize: 1000 }),
+          getEmpresasTiposEspecies({ Estado: true, EspecieId: form.EspecieId, PageSize: 1000 }),
           getUnidadesFaenasOptions(form.EspecieId),
           getTipificacionesOficiales(form.EspecieId),
         ])
@@ -246,7 +246,7 @@ export default function TipificacionFormPage() {
               label="Categoria (Tipo Especie)"
               value={form.TipoEspecieId}
               onChange={(e) => updateField('TipoEspecieId', e.target.value)}
-              options={tiposEspecies.map((t) => ({ value: t.id, label: t.nombre }))}
+              options={tiposEspecies.map((t) => ({ value: t.tipoEspecieId, label: t.nombre }))}
               placeholder="(Ninguna)"
             />
             <Select

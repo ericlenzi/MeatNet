@@ -59,7 +59,7 @@ namespace Meat.Application.ExistenciaCamara.GetMovimientosCamara
         public Guid? ClienteId { get; set; }
         public string ClienteNombre { get; set; }
         public string EspecieId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
 
         public string Referencia { get; set; }
     }

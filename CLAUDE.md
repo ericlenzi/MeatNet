@@ -89,7 +89,7 @@ la administra.
 - **No** llevan `EmpresaId` ni filtro por empresa. Se siembran con sus códigos en la migración.
 - Para conjuntos acotados y estables que clasifican datos (`TipoAlmacen`, `TipoEstadoIngreso`,
   `TipoEstadoHacienda`) y para los nomencladores oficiales del rubro (`TipificacionOficial`,
-  `MotivoDecomiso`, `Denticion`).
+  `MotivoDecomiso`, `Denticion`, `TipoEspecie`).
 - **Los administra el `SUPERADMIN` desde la empresa `ADM`**, porque una fila la comparten todas las
   empresas: si la editara el ADMIN de una, estaría cambiando datos del resto.
 - En el controller eso se traduce en separar lectura de escritura: **escritura**
@@ -108,9 +108,31 @@ la administra.
 - Es el patrón completo (Entity, Handlers CQRS, Controller, migraciones, frontend) descrito en
   `docs/BasisCRUD.md`.
 
-Ojo con la intuición: que algo *parezca* un catálogo no alcanza. `UnidadFaena`, `TipoEspecie` y
-`DestinoComercial` tienen códigos estándar del rubro, pero cada empresa ajusta sus pesos teóricos,
-su código de ERP y cuál es la opción por defecto — así que son del tipo 2.
+### 3. Catálogo global + configuración por empresa
+
+Cuando una entidad **es** un nomenclador del rubro pero cada empresa le cuelga parámetros propios,
+no hay que elegir entre los dos tipos: van las dos tablas. El nomenclador es del tipo 1 y la
+configuración del tipo 2, apuntándole por su código.
+
+`TipoEspecie` (categorías de hacienda) es el caso de referencia. La categoría en sí — NOVILLO,
+VAQUILLONA, CAPÓN — es la misma para todas las empresas, así que vive en el catálogo global junto
+con su `PesoTeoricoReferencia`. Lo que cada empresa ajusta (con qué categorías opera, su peso
+teórico real y su código de ERP) vive en `EmpresaTipoEspecie`.
+
+Dos reglas que salen de ahí:
+
+- Las tablas de operación guardan el **código del catálogo**, no el Id de la fila de configuración.
+  Un romaneo registra que la pieza fue un NOVILLO; el peso teórico es un parámetro de cálculo, no
+  un hecho del registro histórico.
+- Una **pantalla operativa pide siempre la configuración**, nunca el catálogo: el catálogo lista
+  todas las categorías del rubro, la configuración lista aquellas con las que esta empresa opera.
+
+El precedente de la tabla puente es `EstablecimientoEspecie`.
+
+Ojo con la intuición en la otra dirección: que algo *parezca* un catálogo no alcanza. `UnidadFaena`
+y `DestinoComercial` tienen códigos estándar del rubro, pero lo que cambia entre empresas es su
+contenido entero (las piezas por animal, cuál es la opción por defecto), no un par de parámetros
+colgados de una identidad común — así que son del tipo 2 y no se parten.
 
 > `docs/BasisCRUD.md` aplica al **tipo 2 (Guid Id)**, no a los catálogos globales.
 

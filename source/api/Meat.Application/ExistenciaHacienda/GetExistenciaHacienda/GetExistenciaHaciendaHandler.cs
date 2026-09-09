@@ -27,7 +27,7 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 join t in this.context.Tropas on u.TropaId equals (Guid?)t.Id
                 join i in this.context.IngresosHaciendas on u.IngresoHaciendaId equals i.Id
                 join a in this.context.Almacenes on u.AlmacenId equals a.Id
-                join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on u.TipoEspecieId equals te.Codigo
                 join c in this.context.Clientes on i.ClienteId equals c.Id
                 join est in this.context.Establecimientos on i.EstablecimientoId equals est.Id
                 where i.EstadoIngresoId == EstadosIngreso.Aprobado
@@ -43,7 +43,7 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                     x.a.Id,
                     AlmacenNombre = x.a.Nombre,
                     x.a.Capacidad,
-                    TipoEspecieId = x.te.Id,
+                    TipoEspecieId = x.te.Codigo,
                     TipoEspecieNombre = x.te.Nombre,
                     ClienteId = x.c.Id,
                     ClienteNombre = x.c.Nombre,
@@ -106,11 +106,11 @@ namespace Meat.Application.ExistenciaHacienda.GetExistenciaHacienda
                 var pesoPromedio = item.CantidadUN > 0 ? item.PesoKG / item.CantidadUN : 0;
 
                 // En Pie efectivo = recibido - faenado (consumo real).
-                var fae = faenadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId ?? Guid.Empty), out var ff) ? ff : 0;
+                var fae = faenadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId ?? string.Empty), out var ff) ? ff : 0;
                 item.CantidadUN = Math.Max(0, item.CantidadUN - fae);
                 item.PesoKG = item.CantidadUN * pesoPromedio;
 
-                var res = reservadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId ?? Guid.Empty), out var rr)
+                var res = reservadoPorCategoria.TryGetValue((item.TropaId, item.AlmacenId, item.TipoEspecieId ?? string.Empty), out var rr)
                     ? Math.Min(rr, item.CantidadUN)
                     : 0;
                 item.Reservado = res;

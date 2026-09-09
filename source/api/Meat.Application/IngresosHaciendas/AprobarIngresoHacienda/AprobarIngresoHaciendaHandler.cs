@@ -92,11 +92,11 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
                 .ToList();
 
             var especiePorTipo = await this.context.TiposEspecies
-                .Where(te => tipoEspecieIds.Contains(te.Id))
-                .ToDictionaryAsync(te => te.Id, te => te.EspecieId, cancellationToken);
+                .Where(te => tipoEspecieIds.Contains(te.Codigo))
+                .ToDictionaryAsync(te => te.Codigo, te => te.EspecieId, cancellationToken);
 
             var especies = entity.Ubicaciones
-                .Select(u => especiePorTipo.TryGetValue(u.TipoEspecieId ?? Guid.Empty, out var esp) ? esp : null)
+                .Select(u => especiePorTipo.TryGetValue(u.TipoEspecieId ?? string.Empty, out var esp) ? esp : null)
                 .Where(esp => esp != null)
                 .Distinct()
                 .ToList();
@@ -144,7 +144,7 @@ namespace Meat.Application.IngresosHaciendas.AprobarIngresoHacienda
 
                 // Ligar las ubicaciones de esa especie a la tropa
                 foreach (var u in entity.Ubicaciones.Where(u =>
-                    especiePorTipo.TryGetValue(u.TipoEspecieId ?? Guid.Empty, out var esp) && esp == especieCodigo))
+                    especiePorTipo.TryGetValue(u.TipoEspecieId ?? string.Empty, out var esp) && esp == especieCodigo))
                 {
                     u.TropaId = tropa.Id;
                 }

@@ -1,16 +1,14 @@
-﻿using System;
 using MediatR;
 
 namespace Meat.Application.TiposEspecies.UpdateTipoEspecie
 {
     public class UpdateTipoEspecieRequest : IRequest<UpdateTipoEspecieResponse>
     {
-        public Guid Id { get; set; }
+        public string Codigo { get; set; }
         public string Nombre { get; set; }
         public string EspecieId { get; set; }
         public string TipoSexoId { get; set; }
-        public string ERP_Codigo { get; set; }
-        public double PesoTeorico { get; set; }
+        public double PesoTeoricoReferencia { get; set; }
         public bool Activo { get; set; }
     }
 }

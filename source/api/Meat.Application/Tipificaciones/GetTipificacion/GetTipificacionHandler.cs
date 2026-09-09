@@ -22,7 +22,7 @@ namespace Meat.Application.Tipificaciones.GetTipificacion
                 from t in this.context.Tipificaciones
                 join e in this.context.Especies on t.EspecieId equals e.Codigo into ej
                 from e in ej.DefaultIfEmpty()
-                join te in this.context.TiposEspecies on t.TipoEspecieId equals te.Id into tej
+                join te in this.context.TiposEspecies on t.TipoEspecieId equals te.Codigo into tej
                 from te in tej.DefaultIfEmpty()
                 join uf in this.context.UnidadesFaenas on t.UnidadFaenaId equals uf.Id into ufj
                 from uf in ufj.DefaultIfEmpty()

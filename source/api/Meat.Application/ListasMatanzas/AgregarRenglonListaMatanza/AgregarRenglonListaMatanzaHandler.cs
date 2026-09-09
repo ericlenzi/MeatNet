@@ -39,7 +39,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
             if (request.Cantidad <= 0)
                 throw new ValidationException("La cantidad debe ser mayor a cero.");
 
-            if (!request.TipoEspecieId.HasValue)
+            if (string.IsNullOrEmpty(request.TipoEspecieId))
                 throw new ValidationException("Debe indicar la categoria (tipo de especie).");
 
             // R-A3: la LM ya esta confirmada; el renglon nuevo debe traer destino valido
@@ -53,7 +53,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
                 .Where(r => r.TropaId == request.TropaId && r.AlmacenId == request.AlmacenId && r.TipoEspecieId == request.TipoEspecieId)
                 .Sum(r => r.Cantidad - r.CantidadFaenada);
             await ListaMatanzaValidacion.ValidateDisponibilidadAsync(
-                this.context, entity, request.TropaId, request.AlmacenId, request.TipoEspecieId.Value,
+                this.context, entity, request.TropaId, request.AlmacenId, request.TipoEspecieId,
                 pendienteActual + request.Cantidad, cancellationToken);
 
             var secuencia = request.Secuencia
@@ -66,7 +66,7 @@ namespace Meat.Application.ListasMatanzas.AgregarRenglonListaMatanza
                 TropaId = request.TropaId,
                 AlmacenId = request.AlmacenId,
                 AlmacenDestinoId = request.AlmacenDestinoId,
-                TipoEspecieId = request.TipoEspecieId.Value,
+                TipoEspecieId = request.TipoEspecieId,
                 Secuencia = secuencia,
                 Cantidad = request.Cantidad,
                 CantidadFaenada = 0

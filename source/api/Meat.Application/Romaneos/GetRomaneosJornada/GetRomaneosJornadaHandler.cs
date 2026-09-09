@@ -26,7 +26,7 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                 join t in this.context.Tropas on r.TropaId equals t.Id
                 join uf in this.context.UnidadesFaenas on r.UnidadFaenaId equals uf.Id
                 join d in this.context.ListasMatanzasDetalles on r.ListaMatanzaDetalleId equals d.Id
-                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Id
+                join te in this.context.TiposEspecies on d.TipoEspecieId equals te.Codigo
                 where r.ListaMatanzaId == request.ListaMatanzaId
                    
                 orderby r.NumeroRomaneo descending

@@ -54,7 +54,7 @@ namespace Meat.Domain.MovimientosCamaras
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public DateTime Fecha { get; set; }

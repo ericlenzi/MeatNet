@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +28,11 @@ namespace Meat.Application.Especies.DeleteEspecie
                 .AnyAsync(ee => ee.EspecieId == request.Codigo, cancellationToken);
             if (tieneEstablecimientos)
                 throw new ValidationException("No se puede eliminar la especie porque tiene establecimientos asignados.");
+
+            var tieneTiposEspecies = await this.context.TiposEspecies
+                .AnyAsync(te => te.EspecieId == request.Codigo, cancellationToken);
+            if (tieneTiposEspecies)
+                throw new ValidationException("No se puede eliminar la especie porque tiene categorias (tipos de especie) asociadas.");
 
             this.context.Remove(especie);
 

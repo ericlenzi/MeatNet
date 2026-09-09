@@ -73,7 +73,7 @@ export default function TiposEspeciesListPage() {
     if (!deleteTarget) return
     setIsDeleting(true)
     try {
-      await deleteTipoEspecie(deleteTarget.id)
+      await deleteTipoEspecie(deleteTarget.codigo)
       toast('success', 'Tipo de especie eliminado')
       setDeleteTarget(null)
       void fetchData()
@@ -89,8 +89,7 @@ export default function TiposEspeciesListPage() {
     { key: 'nombre', header: 'Nombre', sortable: true },
     { key: 'especieNombre', header: 'Especie', width: '130px', sortable: true },
     { key: 'tipoSexoNombre', header: 'Sexo', width: '110px', sortable: true },
-    { key: 'erP_Codigo', header: 'Cod. ERP', width: '110px' },
-    { key: 'pesoTeorico', header: 'Peso Teorico', width: '110px' },
+    { key: 'pesoTeoricoReferencia', header: 'Peso Ref.', width: '110px' },
     {
       key: 'activo',
       header: 'Estado',
@@ -109,7 +108,7 @@ export default function TiposEspeciesListPage() {
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/tipos-especies/${row.id}/edit`) }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/tipos-especies/${row.codigo}/edit`) }}
             className="rounded p-1.5 text-text-light hover:bg-primary-50 hover:text-primary-600 transition-colors"
             title="Editar"
           >

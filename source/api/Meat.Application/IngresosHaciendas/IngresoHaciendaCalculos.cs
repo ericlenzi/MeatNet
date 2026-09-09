@@ -18,16 +18,16 @@ namespace Meat.Application.IngresosHaciendas
             IEnumerable<IngresoHaciendaUbicacionInput> ubicaciones)
         {
             var pesoPorTipo = pesadas
-                .GroupBy(p => p.TipoEspecieId ?? Guid.Empty)
+                .GroupBy(p => p.TipoEspecieId ?? string.Empty)
                 .ToDictionary(g => g.Key, g => g.Sum(x => x.PesoIngreso));
 
             var cantidadPorTipo = ubicaciones
-                .GroupBy(u => u.TipoEspecieId ?? Guid.Empty)
+                .GroupBy(u => u.TipoEspecieId ?? string.Empty)
                 .ToDictionary(g => g.Key, g => g.Sum(x => x.Cantidad));
 
             return ubicaciones.Select(u =>
             {
-                var key = u.TipoEspecieId ?? Guid.Empty;
+                var key = u.TipoEspecieId ?? string.Empty;
                 var peso = pesoPorTipo.TryGetValue(key, out var pp) ? pp : 0;
                 var cantidadTotal = cantidadPorTipo.TryGetValue(key, out var cc) ? cc : 0;
                 var pesoPromedio = cantidadTotal > 0 ? peso / cantidadTotal : 0;

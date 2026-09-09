@@ -54,7 +54,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
     public class PesadaItem
     {
         public Guid Id { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public double PesoIngreso { get; set; }
         public string UnidadMedida { get; set; }
@@ -65,7 +65,7 @@ namespace Meat.Application.IngresosHaciendas.GetIngresoHacienda
     {
         public Guid Id { get; set; }
         public Guid? TropaId { get; set; }
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public string TipoEspecieNombre { get; set; }
         public Guid AlmacenId { get; set; }
         public string AlmacenNombre { get; set; }

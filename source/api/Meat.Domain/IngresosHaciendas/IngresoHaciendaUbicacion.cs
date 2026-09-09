@@ -22,7 +22,7 @@ namespace Meat.Domain.IngresosHaciendas
         public Guid? TropaId { get; set; }                 // null en Borrador; se liga al aprobar
         public virtual Tropa Tropa { get; set; }
 
-        public Guid? TipoEspecieId { get; set; }
+        public string TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
         public Guid AlmacenId { get; set; }                // corral
