@@ -1,4 +1,4 @@
-# BasisCRUD - Guia para crear un CRUD de una entidad nueva
+﻿# BasisCRUD - Guia para crear un CRUD de una entidad nueva
 
 Este documento describe los patrones establecidos en el proyecto MeatNet para implementar un CRUD completo (Create, Read, Update, Delete) de una nueva entidad, tanto en el backend (API .NET 8) como en el frontend (React + Vite + TypeScript).
 
@@ -178,7 +178,7 @@ Arquitectura: **CQRS con MediatR**. Cada operacion tiene su carpeta con Request,
 
 #### GetAll (Lista paginada)
 
-**Request** - hereda de `RequestListBase` (trae Filter, PageIndex, PageSize, CodigoEmpresa):
+**Request** - hereda de `RequestListBase` (trae Filter, PageIndex, PageSize, EmpresaId):
 
 ```csharp
 public class Get{Entidades}Request : RequestListBase, IRequest<Get{Entidades}Response>
@@ -200,9 +200,8 @@ public class Get{Entidades}Response : ResponseListBase<IEnumerable<Domain.{Entid
 ```csharp
 public async Task<Get{Entidades}Response> Handle(Get{Entidades}Request request, CancellationToken cancellationToken)
 {
+    // Sin filtro por empresa: lo aplica el query filter global del MeatContext.
     IQueryable<{Entidad}> queryable = this.context.{Entidades}
-        .Include(x => x.Empresa)
-        .Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa)  // FILTRO EMPRESA
         .OrderBy(x => x.Nombre)
         .AsQueryable();
 
@@ -240,7 +239,7 @@ public class Get{Entidad}Request : IRequest<Get{Entidad}Response>
 {
     public Guid Id { get; set; }              // o string Codigo
     [JsonIgnore]
-    public string CodigoEmpresa { get; set; } // Inyectado por el Controller
+    // EmpresaId lo hereda de RequestBase; lo inyecta el Controller desde el JWT.
 }
 ```
 
@@ -270,9 +269,7 @@ public class Get{Entidad}MapperProfile : AutoMapper.Profile
 public async Task<Get{Entidad}Response> Handle(Get{Entidad}Request request, CancellationToken cancellationToken)
 {
     var entity = await this.context.{Entidades}
-        .Include(x => x.Empresa)
-        .FirstOrDefaultAsync(x => x.Id == request.Id 
-            && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);  // FILTRO EMPRESA
+        .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
     return this.mapper.Map<Get{Entidad}Response>(entity);
 }
@@ -290,7 +287,7 @@ public class Create{Entidad}Request : IRequest<Create{Entidad}Response>
     // ... otras propiedades
     
     [JsonIgnore]
-    public string CodigoEmpresa { get; set; }  // Inyectado por el Controller
+    // EmpresaId lo hereda de RequestBase; lo inyecta el Controller desde el JWT.
 }
 ```
 
@@ -318,7 +315,7 @@ public async Task<Create{Entidad}Response> Handle(Create{Entidad}Request request
 {
     // Resolver empresa activa
     var empresa = await this.context.Empresas
-        .FirstOrDefaultAsync(e => e.CodigoEmpresa == request.CodigoEmpresa, cancellationToken);
+        .FirstOrDefaultAsync(e => e.Id == request.EmpresaId, cancellationToken);
     if (empresa == null)
         throw new ValidationException("La empresa activa no es valida.");
 
@@ -342,14 +339,13 @@ public class Update{Entidad}Request : IRequest<Update{Entidad}Response>
 {
     public Guid Id { get; set; }
     [JsonIgnore]
-    public string CodigoEmpresa { get; set; }
     
     public string Nombre { get; set; }
     // ... propiedades editables
 }
 ```
 
-**RequestFromBody** (lo que viene del body HTTP, sin Id ni CodigoEmpresa):
+**RequestFromBody** (lo que viene del body HTTP, sin Id ni EmpresaId):
 
 ```csharp
 public class Update{Entidad}RequestFromBody
@@ -376,9 +372,7 @@ this.CreateMap<Update{Entidad}Request, {Entidad}>()
 public async Task<Update{Entidad}Response> Handle(Update{Entidad}Request request, CancellationToken cancellationToken)
 {
     var entity = await this.context.{Entidades}
-        .Include(x => x.Empresa)
-        .FirstOrDefaultAsync(x => x.Id == request.Id 
-            && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);  // FILTRO EMPRESA
+        .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
     if (entity == null)
         throw new ValidationException("El/La {entidad} no existe");
@@ -399,7 +393,6 @@ public class Delete{Entidad}Request : IRequest<Delete{Entidad}Response>
 {
     public Guid Id { get; set; }
     [JsonIgnore]
-    public string CodigoEmpresa { get; set; }
 }
 ```
 
@@ -409,9 +402,7 @@ public class Delete{Entidad}Request : IRequest<Delete{Entidad}Response>
 public async Task<Delete{Entidad}Response> Handle(Delete{Entidad}Request request, CancellationToken cancellationToken)
 {
     var entity = await this.context.{Entidades}
-        .Include(x => x.Empresa)
-        .FirstOrDefaultAsync(x => x.Id == request.Id 
-            && x.Empresa.CodigoEmpresa == request.CodigoEmpresa);  // FILTRO EMPRESA
+        .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
     if (entity == null)
         throw new ValidationException("El/La {entidad} no existe");
@@ -444,7 +435,7 @@ public class {Entidades}Controller : MeatBaseController
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Get{Entidades}Async([FromQuery] Get{Entidades}Request request)
     {
-        request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+        request.EmpresaId = base.CurrentUser.EmpresaId;
         return await this.Handle(request);
     }
 
@@ -454,7 +445,7 @@ public class {Entidades}Controller : MeatBaseController
         new Get{Entidad}Request
         {
             Id = id,
-            CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+            EmpresaId = base.CurrentUser.EmpresaId
         }
     );
 
@@ -462,7 +453,7 @@ public class {Entidades}Controller : MeatBaseController
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Create{Entidad}Async([FromBody] Create{Entidad}Request request)
     {
-        request.CodigoEmpresa = base.CurrentUser.CodigoEmpresa;
+        request.EmpresaId = base.CurrentUser.EmpresaId;
         return await Handle(request);
     }
 
@@ -474,7 +465,7 @@ public class {Entidades}Controller : MeatBaseController
         new Update{Entidad}Request()
         {
             Id = id,
-            CodigoEmpresa = base.CurrentUser.CodigoEmpresa,
+            EmpresaId = base.CurrentUser.EmpresaId,
             Nombre = body.Nombre,
             // ... mapear propiedades del body
             Activo = body.Activo
@@ -487,13 +478,13 @@ public class {Entidades}Controller : MeatBaseController
         new Delete{Entidad}Request
         {
             Id = id,
-            CodigoEmpresa = base.CurrentUser.CodigoEmpresa
+            EmpresaId = base.CurrentUser.EmpresaId
         }
     );
 }
 ```
 
-> **CRITICO:** Todos los endpoints deben inyectar `base.CurrentUser.CodigoEmpresa` en el request. Nunca confiar en datos del body del cliente para filtrar por empresa.
+> **CRITICO:** Todos los endpoints deben inyectar `base.CurrentUser.EmpresaId` en el request. Nunca confiar en datos del body del cliente para filtrar por empresa.
 
 ### 2.5 Migracion EF Core
 
@@ -767,37 +758,71 @@ Iconos disponibles: `officeBuilding`, `locationMarker`, `library`, `users`, `tag
 
 ---
 
-## 4. Regla de Empresa Activa
+## 4. Aislamiento por Empresa
 
-**Toda entidad DEBE estar aislada por empresa activa.** Esto significa:
+**El aislamiento lo garantiza el `MeatContext`, no el handler.** Antes cada handler escribia su
+propio `WHERE`; hoy hay un query filter global que combina el soft delete con la empresa activa.
 
-### Backend
-- **Cada Request** que necesita filtrar tiene `CodigoEmpresa` con `[JsonIgnore]` (nunca viene del cliente)
-- **Cada Controller** inyecta `base.CurrentUser.CodigoEmpresa` antes de enviar al handler
-- **Cada Handler** filtra por `x.Empresa.CodigoEmpresa == request.CodigoEmpresa`
+### Que hay que hacer al crear una entidad
 
-### Filtro por tipo de relacion con Empresa
+1. La entity implementa `ITenantScoped`: `string EmpresaId` + navegacion `virtual Empresa Empresa`.
+2. Nada mas. El contexto se encarga del resto.
 
-| Relacion | Filtro en Handler |
+```csharp
+public class Corral : ITenantScoped
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public Guid Id { get; set; }
+    // ...
+    public string EmpresaId { get; set; }
+    public virtual Empresa Empresa { get; set; }
+}
+```
+
+### Que hace el contexto por vos
+
+| Momento | Que pasa |
 |---|---|
-| FK directa (`EmpresaId`) | `.Where(x => x.Empresa.CodigoEmpresa == request.CodigoEmpresa)` |
-| Via Sucursal | `.Where(x => x.Sucursal.Empresa.CodigoEmpresa == request.CodigoEmpresa)` |
-| Auto-referencial (Empresa) | `.Where(x => x.CodigoEmpresa == req.CodigoEmpresa \|\| x.EmpresaPadre.CodigoEmpresa == req.CodigoEmpresa)` |
+| **Lectura** | Toda consulta a una entidad `ITenantScoped` suma `AND EmpresaId = @empresaActiva` |
+| **Alta** | `OnBeforeSaving` asigna el `EmpresaId` si viene vacio; si no hay empresa activa, falla |
+| **Modificacion** | Rechaza guardar una fila que pertenezca a otra empresa |
+| **Arranque** | Valida la regla `PK Guid <=> EmpresaId` y no deja levantar la app si no se cumple |
 
-### Las 5 operaciones deben estar protegidas
+La empresa activa sale del claim `empresa_id` del JWT, via `ITenantContext`.
 
-| Operacion | Patron |
-|---|---|
-| **GetAll** | Filtro en WHERE del queryable |
-| **GetById** | Condicion adicional en FirstOrDefaultAsync |
-| **Create** | Resolver empresa y asignar EmpresaId |
-| **Update** | Condicion adicional en FirstOrDefaultAsync (si no la encuentra, no la modifica) |
-| **Delete** | Condicion adicional en FirstOrDefaultAsync (si no la encuentra, no la elimina) |
+### Que NO hay que hacer
+
+- **No** escribir `.Where(x => x.EmpresaId == request.EmpresaId)`: ya esta aplicado, y duplicarlo
+  solo agrega ruido.
+- **No** hacer `.Include(x => x.Empresa)` para poder filtrar. Incluí la navegacion solo si vas a
+  mostrar algun dato de la empresa.
+- **No** asignar el `EmpresaId` a mano en el alta, salvo que estes creando datos *para otra*
+  empresa a proposito (es lo que hace el `EmpresaSeeder`).
+
+### Cuando si hay que intervenir
+
+`IgnoreQueryFilters()` para operaciones legitimamente cross-empresa: el CRUD de Empresas, que es
+del SUPERADMIN. Ojo: en EF Core 8 no hay filtros con nombre, asi que ignorar el de empresa apaga
+tambien el de soft delete, y hay que reponerlo a mano:
+
+```csharp
+await this.context.Set<TEntity>()
+    .IgnoreQueryFilters()
+    .AnyAsync(x => x.EmpresaId == empresaId
+        && EF.Property<DateTime?>(x, "FechaBaja") == null, cancellationToken);
+```
+
+### Requests y Controllers
+
+- Los Requests heredan de `RequestBase` (o `RequestListBase`), que ya trae `EmpresaId` con
+  `[JsonIgnore]`: nunca llega desde el body.
+- El Controller inyecta `request.EmpresaId = base.CurrentUser.EmpresaId`. Hoy los handlers no lo
+  usan para filtrar, pero sirve para validar pertenencia y para las operaciones cross-empresa.
 
 ### Frontend
-- El campo **Empresa** en formularios siempre esta `disabled`
-- Se pre-selecciona con la empresa activa del `useAuth().user.codigoEmpresa`
-- En modo editar, se fuerza la empresa activa (no se toma la del registro)
+- No hay selector de empresa: la del usuario es la unica de la sesion.
+- Donde un formulario muestre la empresa, va `disabled` con `useAuth().user.empresaId`.
 
 ---
 
@@ -809,7 +834,7 @@ Iconos disponibles: `officeBuilding`, `locationMarker`, `library`, `users`, `tag
 | Entidad no existe | Update/Delete Handler | `if (entity == null) throw ValidationException(...)` |
 | Dependencias al eliminar | Delete Handler | `AnyAsync(hijo => hijo.{Entidad}Id == request.Id)` |
 | Empresa activa invalida | Create Handler | `if (empresa == null) throw ValidationException(...)` |
-| No eliminar empresa activa | Delete Handler | `if (entity.CodigoEmpresa == request.CodigoEmpresaActiva)` |
+| Dependencias al eliminar una empresa | DeleteEmpresa Handler | Contar con `IgnoreQueryFilters()`: la empresa a borrar no es la activa |
 | Campos requeridos (backend) | Request | `[Required]` en propiedades |
 | Campos requeridos (frontend) | FormPage validate() | `if (!form.Campo.trim()) newErrors['Campo'] = 'Requerido'` |
 
@@ -824,17 +849,17 @@ Excepciones personalizadas:
 
 ### Backend
 
-- [ ] Crear entity en `Meat.Domain/{Entidad}/{Entidad}.cs` con `EmpresaId` + navegacion `Empresa`
+- [ ] Crear entity en `Meat.Domain/{Entidad}/{Entidad}.cs` implementando `ITenantScoped`: PK `Guid Id`, `EmpresaId` + navegacion `Empresa`
 - [ ] (Opcional) Crear factory en `Meat.Domain/{Entidad}/{Entidad}Factory.cs`
 - [ ] Registrar DbSet en `MeatContext.cs`
 - [ ] (Si hay campos unicos) Agregar indice unico filtrado (`HasFilter("[FechaBaja] IS NULL")`) en la region `Indices Unicos` de `OnModelCreating`
 - [ ] Crear carpeta `Meat.Application/{Entidades}/`
 - [ ] Crear `Get{Entidades}/` - Request (hereda RequestListBase), Response, Handler (con filtro empresa)
 - [ ] Crear `Get{Entidad}/` - Request, Response, MapperProfile, Handler (con filtro empresa)
-- [ ] Crear `Create{Entidad}/` - Request (con CodigoEmpresa JsonIgnore), Response, MapperProfile, Handler
+- [ ] Crear `Create{Entidad}/` - Request (con EmpresaId JsonIgnore), Response, MapperProfile, Handler
 - [ ] Crear `Update{Entidad}/` - Request, RequestFromBody, Response, MapperProfile, Handler (con filtro empresa)
 - [ ] Crear `Delete{Entidad}/` - Request, Response, Handler (con filtro empresa + validacion dependencias)
-- [ ] Crear `{Entidades}Controller.cs` inyectando `CodigoEmpresa` en TODOS los endpoints
+- [ ] Crear `{Entidades}Controller.cs` inyectando `EmpresaId` en TODOS los endpoints
 - [ ] Generar migracion EF Core
 - [ ] Verificar que compila: `dotnet build`
 

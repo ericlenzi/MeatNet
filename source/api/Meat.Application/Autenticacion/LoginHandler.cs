@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Meat.Application.Shared;
 using Meat.Domain.Usuarios;
 using Meat.Repositories;
 using System;
@@ -31,14 +32,7 @@ namespace Meat.Application.Autenticacion
 
         public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken cancellationToken)
         {
-            string passwordHash;
-
-            using (SHA1 sha1Hash = SHA1.Create())
-            {
-                byte[] sourceBytes = Encoding.UTF8.GetBytes(request.Contraseña);
-                byte[] hashBytes = sha1Hash.ComputeHash(sourceBytes);
-                passwordHash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-            }
+            var passwordHash = PasswordHash.Calcular(request.Contraseña);
 
             var user = await this.context.Usuarios
                 .FirstOrDefaultAsync(p => p.UserName == request.Usuario && p.PasswordHash == passwordHash, cancellationToken);
@@ -87,7 +81,7 @@ namespace Meat.Application.Autenticacion
 
             bool debeCambiarContrasena = parametroPasswordInicial != null
                 && !string.IsNullOrWhiteSpace(parametroPasswordInicial.Valor)
-                && string.Equals(passwordHash, ComputeSha1(parametroPasswordInicial.Valor), StringComparison.OrdinalIgnoreCase);
+                && PasswordHash.Coincide(parametroPasswordInicial.Valor, passwordHash);
 
             return new LoginResponse()
             {
@@ -108,12 +102,6 @@ namespace Meat.Application.Autenticacion
             };
         }
 
-        private static string ComputeSha1(string value)
-        {
-            using SHA1 sha1 = SHA1.Create();
-            byte[] hashBytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(value));
-            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-        }
 
         /// <summary>Claim que transporta la empresa activa. Debe coincidir con HttpTenantContext.</summary>
         public const string EmpresaClaimType = "empresa_id";

@@ -18,11 +18,24 @@ El proceso industrial del frigorífico completo abarca el Ciclo I (Faena) y el C
 Nuestro sistema se centra en la gestión del Ciclo I, haciendo foco en la Recepción de hacienda, Linea de faena, Tipificación y romaneo y Cámaras de enfriamiento.
 
 ## Modelo de Negocio
-La aplicación opera para **una única Empresa**, que puede tener múltiples **Sucursales** y múltiples **Establecimientos** (plantas de faena). 
+La aplicación es **multiempresa**: cada registro de `Empresas` es un tenant aislado del resto.
+Una Empresa tiene múltiples **Sucursales** y múltiples **Establecimientos** (plantas de faena).
 Cada Establecimiento está asociado a una Sucursal y puede operar con distintas **Especies** a través de **EstablecimientosEspecies**, lo que hace al sistema **multiespecie**.
 
 Entidades que sí pertenecen a la estructura organizacional:
 `Empresa` → `Sucursal` → `Establecimiento` → `EstablecimientoEspecie`
+
+La clave primaria de `Empresa` es su **código de negocio** (un string, ex `CodigoEmpresa`), no un Guid:
+es el mismo valor que viaja en el claim `empresa_id` del JWT, así las consultas filtran sin joinear a `Empresas`.
+
+**El aislamiento lo garantiza el `MeatContext`, no los handlers.** Un query filter global combina
+el soft delete con la empresa activa, que sale del JWT vía `ITenantContext`. En las altas, `OnBeforeSaving`
+asigna el `EmpresaId` solo, y rechaza modificar filas de otra empresa. Un handler nuevo **no** debe
+escribir `WHERE EmpresaId = ...`: ya está aplicado.
+
+Roles: `SUPERADMIN` administra el padrón de Empresas; `ADMIN` administra una empresa. Un alta de
+empresa nace operable — el `EmpresaSeeder` le siembra master data, una sucursal, un establecimiento
+y un usuario `<empresa>.admin`.
 
 ## Estructura del Repositorio
 ```
@@ -48,16 +61,26 @@ MeatNet/
 - Antes de crear un archivo nuevo, verificar si ya existe algo similar en el proyecto
 
 ## Patrones de Tablas (Modelo de Datos)
-El proyecto distingue **dos tipos de tablas**, con patrones distintos. Antes de crear una entidad, identificar a cuál corresponde:
+El proyecto distingue **dos tipos de tablas**. Lo que decide a cuál corresponde una entidad es
+**si sus datos son comunes a todas las empresas o propios de una**:
 
-1. **Tablas de catálogo** (tipos de datos especiales — equivalen a enums pero como tabla):
+1. **Tablas comunes a todas las empresas** — catálogo (equivalen a enums pero como tabla):
    - PK `string Codigo` + `Nombre` + `Activo`. Sin Guid, sin Factory.
-   - Para conjuntos acotados y estables de valores que clasifican datos (ej: `TipoAlmacen`, `TipoEstadoIngreso`, `TipoEstadoHacienda`).
+   - Para conjuntos acotados y estables de valores que clasifican datos (ej: `TipoAlmacen`, `TipoEstadoIngreso`, `TipoEstadoHacienda`), y para los nomencladores oficiales del rubro (`TipificacionOficial`, `MotivoDecomiso`, `Denticion`).
    - Se siembran con sus códigos en la migración. **No** llevan EmpresaId ni filtro por empresa.
 
-2. **Tablas de proceso / negocio** (datos operativos del día a día):
-   - PK `Guid Id` (autogenerada por Factory), con sus FKs y navegaciones.
+2. **Tablas propias de una empresa** — proceso / negocio:
+   - PK `Guid Id` (autogenerada por Factory) + `string EmpresaId` implementando `ITenantScoped`, con sus FKs y navegaciones.
    - Es el patrón completo (Entity, Handlers CQRS, Controller, migraciones, frontend) descrito en `docs/BasisCRUD.md`.
+   - Si la entidad tiene un código de negocio, va como columna `Codigo` con índice único `(EmpresaId, Codigo)`, no como PK.
+
+> **La regla, en una línea: PK `Guid Id` si y solo si lleva `EmpresaId`.**
+> El `MeatContext` la valida al construir el modelo, así que una entidad mal clasificada hace
+> fallar el arranque de la aplicación en vez de filtrar datos entre empresas en silencio.
+
+Ojo con la intuición: que algo *parezca* un catálogo no alcanza. `UnidadFaena`, `TipoEspecie` y
+`DestinoComercial` tienen códigos estándar del rubro, pero cada empresa ajusta sus pesos teóricos,
+su código de ERP y cuál es la opción por defecto — así que son del tipo 2.
 
 > `docs/BasisCRUD.md` aplica al **tipo 2 (Guid Id)**, no a las tablas de catálogo.
 

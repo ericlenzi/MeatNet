@@ -11,19 +11,13 @@
     {
         public Task<GeneratePasswordResponse> Handle(GeneratePasswordRequest request, CancellationToken cancellationToken)
         {
-            using (SHA1 sha1Hash = SHA1.Create())
-            {
-                var newPassword = request.Contraseña;
-                byte[] sourceBytes = Encoding.UTF8.GetBytes(newPassword);
-                byte[] hashBytes = sha1Hash.ComputeHash(sourceBytes);
-                string passwordHash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+            var newPassword = request.Contraseña;
 
-                return Task.FromResult(new GeneratePasswordResponse()
-                {
-                    Password = newPassword,
-                    PasswordHash = passwordHash,
-                });
-            }
+            return Task.FromResult(new GeneratePasswordResponse()
+            {
+                Password = newPassword,
+                PasswordHash = PasswordHash.Calcular(newPassword),
+            });
         }
     }
 }

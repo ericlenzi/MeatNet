@@ -1,0 +1,56 @@
+{
+  "_comentario": [
+    "Master data con el que nace una empresa. Sale de exportar el de la empresa que ya opera,",
+    "no de inventarlo: son los codigos estandar del rubro. Lo que varia por planta (pesos",
+    "teoricos, codigos de ERP, tipificaciones) se ajusta despues desde cada CRUD.",
+    "Se copia al directorio de salida, asi que se puede editar sin recompilar."
+  ],
+
+  "parametros": [
+    { "codigo": "PASSWORD_INICIAL", "nombre": "Contrasena inicial de usuarios", "valor": "inicio" }
+  ],
+
+  "destinosComerciales": [
+    { "codigo": "AC", "nombre": "CHACINADOS" },
+    { "codigo": "ES", "nombre": "EXPORTACION CORTES ENF." },
+    { "codigo": "EX", "nombre": "EXPORTACION RESES" },
+    { "codigo": "XD", "nombre": "DIGESTOR" },
+    { "codigo": "XK", "nombre": "CONSERVA VETERINARIA" },
+    { "codigo": "XQ", "nombre": "CICLO 3 (VET)" },
+    { "codigo": "XZ", "nombre": "CONSUMO INTERNO (VET)" },
+    { "codigo": "ZQ", "nombre": "CICLO 3" },
+    { "codigo": "ZZ", "nombre": "CONSUMO", "favorito": true }
+  ],
+
+  "tiposEspecies": [
+    { "codigo": "CA", "nombre": "CAPONES / HEMBRAS SIN SERVICIO", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 90 },
+    { "codigo": "CH", "nombre": "CHANCHAS", "especieId": "P", "tipoSexoId": "H", "pesoTeorico": 100 },
+    { "codigo": "CO", "nombre": "CACHORRO", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 85 },
+    { "codigo": "LE", "nombre": "LECHONES", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 120 },
+    { "codigo": "ME", "nombre": "MACHO ENTERO INMUNOLOGICAMENTE CASTRADO", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 110 },
+    { "codigo": "PA", "nombre": "PADRILLOS", "especieId": "P", "tipoSexoId": "M", "pesoTeorico": 100 },
+    { "codigo": "MJ", "nombre": "MEJ", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 90 },
+    { "codigo": "NO", "nombre": "NOVILLO", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 90 },
+    { "codigo": "NT", "nombre": "NOVILLITO", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 85 },
+    { "codigo": "TO", "nombre": "TORO", "especieId": "V", "tipoSexoId": "M", "pesoTeorico": 94 },
+    { "codigo": "VA", "nombre": "VACA", "especieId": "V", "tipoSexoId": "H", "pesoTeorico": 92 },
+    { "codigo": "VQ", "nombre": "VAQUILLONA", "especieId": "V", "tipoSexoId": "H", "pesoTeorico": 98 }
+  ],
+
+  "unidadesFaenas": [
+    { "codigo": "1P", "nombre": "1 RES", "especieId": "P", "cantidadCuartos": 4, "piezasPorAnimal": 1, "porDefecto": true, "tipoMaterialId": "RES" },
+    { "codigo": "2P", "nombre": "1/2 RES", "especieId": "P", "cantidadCuartos": 2, "piezasPorAnimal": 2, "tipoMaterialId": "MEDIA_RES" },
+    { "codigo": "3P", "nombre": "1/4 TRASERO", "especieId": "P", "cantidadCuartos": 1, "piezasPorAnimal": 4, "tipoMaterialId": "CUARTO" },
+    { "codigo": "4P", "nombre": "1/4 DELANTERO", "especieId": "P", "cantidadCuartos": 1, "piezasPorAnimal": 4, "tipoMaterialId": "CUARTO" },
+    { "codigo": "5P", "nombre": "3/4 RES TRAS", "especieId": "P", "cantidadCuartos": 3, "piezasPorAnimal": 1, "tipoMaterialId": "CUARTO" },
+    { "codigo": "6P", "nombre": "3/4 RES DEL", "especieId": "P", "cantidadCuartos": 3, "piezasPorAnimal": 1, "tipoMaterialId": "CUARTO" },
+    { "codigo": "7P", "nombre": "2/4 DELANTERO", "especieId": "P", "cantidadCuartos": 2, "piezasPorAnimal": 1, "tipoMaterialId": "CUARTO" },
+    { "codigo": "8P", "nombre": "2/4 TRASERO", "especieId": "P", "cantidadCuartos": 2, "piezasPorAnimal": 1, "tipoMaterialId": "CUARTO" },
+    { "codigo": "9P", "nombre": "1 RES COMISO", "especieId": "P", "cantidadCuartos": 4, "piezasPorAnimal": 1, "tipoMaterialId": "RES" },
+    { "codigo": "1V", "nombre": "1 RES", "especieId": "V", "cantidadCuartos": 4, "piezasPorAnimal": 1, "tipoMaterialId": "RES" },
+    { "codigo": "2V", "nombre": "1/2 RES", "especieId": "V", "cantidadCuartos": 2, "piezasPorAnimal": 2, "porDefecto": true, "tipoMaterialId": "MEDIA_RES" },
+    { "codigo": "3V", "nombre": "1/4 TRASERO", "especieId": "V", "cantidadCuartos": 1, "piezasPorAnimal": 4, "tipoMaterialId": "CUARTO" },
+    { "codigo": "4V", "nombre": "1/4 DELANTERO", "especieId": "V", "cantidadCuartos": 1, "piezasPorAnimal": 4, "tipoMaterialId": "CUARTO" },
+    { "codigo": "9V", "nombre": "1/2 RES COMISO", "especieId": "V", "cantidadCuartos": 0, "piezasPorAnimal": 1, "tipoMaterialId": "MEDIA_RES" }
+  ]
+}

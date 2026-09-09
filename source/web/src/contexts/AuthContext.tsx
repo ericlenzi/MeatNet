@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+﻿import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import type { CurrentUser } from '@/types'
 import { login as loginService } from '@/services/auth.service'
@@ -8,6 +8,7 @@ interface AuthContextType {
   token: string | null
   isAuthenticated: boolean
   isAdmin: boolean
+  isSuperAdmin: boolean
   isLoading: boolean
   debeCambiarContrasena: boolean
   onContrasenaChanged: () => void
@@ -64,10 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!token && !!user
   const isAdmin = user?.rolId === 'ADMIN'
+  // El SUPERADMIN administra el padron de empresas; no es el ADMIN de ninguna.
+  const isSuperAdmin = user?.rolId === 'SUPERADMIN'
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isAuthenticated, isAdmin, isLoading, debeCambiarContrasena, onContrasenaChanged, login, logout }}
+      value={{ user, token, isAuthenticated, isAdmin, isSuperAdmin, isLoading, debeCambiarContrasena, onContrasenaChanged, login, logout }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Meat.Application.Empresas.Seed;
 using Meat.Application.Empresas.Shared;
 using Meat.Application.Shared;
 using Meat.Repositories;
@@ -36,6 +37,11 @@ namespace Meat.Application.Empresas.CreateEmpresa
             this.mapper.Map(request, empresa);
 
             this.context.Empresas.Add(empresa);
+
+            // Una empresa vacia no se puede usar: sin sucursal nadie puede entrar, y sin
+            // master data no se puede planificar una faena. Nace operable o no sirve.
+            new EmpresaSeeder(this.context).Sembrar(empresa.Id, empresa.Nombre);
+
             await this.context.SaveChangesAsync(cancellationToken);
 
             return new CreateEmpresaResponse()

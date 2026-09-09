@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, Link } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,6 +15,8 @@ interface NavItem {
   label: string
   path: string
   icon: ReactNode
+  /** Solo para el rol que administra el padron de empresas. */
+  superAdminOnly?: boolean
 }
 
 interface NavGroup {
@@ -158,7 +160,7 @@ const navGroups: NavGroup[] = [
         title: 'Datos Maestros',
         icon: icons.database,
         items: [
-          { label: 'Empresas', path: '/empresas', icon: icons.officeBuilding },
+          { label: 'Empresas', path: '/empresas', icon: icons.officeBuilding, superAdminOnly: true },
           { label: 'Sucursales', path: '/sucursales', icon: icons.locationMarker },
           { label: 'Establecimientos', path: '/establecimientos', icon: icons.library },
           { label: 'Almacenes', path: '/almacenes', icon: icons.database },
@@ -289,7 +291,7 @@ const roleLabels: Record<string, string> = {
 }
 
 export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) {
-  const { isAdmin, user, logout } = useAuth()
+  const { isAdmin, isSuperAdmin, user, logout } = useAuth()
   const { hasEstablecimientos } = useApp()
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Operaciones Ciclo I': false,
@@ -303,12 +305,37 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
     setExpandedGroups((prev) => ({ ...prev, [title]: !prev[title] }))
   }
 
-  const filteredGroups = navGroups.filter((group) => {
-    if (group.title === 'Operaciones Ciclo I' || group.title === 'Operaciones Ciclo II') {
-      return hasEstablecimientos
-    }
-    return !group.adminOnly || isAdmin
-  })
+  // El SUPERADMIN entra a Administracion, pero solo por Empresas: el resto de esos
+  // CRUD son del ADMIN de cada empresa y la API se los rechazaria igual.
+  const puedeVerItem = (item: NavItem) => (item.superAdminOnly ? isSuperAdmin : isAdmin)
+
+  const filtrarItems = (items?: NavItem[]) => (items ?? []).filter(puedeVerItem)
+
+  const filteredGroups = navGroups
+    .filter((group) => {
+      if (group.title === 'Operaciones Ciclo I' || group.title === 'Operaciones Ciclo II') {
+        return hasEstablecimientos
+      }
+      return !group.adminOnly || isAdmin || isSuperAdmin
+    })
+    .map((group) =>
+      group.adminOnly
+        ? {
+            ...group,
+            items: filtrarItems(group.items),
+            // Un subgrupo sin items visibles no se muestra: al SUPERADMIN le quedarian
+            // encabezados vacios donde estan los CRUD que son del ADMIN.
+            children: (group.children ?? [])
+              .map((c) => ({ ...c, items: filtrarItems(c.items) }))
+              .filter((c) => (c.items ?? []).length > 0),
+          }
+        : group,
+    )
+    .filter((group) =>
+      !group.adminOnly
+      || (group.items ?? []).length > 0
+      || (group.children ?? []).some((c) => (c.items ?? []).length > 0),
+    )
 
   const allItems = filteredGroups.flatMap((group) => [
     ...(group.items ?? []),

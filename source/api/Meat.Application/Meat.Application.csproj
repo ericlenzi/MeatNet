@@ -39,4 +39,11 @@
     <ProjectReference Include="..\Meat.Repositories\Meat.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Master data con el que nace una empresa: se copia a la salida para poder ajustarlo sin recompilar. -->
+    <None Update="Empresas\Seed\empresa-base.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
