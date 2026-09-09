@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,7 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
                 orderby tip.Puntos descending, tip.Descripcion
                 select new TipificacionCandidata
                 {
+                    Id = tip.Id,
                     Codigo = tip.Codigo,
                     Descripcion = tip.Descripcion,
                     DestinoComercialId = tip.DestinoComercialId,
@@ -47,19 +49,19 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
                 })
                 .ToListAsync(cancellationToken);
 
-            string propuesta = null;
+            Guid? propuesta = null;
             if (request.Peso.HasValue)
             {
                 var p = request.Peso.Value;
                 propuesta = candidatas
                     .Where(c => c.PesoDesde <= p && p <= c.PesoHasta)
-                    .Select(c => c.Codigo)
+                    .Select(c => (Guid?)c.Id)
                     .FirstOrDefault();
             }
 
             return new SugerirTipificacionResponse
             {
-                PropuestaCodigo = propuesta,
+                PropuestaId = propuesta,
                 Candidatas = candidatas
             };
         }

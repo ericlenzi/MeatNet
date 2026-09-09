@@ -181,7 +181,7 @@ export default function TipificadorPage() {
         // que esta tipificando. Se toma la de mayor Puntos (el backend ordena por Puntos desc),
         // o sea la mas usada para esta combinacion. El peso despues solo valida el rango.
         setSticky(null)
-        const sugerida = res.candidatas[0]?.codigo ?? ''
+        const sugerida = res.candidatas[0]?.id ?? ''
         setPiezas((prev) => prev.map((p) => ({ ...p, tipificacionId: sugerida })))
       } catch {
         if (!cancel) setCandidatas([])
@@ -196,12 +196,12 @@ export default function TipificadorPage() {
   // operador NO eligio manualmente (sin sticky) y otra candidata cubre ese peso. Si ninguna lo
   // cubre se mantiene la elegida y la pieza queda fuera de rango (requiere confirmacion).
   const ajustarPorPeso = useCallback(
-    (codigoActual: string, peso: number): string => {
-      const actual = candidatas.find((c) => c.codigo === codigoActual)
-      if (actual && peso >= actual.pesoDesde && peso <= actual.pesoHasta) return codigoActual
-      if (sticky) return codigoActual
+    (idActual: string, peso: number): string => {
+      const actual = candidatas.find((c) => c.id === idActual)
+      if (actual && peso >= actual.pesoDesde && peso <= actual.pesoHasta) return idActual
+      if (sticky) return idActual
       const match = candidatas.find((c) => peso >= c.pesoDesde && peso <= c.pesoHasta)
-      return match?.codigo ?? codigoActual
+      return match?.id ?? idActual
     },
     [sticky, candidatas],
   )
@@ -211,7 +211,7 @@ export default function TipificadorPage() {
     (p: PiezaState): boolean => {
       const peso = Number(p.peso)
       if (!(peso > 0) || !p.tipificacionId) return false
-      const c = candidatas.find((x) => x.codigo === p.tipificacionId)
+      const c = candidatas.find((x) => x.id === p.tipificacionId)
       return !!c && (peso < c.pesoDesde || peso > c.pesoHasta)
     },
     [candidatas],
@@ -219,7 +219,7 @@ export default function TipificadorPage() {
   const hayFueraRango = piezas.some(piezaFueraRango)
   const detalleFueraRango = (() => {
     const p = piezas.find(piezaFueraRango)
-    const c = p && candidatas.find((x) => x.codigo === p.tipificacionId)
+    const c = p && candidatas.find((x) => x.id === p.tipificacionId)
     if (!p || !c) return null
     return `${p.peso} kg queda fuera del rango ${c.pesoDesde}–${c.pesoHasta} kg de "${c.descripcion}".`
   })()
@@ -247,15 +247,15 @@ export default function TipificadorPage() {
     })
   }
 
-  const onTipificacionChange = (idx: number, codigo: string) => {
+  const onTipificacionChange = (idx: number, id: string) => {
     setPiezas((prev) => {
       const current = prev[idx]
       if (!current) return prev
       const next = [...prev]
-      next[idx] = { ...current, tipificacionId: codigo }
+      next[idx] = { ...current, tipificacionId: id }
       return next
     })
-    const c = candidatas.find((x) => x.codigo === codigo)
+    const c = candidatas.find((x) => x.id === id)
     if (c) setSticky({ codigo: c.codigo, pesoDesde: c.pesoDesde, pesoHasta: c.pesoHasta })
   }
 
@@ -501,7 +501,7 @@ export default function TipificadorPage() {
                   >
                     <option value="">Seleccionar...</option>
                     {candidatas.map((c) => (
-                      <option key={c.codigo} value={c.codigo}>
+                      <option key={c.id} value={c.id}>
                         {c.descripcion} ({c.pesoDesde}–{c.pesoHasta} kg
                         {c.destinoComercialNombre ? ` · ${c.destinoComercialNombre}` : ''})
                       </option>

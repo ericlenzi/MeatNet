@@ -34,6 +34,8 @@ export interface RenglonesEjecucion {
 
 // --- Sugerencia de tipificacion ---
 export interface TipificacionCandidata {
+  /** Identidad: es lo que viaja como TipificacionId al registrar el romaneo. */
+  id: string
   codigo: string
   descripcion: string
   destinoComercialId: string
@@ -44,7 +46,7 @@ export interface TipificacionCandidata {
 }
 
 export interface SugerenciaTipificacion {
-  propuestaCodigo: string | null
+  propuestaId: string | null
   candidatas: TipificacionCandidata[]
 }
 

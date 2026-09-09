@@ -17,12 +17,15 @@ namespace Meat.Application.Romaneos.SugerirTipificacion
 
     public class SugerirTipificacionResponse
     {
-        public string PropuestaCodigo { get; set; }          // null si nada matchea el peso
+        public Guid? PropuestaId { get; set; }               // null si nada matchea el peso
         public IEnumerable<TipificacionCandidata> Candidatas { get; set; } = new List<TipificacionCandidata>();
     }
 
     public class TipificacionCandidata
     {
+        // Identidad: es lo que despues viaja como RomaneoPieza.TipificacionId. El Codigo es para
+        // mostrar, no para identificar (Tipificacion tiene PK Guid desde la migracion 59).
+        public Guid Id { get; set; }
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
         public Guid? DestinoComercialId { get; set; }
