@@ -180,7 +180,7 @@ const navGroups: NavGroup[] = [
         icon: icons.adjustments,
         items: [
           { label: 'Usuarios', path: '/usuarios', icon: icons.users },
-          { label: 'Roles', path: '/roles', icon: icons.tag },
+          { label: 'Roles', path: '/roles', icon: icons.tag, superAdminOnly: true },
         ],
       },
       {
