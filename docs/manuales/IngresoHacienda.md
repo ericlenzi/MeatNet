@@ -83,8 +83,19 @@ El **operador de recepción** abre un nuevo Ingreso y carga la documentación:
 El peso se registra en una **grilla**, una línea por **TipoEspecie** (categoría) — los tipos
 disponibles están **filtrados por la Especie** del ingreso. Cada línea:
 `TipoEspecie`, `PesoIngreso` (kg), UM = KG, **CantidadEstimada** (según peso teórico) e
-**IdPesada** (número de ticket de la balanza del frigorífico, string). El sistema estima la
-cantidad de animales:
+**IdPesada** (número de ticket de la balanza del frigorífico, string).
+
+**Las categorías que se ofrecen son las de la empresa, no las del catálogo.** La grilla lee
+`EmpresasTiposEspecies` (endpoint `/EmpresasTiposEspecies`), que es la lista de categorías con las
+que la empresa declaró que opera, y de ahí sale también el **peso teórico** que alimenta la
+estimación. El catálogo global `TiposEspecies` tiene todas las categorías del rubro y lo mantiene
+el SUPERADMIN; pedirle a él la lista llenaría el combo con categorías que esta planta no faena.
+
+Este es el punto del proceso donde la configuración de la empresa manda: una categoría que la
+empresa desactivó deja de poder ingresar. Lo ya ingresado con esa categoría se sigue viendo,
+planificando y faenando normalmente — ver `docs/manuales/PlanificacionFaena.md` §3.
+
+El sistema estima la cantidad de animales:
 
 ```
 CantidadEstimada = PesoIngreso / EmpresaTipoEspecie.PesoTeorico   (ajustable por el operador)
@@ -286,6 +297,11 @@ namespace Meat.Domain.IngresosHaciendas
     }
 }
 ```
+
+> `TipoEspecieId` apunta al **código del catálogo global** (`TiposEspecies.Codigo`), no al `Id` de
+> la fila de configuración de la empresa. La pesada registra *de qué categoría era el animal*; el
+> peso teórico con el que se estimó la cantidad es un parámetro de cálculo que la empresa puede
+> cambiar después sin que eso reescriba el ingreso. Vale igual para `IngresoHaciendaUbicacion`.
 
 ### 5.4 `IngresoHaciendaUbicacion` (ubicación en corrales)
 
@@ -522,7 +538,8 @@ El formulario se carga **por bloques/cuadros**, no todo junto. Son **tres cuadro
 - **Fecha/hora** pre-cargadas con el momento actual.
 - **Establecimiento** fijo (activo, `disabled`).
 - **Especie** por defecto = especie activa del establecimiento (si hay una sola, esa); al cambiarla
-  se reinicia el detalle. Los **tipos de especie** a pesar se filtran por la Especie del ingreso.
+  se reinicia el detalle. Los **tipos de especie** a pesar salen de las categorías configuradas por
+  la empresa (`/EmpresasTiposEspecies`, activas) y se filtran por la Especie del ingreso.
 - Los **corrales** del combo se filtran por establecimiento activo y tipo apto al `EstadoHacienda`.
 - **Peso promedio** y **cantidad estimada** se calculan en vivo; la cantidad es editable.
 - **Guardar borrador** permite guardar sin ubicaciones en corral; **enviar a aprobación** las exige.
