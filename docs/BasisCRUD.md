@@ -760,10 +760,33 @@ Iconos disponibles: `officeBuilding`, `locationMarker`, `library`, `users`, `tag
 
 ## 4. Aislamiento por Empresa
 
-**El aislamiento lo garantiza el `MeatContext`, no el handler.** Antes cada handler escribia su
-propio `WHERE`; hoy hay un query filter global que combina el soft delete con la empresa activa.
+### Antes de escribir nada: a que tipo pertenece la entidad
 
-### Que hay que hacer al crear una entidad
+> Lo que **no** lleva `EmpresaId` es un **catalogo global**: PK `string Codigo` + `Nombre` + ...,
+> y lo administra la **empresa ADM**.
+> Lo que **si** lleva `EmpresaId` es **propio de una empresa**: PK `Guid Id` + `Nombre` + ...,
+> y lo administra **cada empresa**.
+
+O sea: **PK `Guid Id` si y solo si lleva `EmpresaId`.** El `MeatContext` valida la invariante al
+construir el modelo, asi que una entidad mal clasificada no arranca.
+
+| | Catalogo global | Propia de una empresa |
+|---|---|---|
+| Clave primaria | `string Codigo` | `Guid Id` (Factory) |
+| `EmpresaId` | no | si, con `ITenantScoped` |
+| Filtro por empresa | no aplica | lo pone el contexto |
+| Codigo de negocio | es la PK | columna `Codigo`, unica por `(EmpresaId, Codigo)` |
+| Quien lo administra | `SUPERADMIN` (empresa ADM) | `ADMIN` de cada empresa |
+| Autorizacion del controller | escritura `SUPERADMIN`, lectura abierta | rol operativo segun el caso |
+| Sidebar | `superAdminOnly: true` | como el resto de Datos Maestros |
+
+**Esta guia describe el segundo tipo.** Para un catalogo global el patron es mucho mas chico
+(entity con `Codigo`/`Nombre`/`Activo`, CRUD sin `EmpresaId`); mirar `EspeciesController` o
+`RolesController` como referencia, sobre todo por como separan lectura de escritura: la lectura
+queda abierta a cualquier usuario autenticado porque estos catalogos son FKs que aparecen en
+pantallas operativas, y restringirlas deja combos vacios.
+
+### Que hay que hacer al crear una entidad propia de una empresa
 
 1. La entity implementa `ITenantScoped`: `string EmpresaId` + navegacion `virtual Empresa Empresa`.
 2. Nada mas. El contexto se encarga del resto.
@@ -847,6 +870,10 @@ Excepciones personalizadas:
 
 ## 6. Checklist de implementacion
 
+### Paso cero
+
+- [ ] **Decidir el tipo**: los datos son comunes a todas las empresas (catalogo global, PK `string Codigo`, lo administra ADM) o propios de una (PK `Guid Id` + `EmpresaId`, lo administra cada empresa). Ver seccion 4. El resto del checklist asume el segundo caso.
+
 ### Backend
 
 - [ ] Crear entity en `Meat.Domain/{Entidad}/{Entidad}.cs` implementando `ITenantScoped`: PK `Guid Id`, `EmpresaId` + navegacion `Empresa`
@@ -854,11 +881,11 @@ Excepciones personalizadas:
 - [ ] Registrar DbSet en `MeatContext.cs`
 - [ ] (Si hay campos unicos) Agregar indice unico filtrado (`HasFilter("[FechaBaja] IS NULL")`) en la region `Indices Unicos` de `OnModelCreating`
 - [ ] Crear carpeta `Meat.Application/{Entidades}/`
-- [ ] Crear `Get{Entidades}/` - Request (hereda RequestListBase), Response, Handler (con filtro empresa)
-- [ ] Crear `Get{Entidad}/` - Request, Response, MapperProfile, Handler (con filtro empresa)
+- [ ] Crear `Get{Entidades}/` - Request (hereda RequestListBase), Response, Handler (sin filtro por empresa: lo pone el contexto)
+- [ ] Crear `Get{Entidad}/` - Request, Response, MapperProfile, Handler (sin filtro por empresa: lo pone el contexto)
 - [ ] Crear `Create{Entidad}/` - Request (con EmpresaId JsonIgnore), Response, MapperProfile, Handler
-- [ ] Crear `Update{Entidad}/` - Request, RequestFromBody, Response, MapperProfile, Handler (con filtro empresa)
-- [ ] Crear `Delete{Entidad}/` - Request, Response, Handler (con filtro empresa + validacion dependencias)
+- [ ] Crear `Update{Entidad}/` - Request, RequestFromBody, Response, MapperProfile, Handler (sin filtro por empresa: lo pone el contexto)
+- [ ] Crear `Delete{Entidad}/` - Request, Response, Handler (validacion de dependencias; el filtro por empresa lo pone el contexto)
 - [ ] Crear `{Entidades}Controller.cs` inyectando `EmpresaId` en TODOS los endpoints
 - [ ] Generar migracion EF Core
 - [ ] Verificar que compila: `dotnet build`
