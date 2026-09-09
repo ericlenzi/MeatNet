@@ -35,7 +35,22 @@ namespace Meat.Application.Empresas.GetEmpresas
 
             var totalRows = await queryable.CountAsync(cancellationToken);
 
-            var data = await queryable.Page(request.PageSize, request.PageIndex).ToListAsync(cancellationToken);
+            var data = await queryable
+                .Page(request.PageSize, request.PageIndex)
+                .Select(x => new EmpresaItem
+                {
+                    Id = x.Id,
+                    Nombre = x.Nombre,
+                    TipoEmpresaId = x.TipoEmpresaId,
+                    NumeroCuit = x.NumeroCuit,
+                    NumeroIngresosBrutos = x.NumeroIngresosBrutos,
+                    NumeroInscripcionRuca = x.NumeroInscripcionRuca,
+                    CodigoActividad = x.CodigoActividad,
+                    ERP_Codigo = x.ERP_Codigo,
+                    Color = x.Color,
+                    Activo = x.Activo
+                })
+                .ToListAsync(cancellationToken);
 
             return new GetEmpresasResponse()
             {

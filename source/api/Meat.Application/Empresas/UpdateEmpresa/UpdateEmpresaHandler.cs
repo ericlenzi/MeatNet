@@ -1,6 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Meat.Application.Empresas.Shared;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using System;
@@ -25,6 +26,9 @@ namespace Meat.Application.Empresas.UpdateEmpresa
             var empresa = await this.context.Empresas.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
             if (empresa == null)
                 throw new ValidationException("La empresa no existe");
+
+            EmpresaValidacion.ValidarColor(request.Color);
+            EmpresaValidacion.ValidarLogo(request.Logo);
 
             this.mapper.Map(request, empresa);
             empresa.FechaActualizacion = DateTime.Now;

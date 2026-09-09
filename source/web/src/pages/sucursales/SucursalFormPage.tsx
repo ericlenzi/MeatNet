@@ -9,7 +9,6 @@ import type { Empresa } from '@/types'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
-import ColorPicker from '@/components/ui/ColorPicker'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
 
@@ -34,7 +33,6 @@ export default function SucursalFormPage() {
     Zona: '',
     Pais: '',
     Erp_Codigo: '',
-    Color: '#DAE4F0',
     Activa: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -66,7 +64,6 @@ export default function SucursalFormPage() {
             Zona: sucursal.zona || '',
             Pais: sucursal.pais || '',
             Erp_Codigo: sucursal.erp_Codigo || '',
-            Color: sucursal.color || '',
             Activa: sucursal.activo,
           })
         }
@@ -105,7 +102,6 @@ export default function SucursalFormPage() {
           Zona: form.Zona,
           Pais: form.Pais,
           Erp_Codigo: form.Erp_Codigo,
-          Color: form.Color,
         })
         toast('success', 'Sucursal actualizada')
       } else {
@@ -120,7 +116,6 @@ export default function SucursalFormPage() {
           Zona: form.Zona,
           Pais: form.Pais,
           Erp_Codigo: form.Erp_Codigo,
-          Color: form.Color,
         })
         toast('success', 'Sucursal creada')
       }
@@ -210,11 +205,6 @@ export default function SucursalFormPage() {
               label="Pais"
               value={form.Pais}
               onChange={(e) => updateField('Pais', e.target.value)}
-            />
-            <ColorPicker
-              label="Color"
-              value={form.Color}
-              onChange={(color) => updateField('Color', color)}
             />
           </div>
 

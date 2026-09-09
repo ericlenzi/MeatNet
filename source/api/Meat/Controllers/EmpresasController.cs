@@ -54,6 +54,8 @@ namespace Meat.Controllers
                 NumeroInscripcionRuca = body.NumeroInscripcionRuca,
                 CodigoActividad = body.CodigoActividad,
                 ERP_Codigo = body.ERP_Codigo,
+                Color = body.Color,
+                Logo = body.Logo,
                 Activo = body.Activo
             }
         );

@@ -21,6 +21,8 @@ export interface Empresa {
 
 export interface CreateEmpresaRequest {
   Id: string
+  Color?: string
+  Logo?: string
   Nombre: string
   TipoEmpresaId: string
   NumeroCuit?: string
@@ -31,6 +33,8 @@ export interface CreateEmpresaRequest {
 }
 
 export interface UpdateEmpresaRequest {
+  Color?: string
+  Logo?: string
   Nombre: string
   TipoEmpresaId: string
   NumeroCuit?: string

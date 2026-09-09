@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+﻿import { Link } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApp } from '@/contexts/AppContext'
 
@@ -10,9 +10,28 @@ const operacionesTiles = [
   { title: 'Evaluacion de Faena', path: '/operaciones/evaluacion-faena', description: 'Evaluar resultados de faena' },
 ]
 
+/** Luminancia relativa aproximada: decide si sobre este color conviene texto claro. */
+function esOscuro(hex: string): boolean {
+  const limpio = hex.replace('#', '')
+  const full = limpio.length === 3 ? limpio.split('').map((c) => c + c).join('') : limpio
+  if (full.length !== 6) return false
+  const canal = (i: number) => {
+    const v = parseInt(full.slice(i, i + 2), 16) / 255
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  }
+  return 0.2126 * canal(0) + 0.7152 * canal(2) + 0.0722 * canal(4) < 0.4
+}
+
 export default function DashboardPage() {
   const { user } = useAuth()
   const { currentSucursal } = useApp()
+
+  // El panel lleva la identidad de la empresa; los datos que muestra son los de la sucursal.
+  const colorEmpresa = user?.colorEmpresa || '#DAE4F0'
+  // El color lo elige cada empresa y puede ser oscuro, asi que el texto se adapta en vez
+  // de quedar ilegible. El degrade abre en el color y cierra en blanco: con un color claro
+  // todo el panel es claro, con uno oscuro solo lo es la mitad donde no va el texto.
+  const panelOscuro = esOscuro(colorEmpresa)
 
   return (
     <div>
@@ -31,19 +50,35 @@ export default function DashboardPage() {
         <div
           className="mb-8 rounded-xl border border-border p-6"
           style={{
-            background: `linear-gradient(135deg, ${currentSucursal.color || '#DAE4F0'}, ${currentSucursal.color || '#DAE4F0'}88, #ffffff)`,
+            background: `linear-gradient(135deg, ${colorEmpresa}, ${colorEmpresa}88, #ffffff)`,
           }}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-600 text-white">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-white text-white">
+              {user?.logoEmpresa ? (
+                <img
+                  src={user.logoEmpresa}
+                  alt={user.nombreEmpresa}
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-primary-600">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </span>
+              )}
             </div>
             <div>
-              <p className="text-sm font-medium text-primary-700">Sucursal activa</p>
-              <p className="text-lg font-semibold text-text">{currentSucursal.nombre}</p>
-              <p className="text-sm text-text-light">Codigo: {currentSucursal.codigoSucursal}</p>
+              <p className={`text-sm font-medium ${panelOscuro ? 'text-white/80' : 'text-primary-700'}`}>
+                Sucursal activa
+              </p>
+              <p className={`text-lg font-semibold ${panelOscuro ? 'text-white' : 'text-text'}`}>
+                {currentSucursal.nombre}
+              </p>
+              <p className={`text-sm ${panelOscuro ? 'text-white/70' : 'text-text-light'}`}>
+                Codigo: {currentSucursal.codigoSucursal}
+              </p>
             </div>
           </div>
         </div>

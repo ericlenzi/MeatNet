@@ -10,6 +10,8 @@ import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
+import ColorPicker from '@/components/ui/ColorPicker'
+import ImageUpload from '@/components/ui/ImageUpload'
 
 export default function EmpresaFormPage() {
   const { id } = useParams()
@@ -29,6 +31,8 @@ export default function EmpresaFormPage() {
     NumeroInscripcionRuca: '',
     CodigoActividad: '',
     ERP_Codigo: '',
+    Color: '',
+    Logo: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -49,6 +53,8 @@ export default function EmpresaFormPage() {
             NumeroInscripcionRuca: data.numeroInscripcionRuca || '',
             CodigoActividad: data.codigoActividad || '',
             ERP_Codigo: data.erP_Codigo || '',
+            Color: data.color || '',
+            Logo: data.logo || '',
             Activo: data.activo,
           })
         }
@@ -157,6 +163,23 @@ export default function EmpresaFormPage() {
               value={form.ERP_Codigo}
               onChange={(e) => updateField('ERP_Codigo', e.target.value)}
             />
+          </div>
+
+          {/* Identidad visual: pinta el panel del dashboard de esta empresa. */}
+          <div className="mt-6 border-t border-border pt-4">
+            <h3 className="mb-3 text-sm font-semibold text-text">Identidad</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <ColorPicker
+                label="Color"
+                value={form.Color}
+                onChange={(color) => updateField('Color', color)}
+              />
+              <ImageUpload
+                label="Logo"
+                value={form.Logo}
+                onChange={(logo) => updateField('Logo', logo)}
+              />
+            </div>
           </div>
 
           {isEdit && (
