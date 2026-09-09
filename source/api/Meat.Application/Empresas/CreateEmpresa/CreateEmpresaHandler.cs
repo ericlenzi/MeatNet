@@ -40,7 +40,7 @@ namespace Meat.Application.Empresas.CreateEmpresa
 
             // Una empresa vacia no se puede usar: sin sucursal nadie puede entrar, y sin
             // master data no se puede planificar una faena. Nace operable o no sirve.
-            new EmpresaSeeder(this.context).Sembrar(empresa.Id, empresa.Nombre);
+            new EmpresaSeeder(this.context).Sembrar(empresa.Id, empresa.Nombre, empresa.TipoEmpresaId);
 
             await this.context.SaveChangesAsync(cancellationToken);
 

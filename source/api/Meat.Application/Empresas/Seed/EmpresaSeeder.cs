@@ -32,8 +32,16 @@ namespace Meat.Application.Empresas.Seed
             this.context = context;
         }
 
-        public void Sembrar(string empresaId, string nombreEmpresa)
+        /// <summary>Tipo de empresa que administra la plataforma, sin operacion propia.</summary>
+        public const string TipoAdministrativa = "AD";
+
+        public void Sembrar(string empresaId, string nombreEmpresa, string tipoEmpresaId)
         {
+            // Una empresa administrativa no faena: no tiene sentido darle destinos comerciales,
+            // unidades de faena ni una planta. Nace vacia y se le cargan usuarios a mano.
+            if (string.Equals(tipoEmpresaId, TipoAdministrativa, StringComparison.OrdinalIgnoreCase))
+                return;
+
             var baseDatos = Cargar();
 
             foreach (var p in baseDatos.Parametros)

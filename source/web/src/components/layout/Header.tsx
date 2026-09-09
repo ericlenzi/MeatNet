@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+﻿import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApp } from '@/contexts/AppContext'
@@ -13,7 +13,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuToggle }: HeaderProps) {
   const { user, logout } = useAuth()
-  const { establecimientos, isLoadingEstablecimientos } = useApp()
+  const { establecimientos, isLoadingEstablecimientos, currentSucursal } = useApp()
   const { pathname } = useLocation()
   const isDashboard = pathname === '/'
   const showEstablecimiento = !isLoadingEstablecimientos && establecimientos.length > 0
@@ -53,15 +53,21 @@ export default function Header({ onMenuToggle }: HeaderProps) {
             {user.nombreEmpresa}
           </span>
         )}
-        <div className="hidden h-4 w-px bg-border sm:block" />
-        <span className="hidden items-center gap-1.5 text-sm font-medium text-text sm:flex">
-          <svg className="h-4 w-4 shrink-0 text-text-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Sucursal:
-        </span>
-        <SucursalSelector disabled={!isDashboard} />
+        {/* Una empresa administrativa no tiene sucursales: sin esto quedaria la etiqueta
+            "Sucursal:" colgando al lado de un selector vacio. */}
+        {currentSucursal && (
+          <>
+            <div className="hidden h-4 w-px bg-border sm:block" />
+            <span className="hidden items-center gap-1.5 text-sm font-medium text-text sm:flex">
+              <svg className="h-4 w-4 shrink-0 text-text-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Sucursal:
+            </span>
+            <SucursalSelector disabled={!isDashboard} />
+          </>
+        )}
         {showEstablecimiento && (
           <>
             <div className="hidden h-4 w-px bg-border sm:block" />

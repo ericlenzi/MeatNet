@@ -68,21 +68,33 @@ namespace Meat.Application.Autenticacion
                 .Where(x => x.UsuarioId == user.Id)
                 .ToListAsync(cancellationToken);
 
+            // Una empresa administrativa (la que administra el padron y la configuracion) no
+            // tiene sucursales, asi que exigirle una a su usuario seria imposible de cumplir.
+            // Si la empresa SI tiene sucursales y el usuario no tiene ninguna, es un error de
+            // configuracion y conviene que se vea al entrar.
+            var sucursalJwt = string.Empty;
+
             if (!sucursalesUsuario.Any())
-                throw new ArgumentException("El usuario no tiene sucursales asignadas. Debe tener al menos una sucursal para iniciar sesión.");
+            {
+                var empresaTieneSucursales = await this.context.Sucursales
+                    .AnyAsync(x => x.EmpresaId == empresaJwt, cancellationToken);
 
-            var mainSucursal = sucursalesUsuario.FirstOrDefault(x => x.EsMain);
-            if (mainSucursal == null)
-                //throw new ArgumentException("El usuario no tiene una sucursal principal asignada (esMain).");
-                mainSucursal = sucursalesUsuario.FirstOrDefault();
+                if (empresaTieneSucursales)
+                    throw new ArgumentException("El usuario no tiene sucursales asignadas. Debe tener al menos una sucursal para iniciar sesión.");
+            }
+            else
+            {
+                var mainSucursal = sucursalesUsuario.FirstOrDefault(x => x.EsMain)
+                    ?? sucursalesUsuario.First();
 
-            var sucursal = await this.context.Sucursales
-                .FirstOrDefaultAsync(x => x.Id == mainSucursal.SucursalId, cancellationToken);
+                var sucursal = await this.context.Sucursales
+                    .FirstOrDefaultAsync(x => x.Id == mainSucursal.SucursalId, cancellationToken);
 
-            if (sucursal == null)
-                throw new ArgumentException("La sucursal principal asignada al usuario no existe.");
+                if (sucursal == null)
+                    throw new ArgumentException("La sucursal principal asignada al usuario no existe.");
 
-            var sucursalJwt = sucursal.CodigoSucursal;
+                sucursalJwt = sucursal.CodigoSucursal;
+            }
 
             var parametroPasswordInicial = await this.context.Parametros
                 .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == empresaJwt, cancellationToken);

@@ -24,7 +24,7 @@ function esOscuro(hex: string): boolean {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { currentSucursal } = useApp()
+  const { currentSucursal, hasEstablecimientos } = useApp()
 
   // El panel lleva la identidad de la empresa; los datos que muestra son los de la sucursal.
   const colorEmpresa = user?.colorEmpresa || '#DAE4F0'
@@ -84,22 +84,28 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Operation tiles */}
-      <h2 className="mb-4 text-lg font-semibold text-text">Operaciones</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {operacionesTiles.map((tile) => (
-          <Link
-            key={tile.path}
-            to={tile.path}
-            className="group rounded-xl border border-border bg-surface p-5 shadow-sm transition-all hover:border-primary-300 hover:shadow-md"
-          >
-            <h3 className="font-semibold text-text group-hover:text-primary-600 transition-colors">
-              {tile.title}
-            </h3>
-            <p className="mt-1 text-sm text-text-light">{tile.description}</p>
-          </Link>
-        ))}
-      </div>
+      {/* Operaciones: solo si la empresa tiene donde operar. Una empresa administrativa
+          no tiene establecimientos, y estos accesos no llevarian a ningun lado. */}
+      {hasEstablecimientos && (
+        <>
+        <h2 className="mb-4 text-lg font-semibold text-text">Operaciones</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {operacionesTiles.map((tile) => (
+            <Link
+              key={tile.path}
+              to={tile.path}
+              className="group rounded-xl border border-border bg-surface p-5 shadow-sm transition-all hover:border-primary-300 hover:shadow-md"
+            >
+              <h3 className="font-semibold text-text group-hover:text-primary-600 transition-colors">
+                {tile.title}
+              </h3>
+              <p className="mt-1 text-sm text-text-light">{tile.description}</p>
+            </Link>
+          ))}
+        </div>
+        </>
+      )}
+
     </div>
   )
 }
