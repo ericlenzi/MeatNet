@@ -56,6 +56,8 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.TiposMediciones.TipoMedicion> TiposMediciones { get; set; }
         public virtual DbSet<Domain.DestinosComerciales.DestinoComercial> DestinosComerciales { get; set; }
         public virtual DbSet<Domain.TipificacionesOficiales.TipificacionOficial> TipificacionesOficiales { get; set; }
+        public virtual DbSet<Domain.Conformaciones.Conformacion> Conformaciones { get; set; }
+        public virtual DbSet<Domain.GradosEngrasamiento.GradoEngrasamiento> GradosEngrasamiento { get; set; }
         public virtual DbSet<Domain.TiposDenticiones.TipoDenticion> TiposDenticiones { get; set; }
         public virtual DbSet<Domain.Denticiones.Denticion> Denticiones { get; set; }
         public virtual DbSet<Domain.TiposContusiones.TipoContusion> TiposContusiones { get; set; }
@@ -477,6 +479,12 @@ namespace Meat.Repositories
 
             #region Relaciones - Romaneo (Ejecucion de Faena)
 
+            modelBuilder.Entity<Domain.Conformaciones.Conformacion>()
+                .HasOne(c => c.Especie).WithMany().HasForeignKey(c => c.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Domain.GradosEngrasamiento.GradoEngrasamiento>()
+                .HasOne(g => g.Especie).WithMany().HasForeignKey(g => g.EspecieId).OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Domain.Romaneos.Romaneo>(e =>
             {
                 e.HasOne(x => x.ListaMatanza).WithMany().HasForeignKey(x => x.ListaMatanzaId).OnDelete(DeleteBehavior.Restrict);
@@ -485,6 +493,8 @@ namespace Meat.Repositories
                 e.HasOne(x => x.Tropa).WithMany().HasForeignKey(x => x.TropaId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.UnidadFaena).WithMany().HasForeignKey(x => x.UnidadFaenaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Conformacion).WithMany().HasForeignKey(x => x.ConformacionId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.GradoEngrasamiento).WithMany().HasForeignKey(x => x.GradoEngrasamientoId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Domain.Romaneos.RomaneoPieza>(e =>

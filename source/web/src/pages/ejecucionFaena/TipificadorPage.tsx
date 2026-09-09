@@ -8,6 +8,7 @@ import {
   anularRomaneo,
 } from '@/services/romaneos.service'
 import { getUnidadesFaenasOptions } from '@/services/unidadesFaenas.service'
+import { getEjes } from '@/services/ejesTipificacion.service'
 import { getDestinosComerciales } from '@/services/tipificaciones.service'
 import { useToast } from '@/components/ui/Toast'
 import { EstadoListaMatanza } from '@/types'
@@ -17,6 +18,7 @@ import type {
   TipificacionCandidata,
   RomaneoJornadaItem,
   CatalogoFaenaOption,
+  EjeTipificacion,
 } from '@/types'
 import type { UnidadFaena } from '@/types'
 import PageHeader from '@/components/ui/PageHeader'
@@ -56,12 +58,17 @@ export default function TipificadorPage() {
 
   const [data, setData] = useState<RenglonesEjecucion | null>(null)
   const [unidadesFaenas, setUnidadesFaenas] = useState<UnidadFaena[]>([])
+  // Ejes de la tipificacion oficial: se determinan mirando la res, asi que se cargan por romaneo.
+  const [conformaciones, setConformaciones] = useState<EjeTipificacion[]>([])
+  const [gradosEngrasamiento, setGradosEngrasamiento] = useState<EjeTipificacion[]>([])
   const [destinos, setDestinos] = useState<CatalogoFaenaOption[]>([])
   const [jornada, setJornada] = useState<RomaneoJornadaItem[]>([])
 
   const [renglonId, setRenglonId] = useState('')
   const [unidadFaenaId, setUnidadFaenaId] = useState('')
   const [destinoId, setDestinoId] = useState('')
+  const [conformacionId, setConformacionId] = useState('')
+  const [gradoEngrasamientoId, setGradoEngrasamientoId] = useState('')
   const [garron, setGarron] = useState<number>(1)
   const [piezas, setPiezas] = useState<PiezaState[]>([nuevaPieza()])
 
@@ -102,14 +109,18 @@ export default function TipificadorPage() {
         return sigueValido ? prev : rengl.renglonSugeridoId ?? ''
       })
 
-      const [ufs, dest, jorn] = await Promise.all([
+      const [ufs, dest, jorn, conf, grad] = await Promise.all([
         getUnidadesFaenasOptions(rengl.especieId),
         getDestinosComerciales(),
         getRomaneosJornada(listaMatanzaId),
+        getEjes('conformaciones', { Estado: true, EspecieId: rengl.especieId, PageSize: 200 }),
+        getEjes('grados-engrasamiento', { Estado: true, EspecieId: rengl.especieId, PageSize: 200 }),
       ])
       setUnidadesFaenas(ufs)
       setDestinos(dest)
       setJornada(jorn)
+      setConformaciones(conf.data || [])
+      setGradosEngrasamiento(grad.data || [])
 
       // Default del destino comercial: el marcado Favorito (si no hay, "Todos").
       setDestinoId((prev) => {
@@ -293,6 +304,8 @@ export default function TipificadorPage() {
         ListaMatanzaDetalleId: renglonSel.renglonId,
         UnidadFaenaId: unidadFaenaId,
         NumeroGarron: garron,
+        ConformacionId: conformacionId || undefined,
+        GradoEngrasamientoId: gradoEngrasamientoId || undefined,
         Piezas: piezas.map((p) => ({
           AlmacenDestinoId: p.almacenDestinoId,
           TipificacionId: p.tipificacionId,
@@ -388,6 +401,38 @@ export default function TipificadorPage() {
               ))}
             </select>
           </div>
+
+          {conformaciones.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-text">Conformacion</label>
+              <select
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                value={conformacionId}
+                onChange={(e) => setConformacionId(e.target.value)}
+              >
+                <option value="">(Sin tipificar)</option>
+                {conformaciones.map((c) => (
+                  <option key={c.codigo} value={c.codigo}>{c.codigo} - {c.nombre}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {gradosEngrasamiento.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-text">Engrasamiento</label>
+              <select
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                value={gradoEngrasamientoId}
+                onChange={(e) => setGradoEngrasamientoId(e.target.value)}
+              >
+                <option value="">(Sin tipificar)</option>
+                {gradosEngrasamiento.map((g) => (
+                  <option key={g.codigo} value={g.codigo}>{g.codigo} - {g.nombre}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="mb-1 block text-sm font-medium text-text">Garron</label>

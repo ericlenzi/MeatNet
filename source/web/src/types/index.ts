@@ -9,6 +9,7 @@ export type { Especie, CreateEspecieRequest, UpdateEspecieRequest } from './espe
 export type { Cliente, CreateClienteRequest, UpdateClienteRequest, TipoCliente } from './cliente'
 export type { TipoEspecie, CreateTipoEspecieRequest, UpdateTipoEspecieRequest, TipoSexo } from './tipoEspecie'
 export type { EmpresaTipoEspecie, CreateEmpresaTipoEspecieRequest, UpdateEmpresaTipoEspecieRequest } from './empresaTipoEspecie'
+export type { EjeTipificacion, CreateEjeTipificacionRequest, UpdateEjeTipificacionRequest } from './ejeTipificacion'
 export type { OrigenHacienda, UsoHacienda } from './hacienda'
 export type { NumeradorTropa, CreateNumeradorTropaRequest, UpdateNumeradorTropaRequest } from './numeradorTropa'
 export type {

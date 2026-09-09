@@ -166,6 +166,8 @@ const navGroups: NavGroup[] = [
           { label: 'Almacenes', path: '/almacenes', icon: icons.database },
           { label: 'Especies', path: '/especies', icon: icons.tag, superAdminOnly: true },
           { label: 'Tipos de Especies', path: '/tipos-especies', icon: icons.tag, superAdminOnly: true },
+          { label: 'Conformaciones', path: '/conformaciones', icon: icons.tag, superAdminOnly: true },
+          { label: 'Grados de Engrasamiento', path: '/grados-engrasamiento', icon: icons.tag, superAdminOnly: true },
           { label: 'Categorias de Hacienda', path: '/categorias-hacienda', icon: icons.tag },
           { label: 'Unidades de Faena', path: '/unidades-faenas', icon: icons.adjustments },
           { label: 'Tipificaciones', path: '/tipificaciones', icon: icons.tag },

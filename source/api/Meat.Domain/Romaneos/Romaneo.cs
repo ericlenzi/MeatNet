@@ -2,6 +2,8 @@
 using Meat.Domain.Establecimientos;
 using Meat.Domain.ListasMatanzas;
 using Meat.Domain.Tropas;
+using Meat.Domain.Conformaciones;
+using Meat.Domain.GradosEngrasamiento;
 using Meat.Domain.UnidadesFaenas;
 using System;
 using System.Collections.Generic;
@@ -40,6 +42,16 @@ namespace Meat.Domain.Romaneos
         public virtual Especie Especie { get; set; }
 
         public Guid UnidadFaenaId { get; set; }              // RES / MEDIA RES; define nro de piezas
+
+        // Ejes de la tipificacion oficial que se determinan mirando la res, no el animal en pie:
+        // varian de una res a otra, asi que se capturan por romaneo y no en el master data. La
+        // categoria (el tercer eje) viene de la Tipificacion de cada pieza.
+        // Nullables: no toda especie tiene tipificacion oficial y los romaneos previos no la traen.
+        public string ConformacionId { get; set; }
+        public virtual Conformacion Conformacion { get; set; }
+
+        public string GradoEngrasamientoId { get; set; }
+        public virtual GradoEngrasamiento GradoEngrasamiento { get; set; }
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         public int NumeroGarron { get; set; }                  // nro fisico de gancho; unico por LM

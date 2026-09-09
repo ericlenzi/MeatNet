@@ -64,6 +64,27 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             if (uf.EspecieId != lm.EspecieId)
                 throw new ValidationException("La unidad de faena no corresponde a la especie de la lista.");
 
+            // 5c) Ejes de la tipificacion oficial (R-E20). Son opcionales, pero si vienen tienen
+            //     que existir, estar activos y ser de la especie de la jornada: el catalogo esta
+            //     abierto por especie y una conformacion de porcino no aplica a un vacuno.
+            if (!string.IsNullOrEmpty(request.ConformacionId))
+            {
+                var conformacionValida = await this.context.Conformaciones
+                    .AnyAsync(c => c.Codigo == request.ConformacionId && c.Activo && c.EspecieId == lm.EspecieId,
+                        cancellationToken);
+                if (!conformacionValida)
+                    throw new ValidationException("La conformacion indicada no existe, no esta activa o no corresponde a la especie de la jornada.");
+            }
+
+            if (!string.IsNullOrEmpty(request.GradoEngrasamientoId))
+            {
+                var gradoValido = await this.context.GradosEngrasamiento
+                    .AnyAsync(g => g.Codigo == request.GradoEngrasamientoId && g.Activo && g.EspecieId == lm.EspecieId,
+                        cancellationToken);
+                if (!gradoValido)
+                    throw new ValidationException("El grado de engrasamiento indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
+            }
+
             var piezasEsperadas = Math.Max(1, uf.PiezasPorAnimal);
             var piezas = request.Piezas ?? new List<PiezaRomaneoInput>();
             if (piezas.Count != piezasEsperadas)
@@ -133,6 +154,8 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             romaneo.TropaId = renglon.TropaId;
             romaneo.EspecieId = lm.EspecieId;
             romaneo.UnidadFaenaId = uf.Id;
+            romaneo.ConformacionId = string.IsNullOrWhiteSpace(request.ConformacionId) ? null : request.ConformacionId;
+            romaneo.GradoEngrasamientoId = string.IsNullOrWhiteSpace(request.GradoEngrasamientoId) ? null : request.GradoEngrasamientoId;
             romaneo.NumeroGarron = request.NumeroGarron;
             romaneo.NumeroRomaneo = numeroRomaneo;
             romaneo.UsuarioId = request.UsuarioId;

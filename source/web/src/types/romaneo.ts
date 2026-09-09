@@ -1,4 +1,4 @@
-// --- Renglones de la LM en ejecucion (modo hibrido del Tipificador) ---
+﻿// --- Renglones de la LM en ejecucion (modo hibrido del Tipificador) ---
 export interface RenglonEjecucionItem {
   renglonId: string
   tropaId: string
@@ -113,5 +113,8 @@ export interface CrearRomaneoRequest {
   ListaMatanzaDetalleId: string
   UnidadFaenaId: string
   NumeroGarron: number
+  /** Ejes de la tipificacion oficial; opcionales, se determinan mirando la res. */
+  ConformacionId?: string
+  GradoEngrasamientoId?: string
   Piezas: PiezaRomaneoInput[]
 }
