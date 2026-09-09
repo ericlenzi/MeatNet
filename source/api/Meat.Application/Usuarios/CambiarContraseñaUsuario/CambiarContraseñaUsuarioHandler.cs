@@ -1,11 +1,10 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Meat.Application.Shared;
 using Meat.Application.Shared.GeneratePassword;
 using Meat.Domain.Enums;
 using Meat.Repositories;
 using System;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,21 +23,12 @@ namespace Meat.Application.Usuarios.CambiarContraseñaUsuario
 
         public async Task<CambiarContraseñaUsuarioResponse> Handle(CambiarContraseñaUsuarioRequest request, CancellationToken cancellationToken)
         {
-            string passwordHash;
-
-            using (SHA1 sha1Hash = SHA1.Create())
-            {
-                var newPassword = request.ContraseñaActual;
-                byte[] sourceBytes = Encoding.UTF8.GetBytes(newPassword);
-                byte[] hashBytes = sha1Hash.ComputeHash(sourceBytes);
-                passwordHash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-            }
-
             var user = await this.context.Usuarios.FirstOrDefaultAsync(
-                p => p.Id == request.UsuarioId && p.PasswordHash == passwordHash
+                p => p.Id == request.UsuarioId
             );
 
-            if (user == null)
+            // El hash lleva salt, asi que la comparacion va en memoria y no en la consulta.
+            if (user == null || !PasswordHash.Verificar(request.ContraseñaActual, user.PasswordHash).EsValida)
                 throw new ArgumentException("Contraseña incorrecta.");
 
             if (!user.Activo)

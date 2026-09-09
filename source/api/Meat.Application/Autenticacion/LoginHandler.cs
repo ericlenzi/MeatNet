@@ -21,6 +21,8 @@ namespace Meat.Application.Autenticacion
         private readonly MeatContext context;
         private readonly string jwtSigningKey;
         private readonly int validFor;
+        private readonly string issuer;
+        private readonly string audience;
 
         public LoginHandler(MeatContext context, IConfiguration configuration)
         {
@@ -28,16 +30,22 @@ namespace Meat.Application.Autenticacion
             this.context = context ?? throw new ArgumentNullException(nameof(context));
             this.jwtSigningKey = configuration.GetValue<string>("JwtOptions:SigninKey");
             this.validFor = configuration.GetValue<int>("JwtOptions:ValidFor");
+            this.issuer = configuration.GetValue<string>("JwtOptions:Issuer") ?? "meatnet-api";
+            this.audience = configuration.GetValue<string>("JwtOptions:Audience") ?? "meatnet-web";
         }
 
         public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken cancellationToken)
         {
-            var passwordHash = PasswordHash.Calcular(request.Contraseña);
-
+            // El hash lleva salt propio, asi que ya no se puede comparar dentro de la consulta:
+            // se busca por usuario y se verifica en memoria.
             var user = await this.context.Usuarios
-                .FirstOrDefaultAsync(p => p.UserName == request.Usuario && p.PasswordHash == passwordHash, cancellationToken);
+                .FirstOrDefaultAsync(p => p.UserName == request.Usuario, cancellationToken);
 
-            if (user == null)
+            var verificacion = user == null
+                ? default
+                : PasswordHash.Verificar(request.Contraseña, user.PasswordHash);
+
+            if (user == null || !verificacion.EsValida)
                 throw new ArgumentException("Usuario o contraseña incorrecto");
 
             if (!user.Activo)
@@ -79,9 +87,19 @@ namespace Meat.Application.Autenticacion
             var parametroPasswordInicial = await this.context.Parametros
                 .FirstOrDefaultAsync(p => p.Codigo == "PASSWORD_INICIAL" && p.EmpresaId == empresaJwt, cancellationToken);
 
+            // La contrasena ya se verifico, asi que alcanza con comparar lo que el usuario
+            // escribio contra el parametro, que guarda la contrasena inicial en claro.
             bool debeCambiarContrasena = parametroPasswordInicial != null
                 && !string.IsNullOrWhiteSpace(parametroPasswordInicial.Valor)
-                && PasswordHash.Coincide(parametroPasswordInicial.Valor, passwordHash);
+                && string.Equals(request.Contraseña, parametroPasswordInicial.Valor, StringComparison.Ordinal);
+
+            // Migracion perezosa: es el unico momento en que se tiene la contrasena en claro
+            // junto con un hash viejo. El usuario no se entera.
+            if (verificacion.NecesitaRehash)
+            {
+                user.PasswordHash = PasswordHash.Calcular(request.Contraseña);
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
 
             return new LoginResponse()
             {
@@ -109,7 +127,9 @@ namespace Meat.Application.Autenticacion
         private string GenerateJwt(Usuario user, string codigoEmpresa, string codigoSucursal)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(this.jwtSigningKey);
+            // UTF8 y no ASCII: con ASCII cualquier caracter no ingles se convierte en '?'
+            // y la clave efectiva termina siendo mas debil que la configurada.
+            var key = Encoding.UTF8.GetBytes(this.jwtSigningKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
@@ -120,6 +140,8 @@ namespace Meat.Application.Autenticacion
                     new Claim(EmpresaClaimType, codigoEmpresa, ClaimValueTypes.String),
                     new Claim(ClaimTypes.PrimaryGroupSid, codigoSucursal, ClaimValueTypes.String)
                 }),
+                Issuer = this.issuer,
+                Audience = this.audience,
                 Expires = DateTime.UtcNow.AddMinutes(this.validFor),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

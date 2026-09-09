@@ -44,7 +44,7 @@ builder.Services.AddScoped<EndpointsMethods>();
 var isApiLocal = builder.Configuration.GetValue<bool>("IsApiLocal");
 builder.Services.AddScoped<IsApiLocal>(_ => new IsApiLocal(isApiLocal));
 
-builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration, builder.Environment.IsDevelopment());
 builder.Services.AddApplicationInsightsTelemetry();
 
 if (!isApiLocal)

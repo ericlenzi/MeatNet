@@ -2,13 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Meat.Application.Shared;
 using Meat.Domain.Usuarios;
 using Meat.Repositories;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
@@ -28,23 +27,14 @@ namespace Meat.Application.Usuarios.IsAutorizador
 
         public async Task<IsAutorizadorResponse> Handle(IsAutorizadorRequest request, CancellationToken cancellationToken)
         {
-            string passwordHash;
             string[] permisos = { "Admin", "Abastecimiento" };
 
-            using (SHA1 sha1Hash = SHA1.Create())
-            {
-                var newPassword = request.Contraseña;
-                byte[] sourceBytes = Encoding.UTF8.GetBytes(newPassword);
-                byte[] hashBytes = sha1Hash.ComputeHash(sourceBytes);
-                passwordHash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-            }
-
             var user = await this.context.Usuarios.FirstOrDefaultAsync(
-                p => p.UserName == request.Usuario && 
-                     p.PasswordHash == passwordHash 
+                p => p.UserName == request.Usuario
             );
 
-            if (user == null)
+            // El hash lleva salt, asi que la comparacion va en memoria y no en la consulta.
+            if (user == null || !PasswordHash.Verificar(request.Contraseña, user.PasswordHash).EsValida)
                 throw new ArgumentException("Usuario o contraseña incorrecto.");
 
             return new IsAutorizadorResponse()
