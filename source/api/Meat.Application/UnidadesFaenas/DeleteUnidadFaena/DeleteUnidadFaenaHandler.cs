@@ -28,6 +28,14 @@ namespace Meat.Application.UnidadesFaenas.DeleteUnidadFaena
             if (enUsoTipificacion)
                 throw new ValidationException("No se puede eliminar la unidad de faena porque esta en uso en tipificaciones.");
 
+            // El romaneo guarda con que unidad se faeno cada animal: es historico y no se puede
+            // dejar colgado. Antes solo se miraba Tipificaciones, asi que una unidad ya usada en
+            // la faena se podia dar de baja igual.
+            var enUsoRomaneo = await this.context.Romaneos
+                .AnyAsync(r => r.UnidadFaenaId == entity.Id, cancellationToken);
+            if (enUsoRomaneo)
+                throw new ValidationException("No se puede eliminar la unidad de faena porque tiene romaneos registrados.");
+
             this.context.Remove(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 

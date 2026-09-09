@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Meat.Application.Shared;
+using Meat.Application.UnidadesFaenas.Shared;
 using Meat.Domain.UnidadesFaenas;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -25,25 +26,14 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
                 throw new ValidationException("El codigo es requerido.");
             var codigo = request.Codigo.Trim();
 
-            var especieExiste = await this.context.Especies.AnyAsync(e => e.Codigo == request.EspecieId, cancellationToken);
-            if (!especieExiste)
-                throw new ValidationException("La especie indicada no existe.");
-
             var codigoEnUso = await this.context.UnidadesFaenas
                 .AnyAsync(u => u.Codigo == codigo, cancellationToken);
             if (codigoEnUso)
                 throw new ValidationException("Ya existe una unidad de faena con ese codigo.");
 
-            if (request.PiezasPorAnimal < 1)
-                throw new ValidationException("Las piezas por animal deben ser al menos 1.");
-
-            if (!string.IsNullOrEmpty(request.TipoMaterialId))
-            {
-                var tipoExiste = await this.context.TiposMateriales
-                    .AnyAsync(t => t.Codigo == request.TipoMaterialId, cancellationToken);
-                if (!tipoExiste)
-                    throw new ValidationException("El tipo de material indicado no existe.");
-            }
+            await UnidadFaenaValidacion.ValidarAsync(
+                this.context, request.EspecieId, request.Nombre, request.CantidadCuartos,
+                request.PiezasPorAnimal, request.TipoMaterialId, cancellationToken);
 
             // Una sola unidad por defecto por especie: destildar las demas si esta se marca.
             if (request.PorDefecto)

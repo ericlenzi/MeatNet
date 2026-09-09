@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
@@ -84,8 +84,19 @@ export default function UnidadFaenaFormPage() {
     if (!isEdit && !form.Codigo.trim()) e['Codigo'] = 'Requerido'
     if (!form.EspecieId) e['EspecieId'] = 'Requerido'
     if (!form.Nombre.trim()) e['Nombre'] = 'Requerido'
-    if (num(form.CantidadCuartos) < 0) e['CantidadCuartos'] = 'Debe ser mayor o igual a 0'
-    if (num(form.PiezasPorAnimal) < 1) e['PiezasPorAnimal'] = 'Debe ser mayor o igual a 1'
+
+    const cuartos = num(form.CantidadCuartos)
+    const piezas = num(form.PiezasPorAnimal)
+    if (cuartos < 0 || cuartos > 4) e['CantidadCuartos'] = 'Entre 0 y 4 (0 para decomisos)'
+    if (piezas < 1 || piezas > 4) e['PiezasPorAnimal'] = 'Entre 1 y 4'
+    // Un animal tiene cuatro cuartos: las piezas que salen de uno no pueden sumar mas.
+    if (!e['CantidadCuartos'] && !e['PiezasPorAnimal'] && cuartos * piezas > 4) {
+      const suman = 'No cierra: suman ' + cuartos * piezas + ' cuartos y un animal tiene 4'
+      e['CantidadCuartos'] = suman
+      e['PiezasPorAnimal'] = suman
+    }
+
+    if (!form.TipoMaterialId) e['TipoMaterialId'] = 'Requerido'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -101,7 +112,7 @@ export default function UnidadFaenaFormPage() {
         CantidadCuartos: num(form.CantidadCuartos),
         PiezasPorAnimal: num(form.PiezasPorAnimal),
         PorDefecto: form.PorDefecto,
-        TipoMaterialId: form.TipoMaterialId || undefined,
+        TipoMaterialId: form.TipoMaterialId,
         ERP_Codigo: form.ERP_Codigo,
       }
       if (isEdit && id) {
@@ -175,6 +186,7 @@ export default function UnidadFaenaFormPage() {
               onChange={(e) => updateField('TipoMaterialId', e.target.value)}
               options={tipos.map((t) => ({ value: t.codigo, label: t.nombre }))}
               placeholder="Seleccionar tipo..."
+              error={errors['TipoMaterialId']}
             />
             <Input
               label="Codigo ERP"
