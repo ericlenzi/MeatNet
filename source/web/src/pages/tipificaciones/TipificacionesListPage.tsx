@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { getTipificaciones, deleteTipificacion } from '@/services/tipificaciones.service'
 import { usePagination } from '@/hooks/usePagination'
@@ -57,7 +57,7 @@ export default function TipificacionesListPage() {
     if (!deleteTarget) return
     setIsDeleting(true)
     try {
-      await deleteTipificacion(deleteTarget.codigo)
+      await deleteTipificacion(deleteTarget.id)
       toast('success', 'Tipificacion eliminada')
       setDeleteTarget(null)
       void fetchData()
@@ -97,7 +97,7 @@ export default function TipificacionesListPage() {
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/tipificaciones/${row.codigo}/edit`) }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/tipificaciones/${row.id}/edit`) }}
             className="rounded p-1.5 text-text-light hover:bg-primary-50 hover:text-primary-600 transition-colors"
             title="Editar"
           >

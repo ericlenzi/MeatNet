@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 
 namespace Meat.Application.DestinosComerciales.GetDestinosComerciales
@@ -9,6 +10,7 @@ namespace Meat.Application.DestinosComerciales.GetDestinosComerciales
 
     public class DestinoComercialItem
     {
+        public Guid Id { get; set; }
         public string Codigo { get; set; }
         public string Nombre { get; set; }
         public bool Favorito { get; set; }

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Domain.UnidadesFaenas;
 using Meat.Repositories;
@@ -54,24 +54,20 @@ namespace Meat.Application.UnidadesFaenas.CreateUnidadFaena
                 foreach (var o in otras) o.PorDefecto = false;
             }
 
-            var entity = new UnidadFaena
-            {
-                Codigo = codigo,
-                EspecieId = request.EspecieId,
-                Nombre = request.Nombre,
-                CantidadCuartos = request.CantidadCuartos,
-                PiezasPorAnimal = request.PiezasPorAnimal,
-                PorDefecto = request.PorDefecto,
-                TipoMaterialId = request.TipoMaterialId,
-                ERP_Codigo = request.ERP_Codigo,
-                Activo = true,
-                FechaActualizacion = DateTime.Now
-            };
+            var entity = UnidadFaenaFactory.Create();
+            entity.Codigo = codigo;
+            entity.EspecieId = request.EspecieId;
+            entity.Nombre = request.Nombre;
+            entity.CantidadCuartos = request.CantidadCuartos;
+            entity.PiezasPorAnimal = request.PiezasPorAnimal;
+            entity.PorDefecto = request.PorDefecto;
+            entity.TipoMaterialId = request.TipoMaterialId;
+            entity.ERP_Codigo = request.ERP_Codigo;
 
             this.context.UnidadesFaenas.Add(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CreateUnidadFaenaResponse { Codigo = entity.Codigo };
+            return new CreateUnidadFaenaResponse { Id = entity.Id };
         }
     }
 }

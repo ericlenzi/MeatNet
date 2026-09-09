@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import {
   getRenglonesEjecucion,
@@ -79,7 +79,7 @@ export default function TipificadorPage() {
     [data, renglonId],
   )
   const ufSel = useMemo(
-    () => unidadesFaenas.find((u) => u.codigo === unidadFaenaId),
+    () => unidadesFaenas.find((u) => u.id === unidadFaenaId),
     [unidadesFaenas, unidadFaenaId],
   )
   const nroPiezas = piezasEsperadas(ufSel)
@@ -113,15 +113,15 @@ export default function TipificadorPage() {
 
       // Default del destino comercial: el marcado Favorito (si no hay, "Todos").
       setDestinoId((prev) => {
-        if (prev && dest.some((d) => d.codigo === prev)) return prev
-        return dest.find((d) => d.favorito)?.codigo ?? ''
+        if (prev && dest.some((d) => d.id === prev)) return prev
+        return dest.find((d) => d.favorito)?.id ?? ''
       })
 
       setUnidadFaenaId((prev) => {
-        if (prev && ufs.some((u) => u.codigo === prev)) return prev
+        if (prev && ufs.some((u) => u.id === prev)) return prev
         // Default: la unidad marcada PorDefecto para la especie; si no hay, la primera.
         const preferido = ufs.find((u) => u.porDefecto)
-        return (preferido ?? ufs[0])?.codigo ?? ''
+        return (preferido ?? ufs[0])?.id ?? ''
       })
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al cargar el tipificador')
@@ -370,7 +370,7 @@ export default function TipificadorPage() {
               onChange={(e) => setUnidadFaenaId(e.target.value)}
             >
               {unidadesFaenas.map((u) => (
-                <option key={u.codigo} value={u.codigo}>{u.nombre}</option>
+                <option key={u.id} value={u.id}>{u.nombre}</option>
               ))}
             </select>
           </div>
@@ -384,7 +384,7 @@ export default function TipificadorPage() {
             >
               <option value="">Todos</option>
               {destinos.map((d) => (
-                <option key={d.codigo} value={d.codigo}>{d.nombre}</option>
+                <option key={d.id} value={d.id}>{d.nombre}</option>
               ))}
             </select>
           </div>

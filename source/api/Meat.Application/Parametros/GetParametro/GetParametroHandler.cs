@@ -21,7 +21,7 @@ namespace Meat.Application.Parametros.GetParametro
         public async Task<GetParametroResponse> Handle(GetParametroRequest request, CancellationToken cancellationToken)
         {
             var parametro = await this.context.Parametros
-                .FirstOrDefaultAsync(p => p.Codigo == request.Codigo);
+                .FirstOrDefaultAsync(p => p.Id == request.Id);
 
             return this.mapper.Map<GetParametroResponse>(parametro);
         }

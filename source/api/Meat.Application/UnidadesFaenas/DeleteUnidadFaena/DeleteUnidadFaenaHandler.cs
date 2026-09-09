@@ -19,7 +19,7 @@ namespace Meat.Application.UnidadesFaenas.DeleteUnidadFaena
         public async Task<DeleteUnidadFaenaResponse> Handle(DeleteUnidadFaenaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.UnidadesFaenas
-                .FirstOrDefaultAsync(u => u.Codigo == request.Codigo, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken);
             if (entity == null)
                 throw new ValidationException("La unidad de faena no existe.");
 

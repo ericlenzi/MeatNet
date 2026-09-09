@@ -32,6 +32,7 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadesFaenas
                 orderby u.EspecieId, u.Codigo
                 select new UnidadFaenaItem
                 {
+                    Id = u.Id,
                     Codigo = u.Codigo,
                     EspecieId = u.EspecieId,
                     EspecieNombre = e != null ? e.Nombre : null,

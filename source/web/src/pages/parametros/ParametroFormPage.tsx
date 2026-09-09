@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getParametro, createParametro, updateParametro } from '@/services/parametros.service'
@@ -9,10 +9,10 @@ import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
 
 export default function ParametroFormPage() {
-  const { codigo } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const isEdit = !!codigo
+  const isEdit = !!id
 
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -27,8 +27,8 @@ export default function ParametroFormPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        if (isEdit && codigo) {
-          const entity = await getParametro(codigo)
+        if (isEdit && id) {
+          const entity = await getParametro(id)
           setForm({
             Codigo: entity.codigo || '',
             Nombre: entity.nombre || '',
@@ -43,7 +43,7 @@ export default function ParametroFormPage() {
       }
     }
     void loadData()
-  }, [codigo, isEdit, toast])
+  }, [id, isEdit, toast])
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -59,8 +59,8 @@ export default function ParametroFormPage() {
 
     setLoading(true)
     try {
-      if (isEdit && codigo) {
-        await updateParametro(codigo, {
+      if (isEdit && id) {
+        await updateParametro(id, {
           Nombre: form.Nombre,
           Valor: form.Valor,
           Activo: form.Activo,

@@ -24,11 +24,11 @@ namespace Meat.Controllers
             return await this.Handle(request);
         }
 
-        [HttpGet("{codigo}")]
-        public async Task<IActionResult> GetByCodigoAsync([FromRoute] string codigo) =>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByCodigoAsync([FromRoute] Guid id) =>
             await this.Handle(new GetTipificacionRequest
             {
-                Codigo = codigo,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId
             });
 
@@ -40,12 +40,12 @@ namespace Meat.Controllers
             return await this.Handle(request);
         }
 
-        [HttpPut("{codigo}")]
+        [HttpPut("{id}")]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
-        public async Task<IActionResult> UpdateAsync([FromRoute] string codigo, [FromBody] UpdateTipificacionRequestFromBody body) =>
+        public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateTipificacionRequestFromBody body) =>
             await this.Handle(new UpdateTipificacionRequest
             {
-                Codigo = codigo,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId,
                 Descripcion = body.Descripcion,
                 EspecieId = body.EspecieId,
@@ -60,12 +60,12 @@ namespace Meat.Controllers
                 Activo = body.Activo
             });
 
-        [HttpDelete("{codigo}")]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] string codigo) =>
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid id) =>
             await this.Handle(new DeleteTipificacionRequest
             {
-                Codigo = codigo,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId
             });
     }

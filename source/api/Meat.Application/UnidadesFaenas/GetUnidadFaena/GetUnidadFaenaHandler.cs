@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadFaena
                 from e in ej.DefaultIfEmpty()
                 join tm in this.context.TiposMateriales on u.TipoMaterialId equals tm.Codigo into tmj
                 from tm in tmj.DefaultIfEmpty()
-                where u.Codigo == request.Codigo
+                where u.Id == request.Id
                 select new GetUnidadFaenaResponse
                 {
                     Codigo = u.Codigo,

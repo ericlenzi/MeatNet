@@ -1,4 +1,5 @@
-export interface Parametro {
+﻿export interface Parametro {
+  id: string
   codigo: string
   nombre: string
   valor: string

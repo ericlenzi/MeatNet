@@ -28,12 +28,12 @@ namespace Meat.Controllers
             return await this.Handle(request);
         }
 
-        [HttpGet("{codigo}")]
+        [HttpGet("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> GetParametroByCodigoAsync([FromRoute] string codigo) => await this.Handle(
+        public async Task<IActionResult> GetParametroByIdAsync([FromRoute] Guid id) => await this.Handle(
             new GetParametroRequest
             {
-                Codigo = codigo,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId
             }
         );
@@ -46,12 +46,12 @@ namespace Meat.Controllers
             return await Handle(request);
         }
 
-        [HttpPut("{codigo}")]
+        [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UpdateParametroAsync([FromRoute] string codigo, [FromBody] UpdateParametroRequestFromBody body) => await this.Handle(
+        public async Task<IActionResult> UpdateParametroAsync([FromRoute] Guid id, [FromBody] UpdateParametroRequestFromBody body) => await this.Handle(
             new UpdateParametroRequest()
             {
-                Codigo = codigo,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId,
                 Nombre = body.Nombre,
                 Valor = body.Valor,
@@ -59,12 +59,12 @@ namespace Meat.Controllers
             }
         );
 
-        [HttpDelete("{codigo}")]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DeleteParametroByCodigoAsync([FromRoute] string codigo) => await this.Handle(
+        public async Task<IActionResult> DeleteParametroByIdAsync([FromRoute] Guid id) => await this.Handle(
             new DeleteParametroRequest
             {
-                Codigo = codigo,
+                Id = id,
                 EmpresaId = base.CurrentUser.EmpresaId
             }
         );

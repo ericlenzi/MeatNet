@@ -21,7 +21,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
         public async Task<UpdateTipificacionResponse> Handle(UpdateTipificacionRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Tipificaciones
-                .FirstOrDefaultAsync(t => t.Codigo == request.Codigo, cancellationToken);
+                .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
             if (entity == null)
                 throw new ValidationException("La tipificacion no existe.");
 

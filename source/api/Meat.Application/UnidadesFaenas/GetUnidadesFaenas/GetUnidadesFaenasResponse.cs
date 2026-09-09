@@ -1,3 +1,4 @@
+﻿using System;
 using Meat.Application.Shared;
 using System.Collections.Generic;
 
@@ -9,6 +10,7 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadesFaenas
 
     public class UnidadFaenaItem
     {
+        public Guid Id { get; set; }
         public string Codigo { get; set; }
         public string EspecieId { get; set; }
         public string EspecieNombre { get; set; }

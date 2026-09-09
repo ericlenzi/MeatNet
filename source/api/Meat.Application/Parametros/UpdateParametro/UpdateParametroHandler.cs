@@ -22,7 +22,7 @@ namespace Meat.Application.Parametros.UpdateParametro
         public async Task<UpdateParametroResponse> Handle(UpdateParametroRequest request, CancellationToken cancellationToken)
         {
             var parametro = await this.context.Parametros
-                .FirstOrDefaultAsync(x => x.Codigo == request.Codigo);
+                .FirstOrDefaultAsync(x => x.Id == request.Id);
             if (parametro == null)
             {
                 throw new ValidationException("El parametro no existe");

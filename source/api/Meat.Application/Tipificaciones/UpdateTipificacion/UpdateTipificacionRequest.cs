@@ -8,7 +8,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
     public class UpdateTipificacionRequest : RequestBase, IRequest<UpdateTipificacionResponse>
     {
         [JsonIgnore]
-        public string Codigo { get; set; }
+        public Guid Id { get; set; }
 
 
         public string Descripcion { get; set; }

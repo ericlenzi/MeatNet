@@ -32,7 +32,7 @@ namespace Meat.Application.Tipificaciones.GetTipificacion
                 from tofi in tofij.DefaultIfEmpty()
                 join um in this.context.UnidadesMedidas on t.UnidadMedidaId equals um.Codigo into umj
                 from um in umj.DefaultIfEmpty()
-                where t.Codigo == request.Codigo
+                where t.Id == request.Id
                 select new GetTipificacionResponse
                 {
                     Codigo = t.Codigo,

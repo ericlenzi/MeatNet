@@ -1,7 +1,9 @@
+﻿using System;
+
 namespace Meat.Application.Tipificaciones.CreateTipificacion
 {
     public class CreateTipificacionResponse
     {
-        public string Codigo { get; set; }
+        public Guid Id { get; set; }
     }
 }

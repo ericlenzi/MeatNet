@@ -25,7 +25,8 @@ namespace Meat.Application.Parametros.CreateParametro
             if (empresa == null)
                 throw new ValidationException("La empresa activa no es valida.");
 
-            var parametro = new Domain.Parametros.Parametro() { Activo = true, EmpresaId = empresa.Id };
+            var parametro = Domain.Parametros.ParametroFactory.Create();
+            parametro.EmpresaId = empresa.Id;
             this.mapper.Map(request, parametro);
 
             this.context.Parametros.Add(parametro);
@@ -34,7 +35,7 @@ namespace Meat.Application.Parametros.CreateParametro
 
             return new CreateParametroResponse()
             {
-                Codigo = parametro.Codigo,
+                Id = parametro.Id,
             };
         }
     }

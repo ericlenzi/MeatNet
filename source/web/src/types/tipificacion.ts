@@ -1,4 +1,5 @@
-export interface Tipificacion {
+﻿export interface Tipificacion {
+  id: string
   codigo: string
   descripcion: string
   especieId: string
@@ -51,6 +52,8 @@ export interface UpdateTipificacionRequest {
 }
 
 export interface CatalogoFaenaOption {
+  /** Solo lo traen los catalogos propios de la empresa, cuya clave es un Guid. */
+  id?: string
   codigo: string
   nombre: string
   favorito?: boolean

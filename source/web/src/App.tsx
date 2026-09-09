@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router'
+﻿import { BrowserRouter, Routes, Route } from 'react-router'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { AppProvider } from '@/contexts/AppContext'
 import { ToastProvider } from '@/components/ui/Toast'
@@ -100,7 +100,7 @@ function AppRoutes() {
                   <Route path="establecimientos/:id/edit" element={<EstablecimientoFormPage />} />
                   <Route path="parametros" element={<ParametrosListPage />} />
                   <Route path="parametros/create" element={<ParametroFormPage />} />
-                  <Route path="parametros/:codigo/edit" element={<ParametroFormPage />} />
+                  <Route path="parametros/:id/edit" element={<ParametroFormPage />} />
                   <Route path="roles" element={<RolesListPage />} />
                   <Route path="roles/create" element={<RolFormPage />} />
                   <Route path="roles/:codigo/edit" element={<RolFormPage />} />
@@ -124,7 +124,7 @@ function AppRoutes() {
                   <Route path="unidades-faenas/:id/edit" element={<UnidadFaenaFormPage />} />
                   <Route path="tipificaciones" element={<TipificacionesListPage />} />
                   <Route path="tipificaciones/create" element={<TipificacionFormPage />} />
-                  <Route path="tipificaciones/:codigo/edit" element={<TipificacionFormPage />} />
+                  <Route path="tipificaciones/:id/edit" element={<TipificacionFormPage />} />
                   <Route path="materiales" element={<MaterialesListPage />} />
                   <Route path="materiales/create" element={<MaterialFormPage />} />
                   <Route path="materiales/:id/edit" element={<MaterialFormPage />} />

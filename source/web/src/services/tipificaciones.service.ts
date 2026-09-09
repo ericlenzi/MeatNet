@@ -1,4 +1,4 @@
-import api from './axios-instance'
+﻿import api from './axios-instance'
 import type {
   PaginatedResponse,
   PaginatedRequest,
@@ -22,27 +22,27 @@ export async function getTipificaciones(
   return response.data
 }
 
-export async function getTipificacion(codigo: string): Promise<Tipificacion> {
-  const response = await api.get<Tipificacion>(`/Tipificaciones/${codigo}`)
+export async function getTipificacion(id: string): Promise<Tipificacion> {
+  const response = await api.get<Tipificacion>(`/Tipificaciones/${id}`)
   return response.data
 }
 
 export async function createTipificacion(
   data: CreateTipificacionRequest,
-): Promise<{ codigo: string }> {
-  const response = await api.post<{ codigo: string }>('/Tipificaciones', data)
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>('/Tipificaciones', data)
   return response.data
 }
 
 export async function updateTipificacion(
-  codigo: string,
+  id: string,
   data: UpdateTipificacionRequest,
 ): Promise<void> {
-  await api.put(`/Tipificaciones/${codigo}`, data)
+  await api.put(`/Tipificaciones/${id}`, data)
 }
 
-export async function deleteTipificacion(codigo: string): Promise<void> {
-  await api.delete(`/Tipificaciones/${codigo}`)
+export async function deleteTipificacion(id: string): Promise<void> {
+  await api.delete(`/Tipificaciones/${id}`)
 }
 
 // --- Combos de referencia (endpoints de solo lectura) ---

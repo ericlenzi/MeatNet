@@ -19,7 +19,7 @@ namespace Meat.Application.Tipificaciones.DeleteTipificacion
         public async Task<DeleteTipificacionResponse> Handle(DeleteTipificacionRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.Tipificaciones
-                .FirstOrDefaultAsync(t => t.Codigo == request.Codigo, cancellationToken);
+                .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
             if (entity == null)
                 throw new ValidationException("La tipificacion no existe.");
 

@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -21,7 +21,7 @@ namespace Meat.Application.DestinosComerciales.GetDestinosComerciales
             var data = await this.context.DestinosComerciales
                 .Where(d => d.Activo)
                 .OrderBy(d => d.Nombre)
-                .Select(d => new DestinoComercialItem { Codigo = d.Codigo, Nombre = d.Nombre, Favorito = d.Favorito })
+                .Select(d => new DestinoComercialItem { Id = d.Id, Codigo = d.Codigo, Nombre = d.Nombre, Favorito = d.Favorito })
                 .ToListAsync(cancellationToken);
 
             return new GetDestinosComercialesResponse { Data = data };

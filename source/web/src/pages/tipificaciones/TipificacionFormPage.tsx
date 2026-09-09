@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
@@ -31,10 +31,10 @@ import Spinner from '@/components/ui/Spinner'
 const num = (v: string): number => Number(v) || 0
 
 export default function TipificacionFormPage() {
-  const { codigo } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const isEdit = !!codigo
+  const isEdit = !!id
 
   const [fetching, setFetching] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -76,8 +76,8 @@ export default function TipificacionFormPage() {
         setDestinos(dest)
         setUnidadesMedidas(um)
         setMateriales(mats.data || [])
-        if (isEdit && codigo) {
-          const t = await getTipificacion(codigo)
+        if (isEdit && id) {
+          const t = await getTipificacion(id)
           setForm({
             Codigo: t.codigo ?? '',
             Descripcion: t.descripcion ?? '',
@@ -101,7 +101,7 @@ export default function TipificacionFormPage() {
       }
     }
     void load()
-  }, [codigo, isEdit, toast])
+  }, [id, isEdit, toast])
 
   // Combos dependientes de la especie: categoria, unidad de faena y tipificacion oficial
   useEffect(() => {
@@ -183,8 +183,8 @@ export default function TipificacionFormPage() {
         UnidadMedidaId: form.UnidadMedidaId || undefined,
         MaterialId: form.MaterialId || undefined,
       }
-      if (isEdit && codigo) {
-        await updateTipificacion(codigo, { ...payload, Activo: form.Activo })
+      if (isEdit && id) {
+        await updateTipificacion(id, { ...payload, Activo: form.Activo })
         toast('success', 'Tipificacion actualizada')
       } else {
         await createTipificacion({ Codigo: form.Codigo, ...payload })
@@ -200,7 +200,7 @@ export default function TipificacionFormPage() {
 
   // El material se filtra por la forma (TipoMaterial) de la unidad de faena elegida.
   // Si la unidad no tiene TipoMaterial definido, se ofrecen todos los materiales.
-  const selectedUf = unidadesFaenas.find((u) => u.codigo === form.UnidadFaenaId)
+  const selectedUf = unidadesFaenas.find((u) => u.id === form.UnidadFaenaId)
   const ufTipoMaterial = selectedUf?.tipoMaterialId ?? ''
   const materialesFiltrados = ufTipoMaterial
     ? materiales.filter((m) => m.tipoMaterialId === ufTipoMaterial)
@@ -253,7 +253,7 @@ export default function TipificacionFormPage() {
               label="Unidad de faena"
               value={form.UnidadFaenaId}
               onChange={(e) => handleUnidadFaenaChange(e.target.value)}
-              options={unidadesFaenas.map((u) => ({ value: u.codigo, label: u.nombre }))}
+              options={unidadesFaenas.map((u) => ({ value: u.id, label: u.nombre }))}
               placeholder="Seleccionar unidad..."
               error={errors['UnidadFaenaId']}
             />
@@ -268,7 +268,7 @@ export default function TipificacionFormPage() {
               label="Destino comercial"
               value={form.DestinoComercialId}
               onChange={(e) => updateField('DestinoComercialId', e.target.value)}
-              options={destinos.map((d) => ({ value: d.codigo, label: d.nombre }))}
+              options={destinos.map((d) => ({ value: d.id ?? '', label: d.nombre }))}
               placeholder="(Ninguno)"
             />
             <Select

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { getUnidadesFaenas, deleteUnidadFaena } from '@/services/unidadesFaenas.service'
 import { getEspecies } from '@/services/especies.service'
@@ -73,7 +73,7 @@ export default function UnidadesFaenasListPage() {
     if (!deleteTarget) return
     setIsDeleting(true)
     try {
-      await deleteUnidadFaena(deleteTarget.codigo)
+      await deleteUnidadFaena(deleteTarget.id)
       toast('success', 'Unidad de faena eliminada')
       setDeleteTarget(null)
       void fetchData()
@@ -112,7 +112,7 @@ export default function UnidadesFaenasListPage() {
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/unidades-faenas/${row.codigo}/edit`) }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/unidades-faenas/${row.id}/edit`) }}
             className="rounded p-1.5 text-text-light hover:bg-primary-50 hover:text-primary-600 transition-colors"
             title="Editar"
           >

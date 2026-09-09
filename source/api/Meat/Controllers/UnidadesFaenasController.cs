@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Meat.Application.UnidadesFaenas.CreateUnidadFaena;
@@ -22,21 +22,21 @@ namespace Meat.Controllers
         public async Task<IActionResult> GetAsync([FromQuery] GetUnidadesFaenasRequest request) =>
             await this.Handle(request);
 
-        [HttpGet("{codigo}")]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] string codigo) =>
-            await this.Handle(new GetUnidadFaenaRequest { Codigo = codigo });
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] Guid id) =>
+            await this.Handle(new GetUnidadFaenaRequest { Id = id });
 
         [HttpPost]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateUnidadFaenaRequest request) =>
             await this.Handle(request);
 
-        [HttpPut("{codigo}")]
+        [HttpPut("{id}")]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
-        public async Task<IActionResult> UpdateAsync([FromRoute] string codigo, [FromBody] UpdateUnidadFaenaRequestFromBody body) =>
+        public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateUnidadFaenaRequestFromBody body) =>
             await this.Handle(new UpdateUnidadFaenaRequest
             {
-                Codigo = codigo,
+                Id = id,
                 EspecieId = body.EspecieId,
                 Nombre = body.Nombre,
                 CantidadCuartos = body.CantidadCuartos,
@@ -47,9 +47,9 @@ namespace Meat.Controllers
                 Activo = body.Activo
             });
 
-        [HttpDelete("{codigo}")]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "ABASTADMIN,ADMIN")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] string codigo) =>
-            await this.Handle(new DeleteUnidadFaenaRequest { Codigo = codigo });
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid id) =>
+            await this.Handle(new DeleteUnidadFaenaRequest { Id = id });
     }
 }

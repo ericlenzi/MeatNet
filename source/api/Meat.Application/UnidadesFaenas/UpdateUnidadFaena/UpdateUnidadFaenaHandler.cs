@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using Meat.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,7 @@ namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
         public async Task<UpdateUnidadFaenaResponse> Handle(UpdateUnidadFaenaRequest request, CancellationToken cancellationToken)
         {
             var entity = await this.context.UnidadesFaenas
-                .FirstOrDefaultAsync(u => u.Codigo == request.Codigo, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken);
             if (entity == null)
                 throw new ValidationException("La unidad de faena no existe.");
 
@@ -44,7 +44,7 @@ namespace Meat.Application.UnidadesFaenas.UpdateUnidadFaena
             if (request.PorDefecto)
             {
                 var otras = await this.context.UnidadesFaenas
-                    .Where(u => u.Codigo != request.Codigo && u.EspecieId == request.EspecieId && u.PorDefecto)
+                    .Where(u => u.Id != request.Id && u.EspecieId == request.EspecieId && u.PorDefecto)
                     .ToListAsync(cancellationToken);
                 foreach (var o in otras) o.PorDefecto = false;
             }

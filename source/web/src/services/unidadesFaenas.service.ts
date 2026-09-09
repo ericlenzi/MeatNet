@@ -1,4 +1,4 @@
-import api from './axios-instance'
+﻿import api from './axios-instance'
 import type {
   PaginatedResponse,
   PaginatedRequest,
@@ -19,27 +19,27 @@ export async function getUnidadesFaenas(
   return response.data
 }
 
-export async function getUnidadFaena(codigo: string): Promise<UnidadFaena> {
-  const response = await api.get<UnidadFaena>(`/UnidadesFaenas/${codigo}`)
+export async function getUnidadFaena(id: string): Promise<UnidadFaena> {
+  const response = await api.get<UnidadFaena>(`/UnidadesFaenas/${id}`)
   return response.data
 }
 
 export async function createUnidadFaena(
   data: CreateUnidadFaenaRequest,
-): Promise<{ codigo: string }> {
-  const response = await api.post<{ codigo: string }>('/UnidadesFaenas', data)
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>('/UnidadesFaenas', data)
   return response.data
 }
 
 export async function updateUnidadFaena(
-  codigo: string,
+  id: string,
   data: UpdateUnidadFaenaRequest,
 ): Promise<void> {
-  await api.put(`/UnidadesFaenas/${codigo}`, data)
+  await api.put(`/UnidadesFaenas/${id}`, data)
 }
 
-export async function deleteUnidadFaena(codigo: string): Promise<void> {
-  await api.delete(`/UnidadesFaenas/${codigo}`)
+export async function deleteUnidadFaena(id: string): Promise<void> {
+  await api.delete(`/UnidadesFaenas/${id}`)
 }
 
 /** Opciones para poblar combos (trae todas las activas, opcionalmente de una especie). */

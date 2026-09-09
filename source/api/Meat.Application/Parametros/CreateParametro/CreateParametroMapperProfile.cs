@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Meat.Domain.Parametros;
 
 namespace Meat.Application.Parametros.CreateParametro
@@ -8,6 +8,7 @@ namespace Meat.Application.Parametros.CreateParametro
         public CreateParametroMapperProfile()
         {
             this.CreateMap<CreateParametroRequest, Parametro>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.EmpresaId, opt => opt.Ignore())
                 .ForMember(dest => dest.Empresa, opt => opt.Ignore());
         }

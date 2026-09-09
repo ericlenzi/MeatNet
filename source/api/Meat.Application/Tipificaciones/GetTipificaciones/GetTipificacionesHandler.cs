@@ -40,6 +40,7 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
                 orderby t.Puntos descending, t.Codigo
                 select new TipificacionItem
                 {
+                    Id = t.Id,
                     Codigo = t.Codigo,
                     Descripcion = t.Descripcion,
                     EspecieId = t.EspecieId,

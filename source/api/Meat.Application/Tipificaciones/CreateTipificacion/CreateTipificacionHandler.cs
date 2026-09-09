@@ -29,29 +29,25 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
                 request.DestinoComercialId, request.TipificacionOficialId, request.UnidadMedidaId,
                 request.PesoDesde, request.PesoHasta, request.MaterialId, cancellationToken);
 
-            var entity = new Domain.Tipificaciones.Tipificacion
-            {
-                Codigo = request.Codigo,
-                Descripcion = request.Descripcion,
-                EmpresaId = request.EmpresaId,
-                EspecieId = request.EspecieId,
-                TipoEspecieId = request.TipoEspecieId,
-                UnidadFaenaId = request.UnidadFaenaId.Value,
-                DestinoComercialId = request.DestinoComercialId,
-                TipificacionOficialId = request.TipificacionOficialId,
-                PesoDesde = request.PesoDesde,
-                PesoHasta = request.PesoHasta,
-                UnidadMedidaId = request.UnidadMedidaId,
-                MaterialId = request.MaterialId,
-                Puntos = 0,
-                Activo = true,
-                FechaActualizacion = DateTime.Now
-            };
+            var entity = Domain.Tipificaciones.TipificacionFactory.Create();
+            entity.Codigo = request.Codigo;
+            entity.Descripcion = request.Descripcion;
+            entity.EmpresaId = request.EmpresaId;
+            entity.EspecieId = request.EspecieId;
+            entity.TipoEspecieId = request.TipoEspecieId;
+            entity.UnidadFaenaId = request.UnidadFaenaId.Value;
+            entity.DestinoComercialId = request.DestinoComercialId;
+            entity.TipificacionOficialId = request.TipificacionOficialId;
+            entity.PesoDesde = request.PesoDesde;
+            entity.PesoHasta = request.PesoHasta;
+            entity.UnidadMedidaId = request.UnidadMedidaId;
+            entity.MaterialId = request.MaterialId;
+            entity.Puntos = 0;
 
             this.context.Tipificaciones.Add(entity);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CreateTipificacionResponse { Codigo = entity.Codigo };
+            return new CreateTipificacionResponse { Id = entity.Id };
         }
     }
 }

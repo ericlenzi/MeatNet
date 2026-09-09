@@ -1,4 +1,4 @@
-import api from './axios-instance'
+﻿import api from './axios-instance'
 import type {
   PaginatedResponse,
   PaginatedRequest,
@@ -18,25 +18,25 @@ export async function getParametros(
   return response.data
 }
 
-export async function getParametro(codigo: string): Promise<Parametro> {
-  const response = await api.get<Parametro>(`/Parametros/${codigo}`)
+export async function getParametro(id: string): Promise<Parametro> {
+  const response = await api.get<Parametro>(`/Parametros/${id}`)
   return response.data
 }
 
 export async function createParametro(
   data: CreateParametroRequest,
-): Promise<{ codigo: string }> {
-  const response = await api.post<{ codigo: string }>('/Parametros', data)
+): Promise<{ id: string }> {
+  const response = await api.post<{ id: string }>('/Parametros', data)
   return response.data
 }
 
 export async function updateParametro(
-  codigo: string,
+  id: string,
   data: UpdateParametroRequest,
 ): Promise<void> {
-  await api.put(`/Parametros/${codigo}`, data)
+  await api.put(`/Parametros/${id}`, data)
 }
 
-export async function deleteParametro(codigo: string): Promise<void> {
-  await api.delete(`/Parametros/${codigo}`)
+export async function deleteParametro(id: string): Promise<void> {
+  await api.delete(`/Parametros/${id}`)
 }

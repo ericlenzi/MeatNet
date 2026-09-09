@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { getParametros, deleteParametro } from '@/services/parametros.service'
 import { usePagination } from '@/hooks/usePagination'
@@ -57,7 +57,7 @@ export default function ParametrosListPage() {
     if (!deleteTarget) return
     setIsDeleting(true)
     try {
-      await deleteParametro(deleteTarget.codigo)
+      await deleteParametro(deleteTarget.id)
       toast('success', 'Parametro eliminado')
       setDeleteTarget(null)
       void fetchData()
@@ -90,7 +90,7 @@ export default function ParametrosListPage() {
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/parametros/${row.codigo}/edit`) }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/parametros/${row.id}/edit`) }}
             className="rounded p-1.5 text-text-light hover:bg-primary-50 hover:text-primary-600 transition-colors"
             title="Editar"
           >

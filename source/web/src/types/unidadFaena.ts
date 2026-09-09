@@ -1,4 +1,5 @@
-export interface UnidadFaena {
+﻿export interface UnidadFaena {
+  id: string
   codigo: string
   especieId: string
   especieNombre: string
