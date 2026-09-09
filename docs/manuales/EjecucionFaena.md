@@ -166,6 +166,11 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   tipificaciones **o romaneos**. El romaneo guarda con qué unidad se faenó cada animal: es
   histórico y no puede quedar colgado. El error informa las dos dependencias juntas, con la
   cantidad de cada una, y sugiere **desactivar** en lugar de eliminar.
+- **R-E19 (código de la tipificación).** El `Codigo` se **recorta antes de buscar el duplicado**.
+  No es cosmético: el índice único `(EmpresaId, Codigo)` compara el texto tal cual, así que sin
+  recorte `"  3411  "` y `"3411"` convivían como códigos distintos y el índice no los alcanzaba.
+  La `Descripcion` también se recorta, en el alta y en la edición; la migración 65 limpió las que
+  ya estaban cargadas con un salto de línea al final.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
@@ -311,7 +316,7 @@ PK: Guid Id
 - RomaneoId (Guid, FK, cascade delete)
 - Letra (string?, "A"/"B"; null porcino)
 - AlmacenDestinoId (Guid, FK)          [cámara destino de la pieza; default del renglón, editable y obligatoria (R-E13)]
-- TipificacionId (string, FK a Tipificacion.Codigo)
+- TipificacionId (Guid?, FK)           [tipificación elegida para la pieza (R-E7)]
 - Peso (double)                        [caché de la medición PESO; canónico p/ tipificación y KG]
 - PesoFueraRango (bool, default false) [el peso quedó fuera del rango de la tipificación y se forzó (R-E15)]
 Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
