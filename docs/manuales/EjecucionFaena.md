@@ -49,9 +49,9 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
   `Cantidad` planificada, `Secuencia` de faena y `CantidadFaenada` (arranca en 0).
 - El stock reservado ya descuenta de Existencia de Hacienda (Paso 2). El **consumo real** lo
   hace este paso.
-- Master data cargado (Fase 1): `UnidadesFaenas`, `Tipificaciones` (con rango de peso),
-  `Numeradores` (con un `ROMANEO` por Establecimiento+Especie), catálogo `TiposMediciones` con
-  el código **`PESO`**.
+- Master data cargado (Fase 1): `UnidadesFaenas` (con su aritmética y su tipo de material
+  validados, R-E16 y R-E17), `Tipificaciones` (con rango de peso), `Numeradores` (con un `ROMANEO`
+  por Establecimiento+Especie), catálogo `TiposMediciones` con el código **`PESO`**.
 
 > **La categoría no se elige en este paso.** Sale del renglón de la LM que el tipificador
 > selecciona, y el renglón la trae del stock que dejó el Ingreso. El Tipificador no tiene combo de
@@ -134,10 +134,38 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
 - **R-E1 (especies MVP).** Solo se romanea LM de especie `V` o `P`. Otras especies quedan fuera.
 - **R-E2 (piezas por UF).** El número de piezas por animal lo da **`UnidadFaena.PiezasPorAnimal`**
   → **RES = 1 pieza sin letra; MEDIA RES = 2 piezas con letras `A`/`B`; CUARTO = 4**. La letra la
-  asigna el servidor. Validar que se carguen todas. El CRUD de UnidadFaena valida `PiezasPorAnimal >= 1`.
+  asigna el servidor. Validar que se carguen todas. Ver **R-E16** por lo que el CRUD de
+  `UnidadFaena` garantiza antes de que ese número llegue acá.
 - **R-E12 (UF por defecto).** La UF que el Tipificador propone por especie es la marcada
   **`UnidadFaena.PorDefecto`** (una sola por especie, índice único filtrado; el CRUD destilda las
   demás al marcar una). Si ninguna está marcada, cae a la primera de la especie.
+- **R-E16 (aritmética de la UF).** `CantidadCuartos` y `PiezasPorAnimal` **no son preferencias de la
+  empresa**: son la aritmética de cómo se presenta la res, y una media res son dos piezas por animal
+  en cualquier planta. El CRUD las valida así:
+
+  | Regla | Por qué |
+  |---|---|
+  | `PiezasPorAnimal` entre 1 y 4 | Son las piezas de esa unidad que salen de **un** animal. |
+  | `CantidadCuartos` entre 0 y 4 | Cuántos cuartos representa la unidad; **0** es para las de decomiso, que no se despiezan. |
+  | `CantidadCuartos × PiezasPorAnimal ≤ 4` | Un animal tiene cuatro cuartos: lo que sale de uno no puede sumar más. |
+  | `TipoMaterialId` requerido | Ver R-E17. |
+
+  Antes lo único que se pedía era `PiezasPorAnimal >= 1`, y una unidad mal cargada llegaba hasta
+  esta pantalla: **R-E2** exige exactamente esa cantidad de piezas por animal, así que un "1/2 RES"
+  con 3 piezas obligaba al operador a colgar y pesar una tercera media res que no existe.
+
+  La regla del producto acepta las presentaciones parciales del set base (`3/4 RES` → 3×1, `2/4
+  DELANTERO` → 2×1) y las de decomiso (`1/2 RES COMISO` → 0×1).
+- **R-E17 (forma de la UF y su material).** `UnidadFaena.TipoMaterialId` es el **eje de forma** que
+  alinea la unidad con el catálogo de Materiales: la Tipificación valida que su `Material` sea de
+  ese mismo `TipoMaterial`. Esa validación estaba escrita como *"si la unidad tiene TipoMaterial"*,
+  así que con la columna vacía no corría y una media res podía terminar tipificada contra un
+  material de cuarto. Ahora el campo es **requerido** en el alta y la edición de la UF, y la
+  migración 64 completó las filas que habían quedado vacías desde la migración 55.
+- **R-E18 (baja de una UF en uso).** Una unidad de faena no se puede eliminar si tiene
+  tipificaciones **o romaneos**. El romaneo guarda con qué unidad se faenó cada animal: es
+  histórico y no puede quedar colgado. El error informa las dos dependencias juntas, con la
+  cantidad de cada una, y sugiere **desactivar** en lugar de eliminar.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
