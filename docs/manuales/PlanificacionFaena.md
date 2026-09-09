@@ -42,6 +42,17 @@ La LM se arma sobre el stock que produce el Ingreso de Hacienda:
 
 > Es la misma base que la consulta `ExistenciaHacienda`.
 
+**Las categorías planificables las decide el stock, no el master data.** La disponibilidad
+resuelve el nombre de cada categoría contra el **catálogo global** `TiposEspecies`, no contra la
+configuración de la empresa (`EmpresasTiposEspecies`). Es una excepción deliberada a la regla
+general de que una pantalla operativa lee la configuración: si una empresa deja de operar con una
+categoría de la que **todavía tiene animales en corral**, esos animales tienen que seguir
+apareciendo para poder faenarlos. Filtrar por la configuración escondería stock real.
+
+Dónde sí manda la configuración de la empresa: en el **Ingreso de Hacienda**, que es el que decide
+con qué categorías se puede dar de alta hacienda nueva. Una categoría que la empresa desactivó deja
+de poder ingresar, pero lo ya ingresado se planifica y se faena normalmente.
+
 ## 4. Decisiones de diseño
 
 1. **Granularidad de la LM:** una LM por **(Establecimiento, Fecha, Especie)**.
@@ -167,6 +178,11 @@ PK: Guid Id
 - Cantidad (int)                    [animales a faenar de esta tropa/corral/categoria]
 - CantidadFaenada (int, default 0)  [lo actualiza el Monitor; congela el renglon]
 ```
+
+> `TipoEspecieId` apunta al **código del catálogo global** (`TiposEspecies.Codigo`), no al `Id` de
+> la fila de configuración de la empresa. El renglón registra *qué categoría se planificó faenar*;
+> los parámetros de esa categoría (peso teórico, código de ERP) son datos de cálculo que cada
+> empresa ajusta por su cuenta y pueden cambiar sin reescribir el histórico.
 
 > **No** lleva índice único por `(ListaMatanzaId, TropaId, AlmacenId, TipoEspecieId)`: una
 > tropa/corral/categoría puede aparecer en varios renglones (resultado de "dividir"). La
