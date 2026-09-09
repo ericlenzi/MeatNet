@@ -1,4 +1,4 @@
-# Ciclo I - Paso 4b: Análisis de Faena
+﻿# Ciclo I - Paso 4b: Análisis de Faena
 
 ## 1. Objetivo y alcance
 
@@ -57,6 +57,18 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
    alto (la merma de oreo ronda el 2%, pero eso se mide, no se supone).
 4. **No descuenta decomisos.** El numerador es lo efectivamente romaneado; si una media res se
    decomisó, no entró al romaneo y el rinde baja sin explicar por qué (ver §6).
+5. **Si nadie ajustó la cantidad en el Ingreso, el denominador es el peso teórico configurado.**
+   `PesoPromedio` sale de `PesoIngreso / Cantidad`, y esa `Cantidad` viene precargada con la
+   estimación `PesoIngreso / EmpresaTipoEspecie.PesoTeorico`. Si el operador la acepta sin contar
+   los animales, el promedio queda pegado al peso teórico que la empresa tiene configurado para esa
+   categoría, y el rinde termina midiendo el parámetro en vez de la hacienda. El número gana sentido
+   recién cuando la cantidad de la ubicación es la contada, no la estimada.
+
+> El punto 5 tiene una consecuencia práctica: **cambiar el peso teórico de una categoría no
+> reescribe el histórico**, porque `PesoPromedio` se calculó y se guardó en el momento del ingreso.
+> Dos jornadas de la misma categoría pueden estar calculadas contra pesos teóricos distintos si
+> alguien editó la configuración en el medio. Al comparar rindes entre períodos largos, conviene
+> mirar si el parámetro se movió.
 
 > Estos supuestos se muestran **en la pantalla**, junto al número. Un rinde sin su definición al
 > lado invita a comparar peras con manzanas entre jornadas o contra el rinde de otra planta.
@@ -84,6 +96,12 @@ foto comercial: qué proporción de la faena cayó en cada categoría comercial.
 Por categoría (`TipoEspecie`): peso promedio, mínimo, máximo y **piezas fuera del rango** de su
 tipificación (`RomaneoPieza.PesoFueraRango`). Sirve para detectar tipificaciones mal parametrizadas,
 problemas de balanza o desvíos de la hacienda recibida.
+
+El nombre de la categoría se resuelve contra el **catálogo global** `TiposEspecies`, no contra la
+configuración de la empresa. Es lo correcto para un análisis histórico: una jornada de hace seis
+meses tiene que seguir mostrando sus categorías con nombre aunque la empresa después haya dejado de
+operar con alguna. Vale el mismo criterio que en la disponibilidad de faena
+(`docs/manuales/PlanificacionFaena.md` §3).
 
 ### 3.6 Destino a cámaras
 Qué quedó en cada cámara, por material, en piezas y kilos. Cierra el circuito con la existencia que
