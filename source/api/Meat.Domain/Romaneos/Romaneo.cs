@@ -39,7 +39,7 @@ namespace Meat.Domain.Romaneos
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
 
-        public Guid UnidadFaenaId { get; set; }              // RES / MEDIA RES; define nro de piezas (FK a UnidadFaena.Codigo)
+        public Guid UnidadFaenaId { get; set; }              // RES / MEDIA RES; define nro de piezas
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         public int NumeroGarron { get; set; }                  // nro fisico de gancho; unico por LM

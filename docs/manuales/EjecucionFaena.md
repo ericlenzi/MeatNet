@@ -293,7 +293,7 @@ PK: Guid Id
 - ListaMatanzaDetalleId (Guid, FK)     [renglón elegido: Tropa+Corral+TipoEspecie]
 - TropaId (Guid, FK)                   [denormalizado del renglón; trazabilidad directa]
 - EspecieId (string, FK)
-- UnidadFaenaId (string, FK)           [FK a UnidadFaena.Codigo; RES / MEDIA RES; define nº de piezas]
+- UnidadFaenaId (Guid, FK)             [RES / MEDIA RES; define nº de piezas (R-E2)]
 - NumeroGarron (int)                   [físico; único por LM]
 - NumeroRomaneo (long)                 [correlativo Numerador ROMANEO por Estab+Especie; reserva atómica (R-E4)]
 - Fecha (DateTime), UsuarioId (Guid?)

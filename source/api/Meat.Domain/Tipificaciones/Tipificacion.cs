@@ -37,7 +37,7 @@ namespace Meat.Domain.Tipificaciones
         public string TipoEspecieId { get; set; }
         public virtual TipoEspecie TipoEspecie { get; set; }
 
-        public Guid UnidadFaenaId { get; set; }              // FK a UnidadFaena.Codigo
+        public Guid UnidadFaenaId { get; set; }
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         // Producto (Material) que esta tipificacion representa. Su TipoMaterial debe coincidir

@@ -1,4 +1,4 @@
-# Reglas — source/api (C# .NET 8)
+﻿# Reglas — source/api (C# .NET 8)
 
 ## Solución y Proyectos
 
@@ -86,15 +86,28 @@ Meat (Host) → Meat.Application → Meat.Repositories → Meat.Domain
 
 ## Entidades registradas en MeatContext
 
-Empresas, Sucursales, Parametros, ParametrosSucursales, Puestos, Establecimientos,
-Roles, Usuarios, UsuariosSucursales, Provincias, Almacenes, Materiales, Especies,
-TiposEmpresas, TiposAlmacenes, TiposSexos, TiposEspecies, AlmacenesMateriales
+Empresas, Sucursales, Parametros, Clientes, ClientesEstablecimientos, Establecimientos,
+EstablecimientosEspecies, Roles, Usuarios, UsuariosSucursales, UsuariosEstablecimientos,
+Provincias, Puestos, Almacenes, Materiales, Especies, TiposEmpresas, TiposClientes,
+TiposAlmacenes, TiposSexos, TiposEspecies, EmpresasTiposEspecies, OrigenesHaciendas,
+UsosHaciendas, TiposMateriales, UnidadesMedidas, NumeradoresTropas, TiposEstadosIngresos,
+TiposEstadosTropas, TiposEstadosHacienda, IngresosHaciendas, IngresosHaciendasPesadas,
+IngresosHaciendasUbicaciones, Tropas, TropasMovimientos, TiposEstadosListasMatanzas,
+ListasMatanzas, ListasMatanzasDetalles, ListasMatanzasMovimientos, TiposPuestos,
+TiposMediciones, DestinosComerciales, TipificacionesOficiales, TiposDenticiones, Denticiones,
+TiposContusiones, MotivosDecomisos, Numeradores, UnidadesFaenas, Tipificaciones,
+DespiecesMateriales, Romaneos, RomaneosPiezas, RomaneosPiezasMediciones,
+TiposMovimientosCamaras, MovimientosCamaras
+
+> Son los 56 `DbSet` de `MeatContext`. La lista anterior habia quedado en 19 e incluia
+> `AlmacenesMateriales`, que se elimino en la migracion 31.
 
 ## Autenticación y Autorización
 - JWT con clave simétrica (HMAC SHA-256), configurada en `JwtOptions:SigninKey`
-- Roles en claims: controllers usan `[Authorize(Roles = "Admin, Abastecimiento")]`
+- Roles en claims: controllers usan `[Authorize(Roles = "ABASTADMIN,ADMIN")]`. Los roles vigentes
+  son `SUPERADMIN`, `ADMIN`, `ABASTADMIN`, `ABAST`, `FAENAADMIN` y `FAENA`.
 - `MeatBaseController.CurrentUser` extrae Id, UserName, RolId, CodigoEmpresa del token
-- Passwords hasheados con SHA1 (legacy)
+- Passwords con **PBKDF2 + salt por usuario**. El SHA1 legacy se elimino.
 
 ## Convenciones C#
 - Clases y métodos en **PascalCase**
@@ -104,7 +117,10 @@ TiposEmpresas, TiposAlmacenes, TiposSexos, TiposEspecies, AlmacenesMateriales
 - Namespaces siguen la estructura de carpetas
 
 ## Convenciones de Entidades
-- PKs: `Guid`, generadas con `Guid.NewGuid()` en la Factory
+- PKs: depende del tipo de tabla. `Guid` generada en la Factory para las tablas propias de una
+  empresa, `string Codigo` para los catalogos globales. La regla completa (y el tercer caso,
+  catalogo global + configuracion por empresa) esta en `CLAUDE.md` y en `docs/BasisCRUD.md` §4;
+  el `MeatContext` la valida al construir el modelo
 - Soft delete: no agregar `FechaBaja` a la entidad — lo maneja `MeatContext` como shadow property
 - `FechaActualizacion` con default SQL `getdate()` donde aplique
 - Data Annotations para PK (`[Key]`, `[DatabaseGenerated(None)]`)
