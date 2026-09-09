@@ -35,6 +35,7 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 | **Unidad de Faena (UF)** | `UnidadFaena` (RES / MEDIA RES / …). Define **cuántas piezas** tiene el romaneo por especie. |
 | **Categoría / TipoEspecie** | Categoría de hacienda del animal (NOVILLO, VAQUILLONA, CAPÓN…). **Catálogo global** (`TiposEspecies`, PK `Codigo`) que mantiene el SUPERADMIN; cada empresa declara con cuáles opera y con qué parámetros en `EmpresasTiposEspecies`. En este paso la categoría **no se elige**: viene del renglón de la LM. |
 | **Tipificación** | `Tipificacion` (parametrizable por empresa): clasifica la pieza por especie, categoría, UF, destino, tipificación oficial y **rango de peso**. |
+| **Tipificación oficial** | La clasificación de la **res** según el organismo, sobre tres ejes: **categoría** (que aporta la Tipificación), **conformación** (desarrollo muscular) y **engrasamiento** (cobertura de grasa). No confundir con `TipoEspecie`, que clasifica al **animal vivo** al ingresar. Ver R-E20. |
 | **Medición** | Valor capturado de un `TipoMedicion` del catálogo. En MVP la única medición es **`PESO`**. |
 | **Tipificador** | Puesto/pantalla donde se captura el romaneo res por res. |
 | **Monitor de Faena** | Tablero **read-only** con el avance de la jornada en vivo. No captura. |
@@ -171,6 +172,39 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   recorte `"  3411  "` y `"3411"` convivían como códigos distintos y el índice no los alcanzaba.
   La `Descripcion` también se recorta, en el alta y en la edición; la migración 65 limpió las que
   ya estaban cargadas con un salto de línea al final.
+- **R-E20 (ejes de la tipificación oficial).** La tipificación oficial tiene tres ejes y **no viven
+  todos en el mismo lugar**:
+
+  | Eje | Dónde vive | Por qué |
+  |---|---|---|
+  | Categoría | `Tipificacion` (master data) | Se corresponde con el animal y es estable. |
+  | Conformación | `Romaneo.ConformacionId` | Se determina **mirando la res**: varía de un animal a otro. |
+  | Engrasamiento | `Romaneo.GradoEngrasamientoId` | Ídem. |
+
+  Poner los tres en el master data hubiera obligado a una fila de `Tipificacion` por cada
+  combinación. Los dos catálogos (`Conformaciones`, `GradosEngrasamiento`) son **globales por
+  especie**, los mantiene el SUPERADMIN y llevan una columna `Orden`, porque son escalas ordinales
+  y alfabéticamente los códigos no dicen nada.
+
+  **`Orden` es la posición en la escala, no un ranking de calidad.** En conformación coinciden
+  (`A` superior … `E` inferior), pero en engrasamiento el óptimo es el **2** y tanto el `0` como el
+  `4` son extremos indeseados.
+
+  Los dos campos del romaneo son **nullables** y el Tipificador muestra su combo **solo si la
+  especie tiene valores cargados**. De ahí lo que sigue.
+- **R-E21 (porcinos no tiene estos ejes, y es a propósito).** En Argentina la res porcina **no se
+  tipifica con escalas de letras y números**: rige un sistema de clasificación por **porcentaje de
+  carne magra**, estimado a partir del espesor de grasa dorsal y la profundidad del músculo. No es
+  una escala visual, es una medición.
+
+  Por eso `Conformaciones` y `GradosEngrasamiento` tienen filas **solo para vacuno**, y una jornada
+  de porcinos se romanea sin esos dos combos. **El vacío no es un dato faltante:** no hay que
+  "completarlo" cargando ahí las categorías comerciales del cerdo (capón, chancha, padrillo), que
+  son otra cosa y ya viven en `TiposEspecies` — mezclarlas ahí duplicaría el eje de categoría.
+
+  Si en el futuro se quiere capturar el magro, el lugar natural es `RomaneoPiezaMedicion`, que ya
+  existe con un `Valor` numérico y hoy solo guarda `PESO`: alcanza con sumar un `TipoMedicion`,
+  sin tocar el esquema.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
