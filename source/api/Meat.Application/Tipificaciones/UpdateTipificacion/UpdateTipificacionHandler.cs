@@ -30,7 +30,7 @@ namespace Meat.Application.Tipificaciones.UpdateTipificacion
                 request.DestinoComercialId, request.TipificacionOficialId, request.UnidadMedidaId,
                 request.PesoDesde, request.PesoHasta, request.MaterialId, cancellationToken);
 
-            entity.Descripcion = request.Descripcion;
+            entity.Descripcion = request.Descripcion?.Trim();
             entity.EspecieId = request.EspecieId;
             entity.TipoEspecieId = request.TipoEspecieId;
             entity.UnidadFaenaId = request.UnidadFaenaId.Value;

@@ -20,7 +20,14 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
 
         public async Task<CreateTipificacionResponse> Handle(CreateTipificacionRequest request, CancellationToken cancellationToken)
         {
-            var yaExiste = await this.context.Tipificaciones.AnyAsync(t => t.Codigo == request.Codigo, cancellationToken);
+            // El codigo es el identificador que teclea el usuario: se recorta antes de buscar el
+            // duplicado, si no " 3411" y "3411" conviven como codigos distintos.
+            var codigo = (request.Codigo ?? string.Empty).Trim();
+
+            if (string.IsNullOrEmpty(codigo))
+                throw new ValidationException("El codigo es requerido.");
+
+            var yaExiste = await this.context.Tipificaciones.AnyAsync(t => t.Codigo == codigo, cancellationToken);
             if (yaExiste)
                 throw new ValidationException("Ya existe una tipificacion con ese codigo.");
 
@@ -30,8 +37,8 @@ namespace Meat.Application.Tipificaciones.CreateTipificacion
                 request.PesoDesde, request.PesoHasta, request.MaterialId, cancellationToken);
 
             var entity = Domain.Tipificaciones.TipificacionFactory.Create();
-            entity.Codigo = request.Codigo;
-            entity.Descripcion = request.Descripcion;
+            entity.Codigo = codigo;
+            entity.Descripcion = request.Descripcion?.Trim();
             entity.EmpresaId = request.EmpresaId;
             entity.EspecieId = request.EspecieId;
             entity.TipoEspecieId = request.TipoEspecieId;
