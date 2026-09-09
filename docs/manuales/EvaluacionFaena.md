@@ -1,4 +1,4 @@
-# Ciclo I - Paso 4: Evaluación de Faena (Liberación y Existencia de Cámara)
+﻿# Ciclo I - Paso 4: Evaluación de Faena (Liberación y Existencia de Cámara)
 
 ## 1. Objetivo y alcance
 
@@ -41,7 +41,7 @@ patrón común y el puente al ERP.
 |---|---|---|
 | Qué es | Animal **vivo** | **Producto** (media res, cuarto, subproducto) |
 | Almacén | `Almacen` familia **CORRAL** | `Almacen` familia **CÁMARA** |
-| Clasificador | **`TipoEspecie`** (especie + sexo + categoría) | **`Material`** (SKU comercial/ERP) |
+| Clasificador | **`TipoEspecie`** (especie + sexo + categoría). Catálogo global; los parámetros de cada empresa van en `EmpresaTipoEspecie`. | **`Material`** (SKU comercial/ERP), propio de cada empresa. |
 | Stock | `IngresoHaciendaUbicacion` (Cantidad, PesoPromedio, Tropa, EstadoHacienda) | Existencia de cámara (§7) |
 | Nace en | Ingreso de Hacienda (Paso 1) | **Liberación (este paso)** |
 
@@ -58,17 +58,26 @@ cámara es un producto (`Material`).
 donde el inventario deja de ser `TipoEspecie` (vivo) y pasa a ser `Material` (producto). Es el
 "nacimiento del material": animal vivo → media res / cuartos.
 
-**Puente al ERP = siempre `ERP_Codigo`.** El ERP externo ve todo como "artículos". Cada catálogo
+**Puente al ERP = siempre `ERP_Codigo`.** El ERP externo ve todo como "artículos". Cada entidad
 mapea a su artículo del ERP por la columna **`ERP_Codigo`** (y **solo** por esa columna):
-- `TipoEspecie.ERP_Codigo` → artículo del ERP para el animal en pie.
+- `EmpresaTipoEspecie.ERP_Codigo` → artículo del ERP para el animal en pie.
 - `Material.ERP_Codigo` → artículo del ERP para el producto de cámara.
 - `UnidadFaena.ERP_Codigo` → según necesidad de integración.
+
+> El puente del animal en pie **no** vive en el catálogo `TipoEspecie` sino en la configuración de
+> cada empresa (`EmpresaTipoEspecie`, migración 63). Tiene que ser así: la categoría NOVILLO es la
+> misma para todas las empresas, pero cada una la mapea al código de artículo de **su** ERP. Las
+> tres columnas de arriba son, entonces, de la empresa; el catálogo global no lleva `ERP_Codigo`.
 
 > **Nota de limpieza.** Existía una columna `CodigoMaterial` (string suelto, sin FK) en
 > `TipoEspecie` y `UnidadFaena` que se solapaba con `ERP_Codigo` como supuesto puente. Se
 > **eliminó** (migración 53). El puente es `ERP_Codigo`, no `CodigoMaterial`. `Material` conserva
 > su `CodigoMaterial` porque ahí **no** es puente al ERP: es el **código propio** del material
 > (análogo a `Almacen.CodigoAlmacen`), y `Material` también tiene su `ERP_Codigo`.
+>
+> **Nota de mudanza.** La migración 63 no eliminó el `ERP_Codigo` del animal en pie: lo **movió**
+> de `TipoEspecie` a `EmpresaTipoEspecie`, junto con el peso teórico, cuando la categoría pasó a
+> ser catálogo global. Al integrar con el ERP hay que leerlo de la configuración de la empresa.
 
 ## 3. Glosario
 
@@ -227,7 +236,8 @@ PK: Guid Id
 - Peso (double)
 - RomaneoPiezaOrigenId (Guid?, FK)         [trazabilidad a la media res de origen]
 - TransformacionId (Guid?)                 [agrupa la BAJA + las ALTAS de un mismo cuarteo]
-- TropaId (Guid?), EspecieId (string?), TipoEspecieId (string?)   [trazabilidad denormalizada]
+- TropaId (Guid?), EspecieId (string?), TipoEspecieId (string?)   [trazabilidad denormalizada;
+                                                             TipoEspecieId = codigo del catalogo]
 - Fecha (DateTime), UsuarioId (Guid?)
 - Referencia (string)                      [ej. "Liberación LM Nº…"]
 ```
