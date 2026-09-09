@@ -1,4 +1,4 @@
-# Reglas — source/web (React + Vite)
+﻿# Reglas — source/web (React + Vite)
 
 ## Stack
 - **React 19** + **Vite 6** + **TypeScript 5.7**
@@ -12,24 +12,25 @@
 ```
 source/web/src/
 ├── components/
-│   ├── ui/          # Componentes reutilizables: Button, Input, Select, Modal, DataTable, Badge, Spinner, Toast, SearchInput, ConfirmDialog, PageHeader
-│   └── layout/      # Sidebar, Header, SucursalSelector
-├── contexts/        # AuthContext (sesion JWT), AppContext (sucursal activa)
+│   ├── ui/          # Reutilizables: Badge, Button, ColorPicker, ConfirmDialog, DataTable,
+│   │                #   EspecieSelect, ImageUpload, Input, Modal, PageHeader, SearchInput,
+│   │                #   Select, Spinner, StatusFilter, Toast
+│   └── layout/      # Sidebar, Header, SucursalSelector, EstablecimientoSelector,
+│                    #   CambiarContrasenaModal, DatosPersonalesModal
+├── contexts/        # AuthContext (sesion JWT), AppContext (sucursal y establecimiento activos)
 ├── hooks/           # usePagination, useDebounce
 ├── layouts/         # MainLayout (sidebar + header + outlet)
-├── pages/
-│   ├── login/       # LoginPage
-│   ├── dashboard/   # DashboardPage
-│   ├── empresas/    # EmpresasListPage, EmpresaFormPage
-│   ├── sucursales/  # SucursalesListPage, SucursalFormPage
-│   ├── usuarios/    # UsuariosListPage, UsuarioFormPage
-│   └── shared/      # PlaceholderPage, NotFoundPage
-├── services/        # Capa de servicios API (axios-instance, auth, empresas, sucursales, usuarios, roles)
-├── types/           # Interfaces TypeScript (auth, api, empresa, sucursal, usuario)
+├── pages/           # Una carpeta por entidad o proceso (~30). Ver "Patron CRUD".
+├── services/        # Un archivo por entidad + axios-instance
+├── types/           # Un archivo por entidad, reexportados desde types/index.ts
 ├── App.tsx          # Router y providers
 ├── main.tsx         # Entry point
 └── index.css        # Tailwind imports + tema corporativo
 ```
+
+> `pages/`, `services/` y `types/` **no se enumeran acá a proposito**: crecen con cada CRUD y la
+> lista se desactualiza sola. La convencion de nombres alcanza para ubicarse; el detalle esta en
+> `docs/BasisCRUD.md`.
 
 ## Convenciones React / TypeScript
 - Componentes en **PascalCase** (ej: `DataTable`, `EmpresaFormPage`)
@@ -51,18 +52,27 @@ source/web/src/
 
 ## Autenticacion
 - JWT Bearer almacenado en localStorage
-- `AuthContext` provee: `user`, `token`, `isAuthenticated`, `isAdmin`, `login()`, `logout()`
-- `isAdmin` se deriva de `user.RolId === "Admin"`
+- `AuthContext` provee: `user`, `token`, `isAuthenticated`, `isAdmin`, `isSuperAdmin`,
+  `isLoading`, `debeCambiarContrasena`, `onContrasenaChanged()`, `login()`, `logout()`
+- `isAdmin` es `user.rolId === 'ADMIN'` y `isSuperAdmin` es `user.rolId === 'SUPERADMIN'`
+  (codigos en mayusculas, como los guarda la tabla `Roles`)
 - Rutas protegidas via `ProtectedRoute` component
 
 ## Patron CRUD
 Cada entidad sigue el mismo patron:
 1. **ListPage**: PageHeader + SearchInput + DataTable paginada + ConfirmDialog para delete
-2. **FormPage**: detecta create/edit por `useParams().id`, formulario con validacion cliente, toast on success
+2. **FormPage**: detecta create/edit por `useParams()`, formulario con validacion cliente, toast on success
+
+El parametro de ruta depende del tipo de tabla: las entidades propias de una empresa van por
+`:id` (Guid) y los **catalogos globales por `:codigo`** (ver `especies`, `roles`, `tiposEspecies`).
+Los tres tipos de tabla estan en `CLAUDE.md` y en `docs/BasisCRUD.md` §4.
 
 ## Menu (Sidebar)
-- **Operaciones**: visible para todos los roles
-- **Datos Maestros**: visible solo si `isAdmin === true`
+- **Operaciones Ciclo I / II**: requieren que el usuario tenga establecimientos asignados
+- **Datos Maestros / Seguridad / Configuracion**: por item, no por grupo. Cada `NavItem` puede
+  llevar `superAdminOnly: true`; el filtro es
+  `item.superAdminOnly ? isSuperAdmin : isAdmin`
+- Es filtrado **de menu, no de ruta**: la ruta sigue siendo navegable y quien rechaza es la API
 
 ## Comandos frecuentes
 ```bash
