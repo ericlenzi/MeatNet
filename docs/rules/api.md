@@ -116,6 +116,19 @@ TiposMovimientosCamaras, MovimientosCamaras
 - Async/await en todos los métodos que accedan a BD o I/O
 - Namespaces siguen la estructura de carpetas
 
+## Verificacion de consistencia
+
+Despues de cualquier migracion que toque **claves primarias**, correr:
+
+```bash
+python docs/verificar-consistencia.py
+```
+
+Compara los manuales y los DTO contra los tipos reales del dominio. Las migraciones 49 y 59
+movieron varias PK de `string Codigo` a `Guid Id` y de vuelta, y cada ida y vuelta dejo rastros
+que solo aparecieron mucho despues: manuales desactualizados, comentarios apuntando a un
+`.Codigo` inexistente y un DTO que rompio el Tipificador sin que nadie lo notara.
+
 ## Convenciones de Entidades
 - PKs: depende del tipo de tabla. `Guid` generada en la Factory para las tablas propias de una
   empresa, `string Codigo` para los catalogos globales. La regla completa (y el tercer caso,
