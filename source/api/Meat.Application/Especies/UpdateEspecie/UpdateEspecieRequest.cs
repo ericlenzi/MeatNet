@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 
 namespace Meat.Application.Especies.UpdateEspecie
 {
@@ -6,6 +6,8 @@ namespace Meat.Application.Especies.UpdateEspecie
     {
         public string Codigo { get; set; }
         public string Nombre { get; set; }
+        public double? RindeMinimo { get; set; }
+        public double? RindeMaximo { get; set; }
         public bool Activo { get; set; }
     }
 }

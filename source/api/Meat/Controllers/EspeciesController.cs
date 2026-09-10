@@ -54,6 +54,8 @@ namespace Meat.Controllers
             {
                 Codigo = codigo,
                 Nombre = body.Nombre,
+                RindeMinimo = body.RindeMinimo,
+                RindeMaximo = body.RindeMaximo,
                 Activo = body.Activo
             }
         );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getEspecie, createEspecie, updateEspecie } from '@/services/especies.service'
@@ -19,6 +19,8 @@ export default function EspecieFormPage() {
   const [form, setForm] = useState({
     Codigo: '',
     Nombre: '',
+    RindeMinimo: '',
+    RindeMaximo: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -31,6 +33,8 @@ export default function EspecieFormPage() {
           setForm({
             Codigo: entity.codigo || '',
             Nombre: entity.nombre || '',
+            RindeMinimo: entity.rindeMinimo != null ? String(entity.rindeMinimo) : '',
+            RindeMaximo: entity.rindeMaximo != null ? String(entity.rindeMaximo) : '',
             Activo: entity.activo,
           })
         }
@@ -60,6 +64,8 @@ export default function EspecieFormPage() {
       if (isEdit && codigo) {
         await updateEspecie(codigo, {
           Nombre: form.Nombre,
+          RindeMinimo: form.RindeMinimo === '' ? null : Number(form.RindeMinimo),
+          RindeMaximo: form.RindeMaximo === '' ? null : Number(form.RindeMaximo),
           Activo: form.Activo,
         })
         toast('success', 'Especie actualizada')
@@ -67,6 +73,8 @@ export default function EspecieFormPage() {
         await createEspecie({
           Codigo: form.Codigo,
           Nombre: form.Nombre,
+          RindeMinimo: form.RindeMinimo === '' ? null : Number(form.RindeMinimo),
+          RindeMaximo: form.RindeMaximo === '' ? null : Number(form.RindeMaximo),
         })
         toast('success', 'Especie creada')
       }
@@ -111,7 +119,28 @@ export default function EspecieFormPage() {
               onChange={(e) => updateField('Nombre', e.target.value)}
               error={errors['Nombre']}
             />
+            <Input
+              label="Rinde minimo esperable (%)"
+              type="number"
+              step="0.01"
+              value={form.RindeMinimo}
+              onChange={(e) => updateField('RindeMinimo', e.target.value)}
+            />
+            <Input
+              label="Rinde maximo esperable (%)"
+              type="number"
+              step="0.01"
+              value={form.RindeMaximo}
+              onChange={(e) => updateField('RindeMaximo', e.target.value)}
+            />
           </div>
+
+          <p className="mt-4 text-sm text-text-light">
+            La banda de rinde no corrige ni acota el cálculo: solo hace que el Análisis de Faena
+            avise cuando el número se va de rango, que casi siempre significa un peso de ingreso
+            mal cargado. La especie que la deje vacía no dispara ningún aviso. De referencia, el
+            rinde caliente ronda el 55% en bovino y el 78% en porcino.
+          </p>
 
           {isEdit && (
             <div className="mt-4">

@@ -40,6 +40,12 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
 
+            // Banda de rinde esperable de la especie (R-A7). Si no esta configurada, no se avisa.
+            var especie = await this.context.Especies
+                .Where(e => e.Codigo == lm.EspecieId)
+                .Select(e => new { e.RindeMinimo, e.RindeMaximo })
+                .FirstOrDefaultAsync(cancellationToken);
+
             // R-A2: los romaneos anulados no son carne y quedan fuera de todo.
             var piezas = await (
                 from p in this.context.RomaneosPiezas
@@ -148,6 +154,8 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 KgVivos = kgVivos > 0 ? kgVivos : (double?)null,
                 RindeCaliente = kgVivos > 0 ? Math.Round(kgFaena / kgVivos * 100, 2) : (double?)null,
                 AnimalesSinPesoVivo = animalesSinPesoVivo,
+                RindeMinimo = especie?.RindeMinimo,
+                RindeMaximo = especie?.RindeMaximo,
                 PiezasLiberadas = piezas.Count(p => p.Liberado),
                 AnimalesDecomisados = animalesDecomisados,
                 KgDecomisoTotal = kgDecomisoTotal,
@@ -158,6 +166,13 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 KgDecomisados = kgDecomisados,
                 MermaSanitaria = kgVivos > 0 ? Math.Round(kgDecomisados / kgVivos * 100, 2) : (double?)null
             };
+
+            // R-A7: el rinde no se corrige ni se acota, solo se avisa. Un rinde fuera de la banda
+            // de la especie casi siempre significa que el peso vivo de ingreso esta mal cargado,
+            // que es el dato del que depende todo el denominador.
+            response.RindeFueraDeRango = response.RindeCaliente.HasValue
+                && ((especie?.RindeMinimo != null && response.RindeCaliente < especie.RindeMinimo)
+                    || (especie?.RindeMaximo != null && response.RindeCaliente > especie.RindeMaximo));
 
             // --- Por cliente: el corte por el que se discute el resultado ---
             var kgVivosPorCliente = renglonesConPeso

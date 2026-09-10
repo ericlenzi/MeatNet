@@ -104,6 +104,31 @@ export default function AnalisisFaenaPage() {
         )}
       </div>
 
+      {/* R-A7: el rinde no se corrige ni se acota. Cuando se va de la banda de la especie, casi
+          siempre es el peso vivo de ingreso, que es de donde sale todo el denominador. */}
+      {data.rindeFueraDeRango && (
+        <div className="mb-4 rounded-md border border-danger/40 bg-red-50 px-4 py-3 text-sm text-danger">
+          <p className="font-semibold">
+            El rinde está fuera de lo esperable para la especie
+            {data.rindeMinimo != null && data.rindeMaximo != null
+              ? ` (${pct(data.rindeMinimo)} a ${pct(data.rindeMaximo)})`
+              : ''}
+            .
+          </p>
+          <p className="mt-1">
+            El número está bien calculado: lo que suele estar mal es el <strong>peso vivo de
+            ingreso</strong> de alguna tropa, del que sale todo el denominador. Revisá el peso y la
+            cantidad de animales del Ingreso de Hacienda antes de tomar este rinde como bueno.
+          </p>
+          {data.kgDecomisados > 0 && (
+            <p className="mt-1">
+              Esta jornada además tuvo decomisos por {kg(data.kgDecomisados)} kg, que bajan el
+              rinde por sí solos: mirá la merma sanitaria antes de buscar el error en otro lado.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="mb-4 rounded-md bg-amber-50 px-4 py-3 text-xs text-amber-900">
         <p className="mb-1 font-semibold">Cómo leer el rinde</p>
         <p>

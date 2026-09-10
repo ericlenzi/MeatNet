@@ -17,6 +17,7 @@ Liberación (Paso 4).
 - **Pesos y dispersión**: promedio, mínimo, máximo y piezas fuera del rango de su tipificación.
 - **Destino a cámaras**: qué materiales y kilos quedaron en cada cámara.
 - **Merma sanitaria**: reses condenadas y kilos decomisados de la jornada, abiertos por motivo.
+- **Aviso de rinde fuera de rango**, cuando el número se va de la banda esperable de la especie.
 - **Desglose por cliente** en todo lo anterior: el cliente es quien paga la faena, así que es el
   corte por el que se discute el resultado.
 
@@ -89,7 +90,8 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
 
 ### 3.1 Resumen de la jornada
 Animales faenados, piezas, kg vivos, kg de faena, rinde caliente y estado de liberación. Cuando la
-jornada tuvo decomisos, al lado del rinde aparece la **merma sanitaria** (§3.7).
+jornada tuvo decomisos, al lado del rinde aparece la **merma sanitaria** (§3.7); cuando el rinde se
+va de la banda esperable de la especie, arriba de todo aparece el aviso de R-A7.
 
 ### 3.2 Por cliente
 La misma foto, abierta por cliente (`IngresoHacienda.ClienteId`, alcanzado desde el romaneo por
@@ -146,6 +148,7 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 | Tipificación | `RomaneoPieza.TipificacionId` |
 | Fuera de rango | `RomaneoPieza.PesoFueraRango` |
 | Existencia en cámara | `MovimientoCamara` (saldo derivado) |
+| Banda de rinde esperable | `Especie.RindeMinimo` / `Especie.RindeMaximo` |
 | Res condenada | `Romaneo.DecomisoTotal` + `Romaneo.MotivoDecomisoId` |
 | Media res condenada | `RomaneoPieza.Decomisada` + `RomaneoPieza.MotivoDecomisoId` |
 | Recorte parcial | `RomaneoPieza.PesoDecomisado` + `RomaneoPieza.MotivoDecomisoId` |
@@ -176,6 +179,25 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
   reses** y aporta su peso entero; el recorte también se cuenta en medias reses pero aporta solo
   los kilos retirados. Nada de lo condenado entra en la tipificación consolidada ni en la
   dispersión de pesos: no se tipificó, y no hay rango contra el cual compararlo.
+
+- **R-A7 (rinde fuera de rango: se avisa, no se corrige).** Cada especie puede declarar la banda
+  de rinde caliente que le es esperable, en `Especie.RindeMinimo` / `RindeMaximo`. Si el rinde de
+  la jornada queda afuera, la pantalla lo dice arriba de todo.
+
+  **El número no se toca:** no se acota, no se recalcula y no se oculta. Un rinde de 160% es
+  aritmética correcta sobre un dato de entrada imposible, y taparlo sería peor que mostrarlo.
+
+  El aviso apunta a la causa habitual, que es el **peso vivo de ingreso**: el denominador sale de
+  `PesoPromedio × CantidadFaenada`, así que una tropa con el peso o la cantidad mal cargados
+  deforma el rinde entero (es el punto 5 de §2). Cuando la jornada además tuvo decomisos, el aviso
+  lo dice, porque ahí la caída puede ser legítima y explicarla la merma sanitaria.
+
+  **La banda la decide el catálogo, no el código.** La mantiene el SUPERADMIN desde la pantalla de
+  Especies, y la especie que la deje vacía no dispara ningún aviso: es la misma regla que gobierna
+  los datos del palco (R-E22 en `EjecucionFaena.md`). Las bandas iniciales de la migración 74 son
+  holgadas a propósito — vacuno 45% a 65%, porcino 65% a 85% — porque el aviso tiene que señalar
+  el dato roto, no discutir una jornada floja: el rinde de referencia ronda 55-58% en bovino y
+  75-80% en porcino.
 
 ## 6. Temas abiertos
 

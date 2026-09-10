@@ -39,6 +39,14 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         /// <summary>Animales faenados cuya tropa no tiene peso de ingreso: quedan fuera del rinde.</summary>
         public int AnimalesSinPesoVivo { get; set; }
 
+        // Banda de rinde esperable de la especie (R-A7). Null si la especie no la tiene
+        // configurada, y en ese caso no se avisa nada.
+        public double? RindeMinimo { get; set; }
+        public double? RindeMaximo { get; set; }
+
+        /// <summary>El rinde quedó fuera de la banda de la especie: casi siempre es el peso vivo.</summary>
+        public bool RindeFueraDeRango { get; set; }
+
         public int PiezasLiberadas { get; set; }
 
         // --- Merma sanitaria (R-A6) ---

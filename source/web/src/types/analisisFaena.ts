@@ -78,6 +78,11 @@ export interface AnalisisFaenaResponse {
   kgVivos: number | null
   rindeCaliente: number | null
   animalesSinPesoVivo: number
+  /** Banda de rinde esperable de la especie (%); null si no está configurada (R-A7). */
+  rindeMinimo: number | null
+  rindeMaximo: number | null
+  /** El rinde quedó fuera de esa banda: casi siempre es el peso vivo de ingreso. */
+  rindeFueraDeRango: boolean
   piezasLiberadas: number
   // Merma sanitaria: el rinde no se retoca, los decomisos se informan al lado.
   animalesDecomisados: number
