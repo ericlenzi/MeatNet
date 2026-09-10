@@ -38,12 +38,14 @@ interface PiezaState {
   peso: string
   tipificacionId: string
   almacenDestinoId: string
+  tipoContusionId: string
 }
 
-const nuevaPieza = (almacenDestinoId = ''): PiezaState => ({
+const nuevaPieza = (almacenDestinoId = '', tipoContusionId = ''): PiezaState => ({
   peso: '',
   tipificacionId: '',
   almacenDestinoId,
+  tipoContusionId,
 })
 
 function piezasEsperadas(uf: UnidadFaena | undefined): number {
@@ -58,9 +60,13 @@ export default function TipificadorPage() {
 
   const [data, setData] = useState<RenglonesEjecucion | null>(null)
   const [unidadesFaenas, setUnidadesFaenas] = useState<UnidadFaena[]>([])
-  // Ejes de la tipificacion oficial: se determinan mirando la res, asi que se cargan por romaneo.
+  // Los cuatro datos del palco: se determinan mirando la res, asi que se cargan por romaneo.
+  // Si la especie de la jornada no tiene valores cargados, el combo no se muestra y el dato no se
+  // exige. Es la misma regla que aplica el backend (R-E20), asi que vacuno los pide y porcino no.
   const [conformaciones, setConformaciones] = useState<EjeTipificacion[]>([])
   const [gradosEngrasamiento, setGradosEngrasamiento] = useState<EjeTipificacion[]>([])
+  const [denticiones, setDenticiones] = useState<EjeTipificacion[]>([])
+  const [tiposContusiones, setTiposContusiones] = useState<EjeTipificacion[]>([])
   const [destinos, setDestinos] = useState<CatalogoFaenaOption[]>([])
   const [jornada, setJornada] = useState<RomaneoJornadaItem[]>([])
 
@@ -69,6 +75,7 @@ export default function TipificadorPage() {
   const [destinoId, setDestinoId] = useState('')
   const [conformacionId, setConformacionId] = useState('')
   const [gradoEngrasamientoId, setGradoEngrasamientoId] = useState('')
+  const [denticionId, setDenticionId] = useState('')
   const [garron, setGarron] = useState<number>(1)
   const [piezas, setPiezas] = useState<PiezaState[]>([nuevaPieza()])
 
@@ -96,6 +103,13 @@ export default function TipificadorPage() {
   const defaultCamaraRef = useRef(defaultCamara)
   defaultCamaraRef.current = defaultCamara
 
+  // La contusion arranca en el primer valor de la escala, que es "sin contusion": es el caso
+  // normal y la linea no puede frenarse a elegirlo res por res. El tipificador lo cambia cuando
+  // ve el golpe. El catalogo viene ordenado por Orden, asi que el primero es el menos severo.
+  const defaultContusion = tiposContusiones[0]?.codigo ?? ''
+  const defaultContusionRef = useRef(defaultContusion)
+  defaultContusionRef.current = defaultContusion
+
   // Carga inicial: renglones, unidades de faena de la especie, destinos, jornada
   const cargar = useCallback(async () => {
     if (!listaMatanzaId) return
@@ -109,18 +123,22 @@ export default function TipificadorPage() {
         return sigueValido ? prev : rengl.renglonSugeridoId ?? ''
       })
 
-      const [ufs, dest, jorn, conf, grad] = await Promise.all([
+      const [ufs, dest, jorn, conf, grad, dent, cont] = await Promise.all([
         getUnidadesFaenasOptions(rengl.especieId),
         getDestinosComerciales(),
         getRomaneosJornada(listaMatanzaId),
         getEjes('conformaciones', { Estado: true, EspecieId: rengl.especieId, PageSize: 200 }),
         getEjes('grados-engrasamiento', { Estado: true, EspecieId: rengl.especieId, PageSize: 200 }),
+        getEjes('denticiones', { Estado: true, EspecieId: rengl.especieId, PageSize: 200 }),
+        getEjes('tipos-contusiones', { Estado: true, EspecieId: rengl.especieId, PageSize: 200 }),
       ])
       setUnidadesFaenas(ufs)
       setDestinos(dest)
       setJornada(jorn)
       setConformaciones(conf.data || [])
       setGradosEngrasamiento(grad.data || [])
+      setDenticiones(dent.data || [])
+      setTiposContusiones(cont.data || [])
 
       // Default del destino comercial: el marcado Favorito (si no hay, "Todos").
       setDestinoId((prev) => {
@@ -153,10 +171,23 @@ export default function TipificadorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renglonId, data])
 
-  // Ajustar la cantidad de piezas al cambiar la unidad de faena (las nuevas heredan la camara default)
+  // El catalogo de contusiones llega despues del primer render: al llegar se completa el valor
+  // por defecto de las piezas que todavia no tienen uno elegido.
+  useEffect(() => {
+    if (!defaultContusion) return
+    setPiezas((prev) =>
+      prev.map((p) => (p.tipoContusionId ? p : { ...p, tipoContusionId: defaultContusion })),
+    )
+  }, [defaultContusion])
+
+  // Ajustar la cantidad de piezas al cambiar la unidad de faena (las nuevas heredan la camara y la
+  // contusion por defecto)
   useEffect(() => {
     setPiezas((prev) =>
-      Array.from({ length: nroPiezas }, (_, i) => prev[i] ?? nuevaPieza(defaultCamaraRef.current)),
+      Array.from(
+        { length: nroPiezas },
+        (_, i) => prev[i] ?? nuevaPieza(defaultCamaraRef.current, defaultContusionRef.current),
+      ),
     )
   }, [nroPiezas])
 
@@ -247,6 +278,16 @@ export default function TipificadorPage() {
     })
   }
 
+  const onContusionChange = (idx: number, tipoContusionId: string) => {
+    setPiezas((prev) => {
+      const current = prev[idx]
+      if (!current) return prev
+      const next = [...prev]
+      next[idx] = { ...current, tipoContusionId }
+      return next
+    })
+  }
+
   const onTipificacionChange = (idx: number, id: string) => {
     setPiezas((prev) => {
       const current = prev[idx]
@@ -266,7 +307,7 @@ export default function TipificadorPage() {
     const sugerida = candidatas[0]?.codigo ?? ''
     setPiezas(
       Array.from({ length: nroPiezas }, () => ({
-        ...nuevaPieza(defaultCamaraRef.current),
+        ...nuevaPieza(defaultCamaraRef.current, defaultContusionRef.current),
         tipificacionId: sugerida,
       })),
     )
@@ -293,6 +334,24 @@ export default function TipificadorPage() {
       toast('error', 'Cada pieza requiere una camara de destino.')
       return
     }
+    // Los cuatro datos del palco son obligatorios cuando la especie los tiene cargados. El
+    // backend valida lo mismo; esto solo evita el viaje y avisa antes.
+    if (conformaciones.length > 0 && !conformacionId) {
+      toast('error', 'Indique la conformacion de la res.')
+      return
+    }
+    if (gradosEngrasamiento.length > 0 && !gradoEngrasamientoId) {
+      toast('error', 'Indique el grado de engrasamiento de la res.')
+      return
+    }
+    if (denticiones.length > 0 && !denticionId) {
+      toast('error', 'Indique la denticion del animal.')
+      return
+    }
+    if (tiposContusiones.length > 0 && piezas.some((p) => !p.tipoContusionId)) {
+      toast('error', 'Indique la contusion de cada media res.')
+      return
+    }
     if (hayFueraRango && !forzarFueraRango) {
       toast('error', 'Hay un peso fuera del rango de su tipificacion. Confirme para registrarlo igual.')
       return
@@ -306,9 +365,11 @@ export default function TipificadorPage() {
         NumeroGarron: garron,
         ConformacionId: conformacionId || undefined,
         GradoEngrasamientoId: gradoEngrasamientoId || undefined,
+        DenticionId: denticionId || undefined,
         Piezas: piezas.map((p) => ({
           AlmacenDestinoId: p.almacenDestinoId,
           TipificacionId: p.tipificacionId,
+          TipoContusionId: p.tipoContusionId || undefined,
           Peso: Number(p.peso),
           ForzarFueraRango: piezaFueraRango(p) && forzarFueraRango,
         })),
@@ -404,13 +465,15 @@ export default function TipificadorPage() {
 
           {conformaciones.length > 0 && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-text">Conformacion</label>
+              <label className="mb-1 block text-sm font-medium text-text">Conformacion *</label>
               <select
-                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                className={`w-full rounded-lg border px-3 py-2 text-sm ${
+                  conformacionId ? 'border-border' : 'border-danger bg-red-50'
+                }`}
                 value={conformacionId}
                 onChange={(e) => setConformacionId(e.target.value)}
               >
-                <option value="">(Sin tipificar)</option>
+                <option value="">Seleccionar...</option>
                 {conformaciones.map((c) => (
                   <option key={c.codigo} value={c.codigo}>{c.codigo} - {c.nombre}</option>
                 ))}
@@ -420,15 +483,35 @@ export default function TipificadorPage() {
 
           {gradosEngrasamiento.length > 0 && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-text">Engrasamiento</label>
+              <label className="mb-1 block text-sm font-medium text-text">Engrasamiento *</label>
               <select
-                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                className={`w-full rounded-lg border px-3 py-2 text-sm ${
+                  gradoEngrasamientoId ? 'border-border' : 'border-danger bg-red-50'
+                }`}
                 value={gradoEngrasamientoId}
                 onChange={(e) => setGradoEngrasamientoId(e.target.value)}
               >
-                <option value="">(Sin tipificar)</option>
+                <option value="">Seleccionar...</option>
                 {gradosEngrasamiento.map((g) => (
                   <option key={g.codigo} value={g.codigo}>{g.codigo} - {g.nombre}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {denticiones.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-text">Denticion *</label>
+              <select
+                className={`w-full rounded-lg border px-3 py-2 text-sm ${
+                  denticionId ? 'border-border' : 'border-danger bg-red-50'
+                }`}
+                value={denticionId}
+                onChange={(e) => setDenticionId(e.target.value)}
+              >
+                <option value="">Seleccionar...</option>
+                {denticiones.map((d) => (
+                  <option key={d.codigo} value={d.codigo}>{d.codigo} - {d.nombre}</option>
                 ))}
               </select>
             </div>
@@ -479,7 +562,7 @@ export default function TipificadorPage() {
                     onChange={(e) => onPesoChange(idx, e.target.value)}
                   />
                 </div>
-                <div className="sm:col-span-4">
+                <div className={tiposContusiones.length > 0 ? 'sm:col-span-3' : 'sm:col-span-4'}>
                   <label className="mb-1 block text-xs text-text-light">Camara destino</label>
                   <select
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm"
@@ -492,7 +575,24 @@ export default function TipificadorPage() {
                     ))}
                   </select>
                 </div>
-                <div className="sm:col-span-5">
+                {tiposContusiones.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs text-text-light">Contusion *</label>
+                    <select
+                      className={`w-full rounded-lg border px-3 py-2 text-sm ${
+                        p.tipoContusionId ? 'border-border' : 'border-danger bg-red-50'
+                      }`}
+                      value={p.tipoContusionId}
+                      onChange={(e) => onContusionChange(idx, e.target.value)}
+                    >
+                      <option value="">Seleccionar...</option>
+                      {tiposContusiones.map((t) => (
+                        <option key={t.codigo} value={t.codigo}>{t.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className={tiposContusiones.length > 0 ? 'sm:col-span-4' : 'sm:col-span-5'}>
                   <label className="mb-1 block text-xs text-text-light">Tipificacion</label>
                   <select
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm"
@@ -581,6 +681,11 @@ export default function TipificadorPage() {
                           {i > 0 && '  ·  '}
                           {p.letra ? `${p.letra}: ` : ''}
                           {p.peso}kg → {p.almacenDestinoNombre ?? '—'}
+                          {p.tipoContusionNombre && (
+                            <span className="ml-1 text-xs text-text-light">
+                              ({p.tipoContusionNombre})
+                            </span>
+                          )}
                           {p.pesoFueraRango && (
                             <span
                               className="ml-1 rounded bg-amber-100 px-1 text-xs text-amber-800"

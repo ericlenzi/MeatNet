@@ -13,13 +13,14 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 **Dentro de alcance (Fase 2 - MVP):**
 - Especies **V (VACUNO)** y **P (PORCINO)** únicamente.
 - Captura de romaneo: **garrón + peso (medición) + tipificación**.
+- Los **cuatro datos del palco**: conformación, engrasamiento, dentición y contusión (ver R-E20).
 - Consumo real de stock, trazabilidad de la tropa (`FAENA`) e incremento de `Tipificacion.Puntos`.
 - **Tipificador** (pantalla de captura por res) y **Monitor de Faena** (tablero de supervisión en
   vivo, solo lectura).
 - Anulación de romaneo (corrección de errores, devuelve el stock).
 
 **Fuera de alcance (se documentan / implementan aparte):**
-- **Fase 2b:** dentición, contusiones, decomisos y mediciones adicionales por pieza; otras especies.
+- **Fase 2b:** decomisos y mediciones adicionales por pieza; otras especies.
 - **Evaluación de Faena** (Ciclo I Paso 4): rindes, tipificación consolidada, plan vs. real. Es
   **análisis post-faena** (read/BI) sobre los datos que genera este paso; no forma parte de la Fase 2.
 - Integración con balanza/hardware de puesto (en MVP el peso es carga manual).
@@ -36,6 +37,8 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 | **Categoría / TipoEspecie** | Categoría de hacienda del animal (NOVILLO, VAQUILLONA, CAPÓN…). **Catálogo global** (`TiposEspecies`, PK `Codigo`) que mantiene el SUPERADMIN; cada empresa declara con cuáles opera y con qué parámetros en `EmpresasTiposEspecies`. En este paso la categoría **no se elige**: viene del renglón de la LM. |
 | **Tipificación** | `Tipificacion` (parametrizable por empresa): clasifica la pieza por especie, categoría, UF, destino, tipificación oficial y **rango de peso**. |
 | **Tipificación oficial** | La clasificación de la **res** según el organismo, sobre tres ejes: **categoría** (que aporta la Tipificación), **conformación** (desarrollo muscular) y **engrasamiento** (cobertura de grasa). No confundir con `TipoEspecie`, que clasifica al **animal vivo** al ingresar. Ver R-E20. |
+| **Dentición** | Recuento de incisivos permanentes con el que se estima la edad del animal (de diente de leche a boca llena). Catálogo global `Denticiones`, escala ordinal. Se mira la boca, así que es del **animal**. |
+| **Contusión** | Golpe visible en la media res. Catálogo global `TiposContusiones`, escala ordinal que arranca en "sin contusión". Es el único de los cuatro datos del palco que va **por pieza**. |
 | **Medición** | Valor capturado de un `TipoMedicion` del catálogo. En MVP la única medición es **`PESO`**. |
 | **Tipificador** | Puesto/pantalla donde se captura el romaneo res por res. |
 | **Monitor de Faena** | Tablero **read-only** con el avance de la jornada en vivo. No captura. |
@@ -172,33 +175,55 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   recorte `"  3411  "` y `"3411"` convivían como códigos distintos y el índice no los alcanzaba.
   La `Descripcion` también se recorta, en el alta y en la edición; la migración 65 limpió las que
   ya estaban cargadas con un salto de línea al final.
-- **R-E20 (ejes de la tipificación oficial).** La tipificación oficial tiene tres ejes y **no viven
-  todos en el mismo lugar**:
+- **R-E20 (los cuatro datos del palco).** En el palco el tipificador mira la res y registra cuatro
+  datos que **no se pueden saber antes** de tenerla colgada. **No viven todos en el mismo lugar**:
 
-  | Eje | Dónde vive | Por qué |
+  | Dato | Dónde vive | Por qué ahí |
   |---|---|---|
-  | Categoría | `Tipificacion` (master data) | Se corresponde con el animal y es estable. |
+  | Categoría | `Tipificacion` (master data) | Se corresponde con el animal y es estable, no se mira en el palco. |
   | Conformación | `Romaneo.ConformacionId` | Se determina **mirando la res**: varía de un animal a otro. |
   | Engrasamiento | `Romaneo.GradoEngrasamientoId` | Ídem. |
+  | Dentición | `Romaneo.DenticionId` | Se mira la **boca del animal**, así que es del animal entero. |
+  | Contusión | `RomaneoPieza.TipoContusionId` | El golpe está en **una media res concreta**, no en el animal. |
 
-  Poner los tres en el master data hubiera obligado a una fila de `Tipificacion` por cada
-  combinación. Los dos catálogos (`Conformaciones`, `GradosEngrasamiento`) son **globales por
-  especie**, los mantiene el SUPERADMIN y llevan una columna `Orden`, porque son escalas ordinales
-  y alfabéticamente los códigos no dicen nada.
+  Los tres primeros son ejes de la **tipificación oficial**; la contusión no, pero se registra en el
+  mismo momento y con la misma mecánica, así que comparte catálogo, pantalla y reglas.
+
+  Ponerlos en el master data hubiera obligado a una fila de `Tipificacion` por cada combinación.
+  Los cuatro catálogos (`Conformaciones`, `GradosEngrasamiento`, `Denticiones`, `TiposContusiones`)
+  son **globales por especie**, los mantiene el SUPERADMIN y llevan una columna `Orden`, porque son
+  escalas ordinales y alfabéticamente los códigos no dicen nada.
 
   **`Orden` es la posición en la escala, no un ranking de calidad.** En conformación coinciden
   (`A` superior … `E` inferior), pero en engrasamiento el óptimo es el **2** y tanto el `0` como el
   `4` son extremos indeseados.
 
-  Los dos campos del romaneo son **nullables** y el Tipificador muestra su combo **solo si la
-  especie tiene valores cargados**. De ahí lo que sigue.
-- **R-E21 (porcinos no tiene estos ejes, y es a propósito).** En Argentina la res porcina **no se
+- **R-E22 (la obligatoriedad la decide el catálogo, no la especie).** Los cuatro datos son
+  **obligatorios para vacuno y no aplican a porcino**, pero eso **no está escrito en el código**.
+  La regla es una sola:
+
+  > Si la especie de la jornada tiene valores **activos** en el catálogo, el dato es obligatorio.
+  > Si no tiene ninguno, el combo no se muestra y el campo tiene que viajar vacío.
+
+  Vacuno tiene filas cargadas y por eso los exige; porcino no tiene ninguna y por eso no. Sumar
+  ovinos o caprinos es **cargar filas, no tocar código**, y desactivar un catálogo entero para una
+  especie deja de exigirlo sin desplegar nada.
+
+  Las cuatro columnas son **nullables en la base**: la obligatoriedad es una regla de negocio del
+  alta, no una restricción de esquema, porque los romaneos anteriores a esta regla no los traen.
+  El Tipificador valida lo mismo antes de mandar, para no gastar el viaje.
+
+  **La contusión viene propuesta en el primer valor de la escala** (`SC`, sin contusión), que es el
+  caso normal: la línea no puede frenarse a elegir "no tiene golpes" res por res. El tipificador lo
+  cambia cuando ve el golpe. Los otros tres se eligen a mano y **persisten entre romaneos**, porque
+  suelen repetirse dentro de una misma tropa.
+- **R-E21 (porcinos no tiene estos datos, y es a propósito).** En Argentina la res porcina **no se
   tipifica con escalas de letras y números**: rige un sistema de clasificación por **porcentaje de
   carne magra**, estimado a partir del espesor de grasa dorsal y la profundidad del músculo. No es
   una escala visual, es una medición.
 
-  Por eso `Conformaciones` y `GradosEngrasamiento` tienen filas **solo para vacuno**, y una jornada
-  de porcinos se romanea sin esos dos combos. **El vacío no es un dato faltante:** no hay que
+  Por eso los cuatro catálogos tienen filas **solo para vacuno**, y una jornada
+  de porcinos se romanea sin esos combos. **El vacío no es un dato faltante:** no hay que
   "completarlo" cargando ahí las categorías comerciales del cerdo (capón, chancha, padrillo), que
   son otra cosa y ya viven en `TiposEspecies` — mezclarlas ahí duplicaría el eje de categoría.
 

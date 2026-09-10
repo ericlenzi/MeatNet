@@ -64,26 +64,27 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             if (uf.EspecieId != lm.EspecieId)
                 throw new ValidationException("La unidad de faena no corresponde a la especie de la lista.");
 
-            // 5c) Ejes de la tipificacion oficial (R-E20). Son opcionales, pero si vienen tienen
-            //     que existir, estar activos y ser de la especie de la jornada: el catalogo esta
-            //     abierto por especie y una conformacion de porcino no aplica a un vacuno.
-            if (!string.IsNullOrEmpty(request.ConformacionId))
-            {
-                var conformacionValida = await this.context.Conformaciones
-                    .AnyAsync(c => c.Codigo == request.ConformacionId && c.Activo && c.EspecieId == lm.EspecieId,
-                        cancellationToken);
-                if (!conformacionValida)
-                    throw new ValidationException("La conformacion indicada no existe, no esta activa o no corresponde a la especie de la jornada.");
-            }
+            // 5c) Los cuatro datos del palco (R-E20). La obligatoriedad no esta escrita por
+            //     especie: sale del propio catalogo. Si la especie de la jornada tiene valores
+            //     activos, el dato es obligatorio; si no los tiene, el Tipificador ni siquiera
+            //     muestra el combo y el campo tiene que venir vacio. Asi el vacuno los exige y el
+            //     porcino no, sin ningun codigo de especie clavado en la logica (R-E21).
+            var conformaciones = await this.context.Conformaciones
+                .Where(c => c.Activo && c.EspecieId == lm.EspecieId)
+                .Select(c => c.Codigo).ToListAsync(cancellationToken);
+            var gradosEngrasamiento = await this.context.GradosEngrasamiento
+                .Where(g => g.Activo && g.EspecieId == lm.EspecieId)
+                .Select(g => g.Codigo).ToListAsync(cancellationToken);
+            var denticiones = await this.context.Denticiones
+                .Where(d => d.Activo && d.EspecieId == lm.EspecieId)
+                .Select(d => d.Codigo).ToListAsync(cancellationToken);
+            var contusiones = await this.context.TiposContusiones
+                .Where(t => t.Activo && t.EspecieId == lm.EspecieId)
+                .Select(t => t.Codigo).ToListAsync(cancellationToken);
 
-            if (!string.IsNullOrEmpty(request.GradoEngrasamientoId))
-            {
-                var gradoValido = await this.context.GradosEngrasamiento
-                    .AnyAsync(g => g.Codigo == request.GradoEngrasamientoId && g.Activo && g.EspecieId == lm.EspecieId,
-                        cancellationToken);
-                if (!gradoValido)
-                    throw new ValidationException("El grado de engrasamiento indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
-            }
+            ValidarDatoDePalco("la conformacion de la res", conformaciones, request.ConformacionId);
+            ValidarDatoDePalco("el grado de engrasamiento de la res", gradosEngrasamiento, request.GradoEngrasamientoId);
+            ValidarDatoDePalco("la denticion del animal", denticiones, request.DenticionId);
 
             var piezasEsperadas = Math.Max(1, uf.PiezasPorAnimal);
             var piezas = request.Piezas ?? new List<PiezaRomaneoInput>();
@@ -93,6 +94,11 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 throw new ValidationException("El peso de cada pieza debe ser mayor a cero.");
             if (piezas.Any(p => !p.TipificacionId.HasValue))
                 throw new ValidationException("Cada pieza debe tener una tipificacion.");
+
+            // La contusion es el unico de los cuatro datos del palco que va por pieza: el golpe
+            // esta en una media res concreta. Se valida con la misma regla derivada del catalogo.
+            foreach (var p in piezas)
+                ValidarDatoDePalco("la contusion de cada media res", contusiones, p.TipoContusionId);
 
             // 5b) Camara destino por pieza (default del renglon, editable en el puesto): obligatoria
             //     y valida (camara activa del establecimiento de la LM). Cada media res puede ir a
@@ -156,6 +162,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             romaneo.UnidadFaenaId = uf.Id;
             romaneo.ConformacionId = string.IsNullOrWhiteSpace(request.ConformacionId) ? null : request.ConformacionId;
             romaneo.GradoEngrasamientoId = string.IsNullOrWhiteSpace(request.GradoEngrasamientoId) ? null : request.GradoEngrasamientoId;
+            romaneo.DenticionId = string.IsNullOrWhiteSpace(request.DenticionId) ? null : request.DenticionId;
             romaneo.NumeroGarron = request.NumeroGarron;
             romaneo.NumeroRomaneo = numeroRomaneo;
             romaneo.UsuarioId = request.UsuarioId;
@@ -167,6 +174,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 pieza.Letra = piezasEsperadas > 1 ? RomaneoConstantes.Letras[idx] : null;
                 pieza.AlmacenDestinoId = p.AlmacenDestinoId;
                 pieza.TipificacionId = p.TipificacionId;
+                pieza.TipoContusionId = string.IsNullOrWhiteSpace(p.TipoContusionId) ? null : p.TipoContusionId;
                 pieza.Peso = p.Peso;
                 var tipPieza = tipPorId[p.TipificacionId.Value];
                 pieza.PesoFueraRango = p.Peso < tipPieza.PesoDesde || p.Peso > tipPieza.PesoHasta;
@@ -205,6 +213,30 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 NumeroRomaneo = romaneo.NumeroRomaneo,
                 NumeroGarron = romaneo.NumeroGarron
             };
+        }
+
+        /// <summary>
+        /// Valida uno de los cuatro datos del palco contra su catalogo (R-E20). El catalogo es la
+        /// regla: si la especie tiene valores activos el dato es obligatorio, y si no los tiene
+        /// tiene que venir vacio. No hay ninguna especie escrita a mano en esta logica, asi que
+        /// sumar ovinos o caprinos es cargar filas, no tocar codigo.
+        /// </summary>
+        private static void ValidarDatoDePalco(string nombre, List<string> codigosDeLaEspecie, string valor)
+        {
+            var vacio = string.IsNullOrWhiteSpace(valor);
+
+            if (codigosDeLaEspecie.Count == 0)
+            {
+                if (!vacio)
+                    throw new ValidationException($"La especie de la jornada no registra {nombre}.");
+                return;
+            }
+
+            if (vacio)
+                throw new ValidationException($"Debe indicar {nombre}.");
+
+            if (!codigosDeLaEspecie.Contains(valor))
+                throw new ValidationException($"El valor indicado para {nombre} no existe, no esta activo o no corresponde a la especie de la jornada.");
         }
 
         /// <summary>

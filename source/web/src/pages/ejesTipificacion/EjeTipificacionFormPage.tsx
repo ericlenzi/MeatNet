@@ -149,7 +149,9 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
           <p className="mt-4 text-sm text-text-light">
             El orden es la posicion en la escala, no un ranking de calidad. Se usa para listar, porque
             los codigos ordenados alfabeticamente no dicen nada. En conformacion la escala va de
-            mejor a peor; en engrasamiento va de menos a mas grasa, y el optimo esta en el medio.
+            mejor a peor; en engrasamiento va de menos a mas grasa, y el optimo esta en el medio; en
+            denticion va de menor a mayor edad; en contusion va de menor a mayor severidad, y el
+            primero de la escala es el que el Tipificador propone por defecto.
           </p>
 
           {isEdit && (

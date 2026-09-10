@@ -58,7 +58,6 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.TipificacionesOficiales.TipificacionOficial> TipificacionesOficiales { get; set; }
         public virtual DbSet<Domain.Conformaciones.Conformacion> Conformaciones { get; set; }
         public virtual DbSet<Domain.GradosEngrasamiento.GradoEngrasamiento> GradosEngrasamiento { get; set; }
-        public virtual DbSet<Domain.TiposDenticiones.TipoDenticion> TiposDenticiones { get; set; }
         public virtual DbSet<Domain.Denticiones.Denticion> Denticiones { get; set; }
         public virtual DbSet<Domain.TiposContusiones.TipoContusion> TiposContusiones { get; set; }
         public virtual DbSet<Domain.MotivosDecomisos.MotivoDecomiso> MotivosDecomisos { get; set; }
@@ -420,14 +419,8 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.TipificacionesOficiales.TipificacionOficial>()
                 .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Domain.TiposDenticiones.TipoDenticion>()
+            modelBuilder.Entity<Domain.Denticiones.Denticion>()
                 .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Domain.Denticiones.Denticion>(e =>
-            {
-                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.TipoDenticion).WithMany().HasForeignKey(x => x.TipoDenticionId).OnDelete(DeleteBehavior.Restrict);
-            });
 
             modelBuilder.Entity<Domain.TiposContusiones.TipoContusion>()
                 .HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
@@ -495,6 +488,7 @@ namespace Meat.Repositories
                 e.HasOne(x => x.UnidadFaena).WithMany().HasForeignKey(x => x.UnidadFaenaId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Conformacion).WithMany().HasForeignKey(x => x.ConformacionId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.GradoEngrasamiento).WithMany().HasForeignKey(x => x.GradoEngrasamientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Denticion).WithMany().HasForeignKey(x => x.DenticionId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Domain.Romaneos.RomaneoPieza>(e =>
@@ -502,6 +496,7 @@ namespace Meat.Repositories
                 e.HasOne(x => x.Romaneo).WithMany(r => r.Piezas).HasForeignKey(x => x.RomaneoId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.AlmacenDestino).WithMany().HasForeignKey(x => x.AlmacenDestinoId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Tipificacion).WithMany().HasForeignKey(x => x.TipificacionId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoContusion).WithMany().HasForeignKey(x => x.TipoContusionId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Domain.Romaneos.RomaneoPiezaMedicion>(e =>

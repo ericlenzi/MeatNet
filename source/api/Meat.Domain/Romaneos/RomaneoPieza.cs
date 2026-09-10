@@ -1,4 +1,5 @@
 ﻿using Meat.Domain.Almacenes;
+using Meat.Domain.TiposContusiones;
 using Meat.Domain.Tipificaciones;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,11 @@ namespace Meat.Domain.Romaneos
 
         public Guid? TipificacionId { get; set; }
         public virtual Tipificacion Tipificacion { get; set; }
+
+        // Contusion de esta media res. Es el unico de los cuatro datos del palco que se registra
+        // por pieza: el golpe esta en una media res concreta, no en el animal entero.
+        public string TipoContusionId { get; set; }
+        public virtual TipoContusion TipoContusion { get; set; }
 
         public double Peso { get; set; }                       // cache de la medicion PESO
 

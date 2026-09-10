@@ -7,17 +7,27 @@ import type {
   UpdateEjeTipificacionRequest,
 } from '@/types'
 
+// Los cuatro catalogos que el Tipificador registra en el palco. Comparten forma (codigo, nombre,
+// especie, orden) y reglas, asi que comparten servicio y pantallas.
 // Catalogos globales: lectura abierta (el Tipificador los necesita), escritura del SUPERADMIN.
-export type EjeTipificacionId = 'conformaciones' | 'grados-engrasamiento'
+export type EjeTipificacionId =
+  | 'conformaciones'
+  | 'grados-engrasamiento'
+  | 'denticiones'
+  | 'tipos-contusiones'
 
 const RUTAS: Record<EjeTipificacionId, string> = {
   conformaciones: '/Conformaciones',
   'grados-engrasamiento': '/GradosEngrasamiento',
+  denticiones: '/Denticiones',
+  'tipos-contusiones': '/TiposContusiones',
 }
 
 export const ETIQUETAS: Record<EjeTipificacionId, { singular: string; plural: string }> = {
   conformaciones: { singular: 'Conformacion', plural: 'Conformaciones' },
   'grados-engrasamiento': { singular: 'Grado de Engrasamiento', plural: 'Grados de Engrasamiento' },
+  denticiones: { singular: 'Denticion', plural: 'Denticiones' },
+  'tipos-contusiones': { singular: 'Tipo de Contusion', plural: 'Tipos de Contusion' },
 }
 
 interface GetEjesParams extends PaginatedRequest {

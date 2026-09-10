@@ -132,6 +132,12 @@ function AppRoutes() {
                   <Route path="grados-engrasamiento" element={<EjeTipificacionListPage eje="grados-engrasamiento" />} />
                   <Route path="grados-engrasamiento/create" element={<EjeTipificacionFormPage eje="grados-engrasamiento" />} />
                   <Route path="grados-engrasamiento/:codigo/edit" element={<EjeTipificacionFormPage eje="grados-engrasamiento" />} />
+                  <Route path="denticiones" element={<EjeTipificacionListPage eje="denticiones" />} />
+                  <Route path="denticiones/create" element={<EjeTipificacionFormPage eje="denticiones" />} />
+                  <Route path="denticiones/:codigo/edit" element={<EjeTipificacionFormPage eje="denticiones" />} />
+                  <Route path="tipos-contusiones" element={<EjeTipificacionListPage eje="tipos-contusiones" />} />
+                  <Route path="tipos-contusiones/create" element={<EjeTipificacionFormPage eje="tipos-contusiones" />} />
+                  <Route path="tipos-contusiones/:codigo/edit" element={<EjeTipificacionFormPage eje="tipos-contusiones" />} />
                   <Route path="unidades-faenas" element={<UnidadesFaenasListPage />} />
                   <Route path="unidades-faenas/create" element={<UnidadFaenaFormPage />} />
                   <Route path="unidades-faenas/:id/edit" element={<UnidadFaenaFormPage />} />

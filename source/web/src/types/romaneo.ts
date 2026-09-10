@@ -54,6 +54,7 @@ export interface SugerenciaTipificacion {
 export interface RomaneoPiezaItem {
   letra: string | null
   peso: number
+  tipoContusionNombre?: string | null
   almacenDestinoNombre: string | null
   tipificacionId: string
   tipificacionDescripcion: string | null
@@ -106,6 +107,8 @@ export interface MonitorFaena {
 export interface PiezaRomaneoInput {
   AlmacenDestinoId: string
   TipificacionId: string
+  /** Contusion de esta media res: el golpe es de la pieza, no del animal. */
+  TipoContusionId?: string
   Peso: number
   ForzarFueraRango: boolean
 }
@@ -115,8 +118,10 @@ export interface CrearRomaneoRequest {
   ListaMatanzaDetalleId: string
   UnidadFaenaId: string
   NumeroGarron: number
-  /** Ejes de la tipificacion oficial; opcionales, se determinan mirando la res. */
+  /** Datos del palco, que se determinan mirando la res. Son obligatorios cuando la especie de
+   *  la jornada tiene valores cargados en el catalogo; vacuno los exige, porcino no. */
   ConformacionId?: string
   GradoEngrasamientoId?: string
+  DenticionId?: string
   Piezas: PiezaRomaneoInput[]
 }

@@ -3,6 +3,7 @@ using Meat.Domain.Establecimientos;
 using Meat.Domain.ListasMatanzas;
 using Meat.Domain.Tropas;
 using Meat.Domain.Conformaciones;
+using Meat.Domain.Denticiones;
 using Meat.Domain.GradosEngrasamiento;
 using Meat.Domain.UnidadesFaenas;
 using System;
@@ -52,6 +53,12 @@ namespace Meat.Domain.Romaneos
 
         public string GradoEngrasamientoId { get; set; }
         public virtual GradoEngrasamiento GradoEngrasamiento { get; set; }
+
+        // Denticion: se mira la boca del animal, asi que es del romaneo y no de la pieza, igual
+        // que los otros dos ejes que se determinan en el palco.
+        public string DenticionId { get; set; }
+        public virtual Denticion Denticion { get; set; }
+
         public virtual UnidadFaena UnidadFaena { get; set; }
 
         public int NumeroGarron { get; set; }                  // nro fisico de gancho; unico por LM
