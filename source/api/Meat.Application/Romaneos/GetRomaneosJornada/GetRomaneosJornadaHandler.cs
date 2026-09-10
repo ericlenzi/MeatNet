@@ -39,6 +39,8 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                     TipoEspecieNombre = te.Nombre,
                     UnidadFaenaNombre = uf.Nombre,
                     Anulado = r.Anulado,
+                    DecomisoTotal = r.DecomisoTotal,
+                    MotivoDecomisoNombre = r.MotivoDecomiso != null ? r.MotivoDecomiso.Nombre : null,
                     Fecha = r.Fecha,
                     PesoTotal = r.Piezas.Sum(p => p.Peso),
                     Piezas = r.Piezas
@@ -51,7 +53,9 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                             TipificacionId = p.TipificacionId,
                             TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null,
                             TipoContusionNombre = p.TipoContusion != null ? p.TipoContusion.Nombre : null,
-                            PesoFueraRango = p.PesoFueraRango
+                            PesoFueraRango = p.PesoFueraRango,
+                            MotivoDecomisoNombre = p.MotivoDecomiso != null ? p.MotivoDecomiso.Nombre : null,
+                            PesoDecomisado = p.PesoDecomisado
                         }).ToList()
                 })
                 .ToListAsync(cancellationToken);

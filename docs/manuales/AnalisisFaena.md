@@ -16,11 +16,12 @@ Liberación (Paso 4).
 - **Tipificación consolidada**: participación de cada tipificación en piezas y kilos.
 - **Pesos y dispersión**: promedio, mínimo, máximo y piezas fuera del rango de su tipificación.
 - **Destino a cámaras**: qué materiales y kilos quedaron en cada cámara.
+- **Merma sanitaria**: reses condenadas y kilos decomisados de la jornada, abiertos por motivo.
 - **Desglose por cliente** en todo lo anterior: el cliente es quien paga la faena, así que es el
   corte por el que se discute el resultado.
 
-**Fuera de alcance (ver §6):** rinde frío, desbaste y decomisos. Los tres dependen de datos que
-hoy **no se capturan**; no se estiman ni se inventan.
+**Fuera de alcance (ver §6):** rinde frío y desbaste. Los dos dependen de pesadas que hoy **no se
+hacen**; no se estiman ni se inventan.
 
 ## 2. El rinde: definición exacta y sus supuestos
 
@@ -30,8 +31,8 @@ hoy **no se capturan**; no se estiman ni se inventan.
 Rinde caliente (%) = (kg de romaneo / kg vivos de los animales faenados) × 100
 ```
 
-**Numerador — kg de romaneo.** Suma de `RomaneoPieza.Peso` de los romaneos **no anulados** de la
-jornada. Es el peso de la media res / res al salir de la playa de faena, capturado por el
+**Numerador — kg de romaneo.** Suma de `RomaneoPieza.Peso` de los romaneos **no anulados y no
+condenados** de la jornada. Es el peso de la media res / res al salir de la playa de faena, capturado por el
 Tipificador. Es un peso **caliente**: todavía no perdió la merma del oreo.
 
 > **Cuántas piezas entran en esa suma lo decide la Unidad de Faena.** El Tipificador exige
@@ -62,8 +63,11 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
    no significa nada.
 3. **El peso de faena es caliente.** Comparado contra un rinde frío de referencia, este da más
    alto (la merma de oreo ronda el 2%, pero eso se mide, no se supone).
-4. **No descuenta decomisos.** El numerador es lo efectivamente romaneado; si una media res se
-   decomisó, no entró al romaneo y el rinde baja sin explicar por qué (ver §6).
+4. **El decomiso hace bajar el rinde, y la merma sanitaria dice cuánto.** La res condenada entera
+   sale del numerador (esa carne no llega a la cámara) pero el animal sigue en el denominador,
+   porque se faenó. Eso hace caer el rinde a propósito, y la **merma sanitaria** que se informa al
+   lado es la que explica la caída. El recorte parcial no toca ninguno de los dos: el peso de la
+   pieza es el que entró a la cámara, y los kilos retirados se suman a la merma (R-A6).
 5. **Si nadie ajustó la cantidad en el Ingreso, el denominador es el peso teórico configurado.**
    `PesoPromedio` sale de `PesoIngreso / Cantidad`, y esa `Cantidad` viene precargada con la
    estimación `PesoIngreso / EmpresaTipoEspecie.PesoTeorico`. Si el operador la acepta sin contar
@@ -126,6 +130,8 @@ generó la Liberación. Antes de liberar, la sección está vacía.
 | Tipificación | `RomaneoPieza.TipificacionId` |
 | Fuera de rango | `RomaneoPieza.PesoFueraRango` |
 | Existencia en cámara | `MovimientoCamara` (saldo derivado) |
+| Res condenada | `Romaneo.DecomisoTotal` + `Romaneo.MotivoDecomisoId` |
+| Recorte parcial | `RomaneoPieza.PesoDecomisado` + `RomaneoPieza.MotivoDecomisoId` |
 
 ## 5. Reglas
 
@@ -136,20 +142,46 @@ generó la Liberación. Antes de liberar, la sección está vacía.
 - **R-A4 (disponible desde En Ejecución).** El análisis se puede ver con la jornada abierta, con lo
   faenado hasta el momento. La sección de cámaras queda vacía hasta liberar.
 - **R-A5 (definición a la vista).** La pantalla muestra los supuestos del rinde (§2) junto al valor.
+- **R-A6 (el decomiso se informa, no se maquilla).** El rinde conserva su definición: no se le
+  suman los kilos condenados para "arreglarlo", ni se saca del denominador el animal que se
+  condenó. Lo que se agrega es un indicador propio:
+
+  ```
+  Merma sanitaria (%) = (kg condenados / kg vivos) × 100
+  ```
+
+  …donde los kg condenados son los de las **reses condenadas enteras** más los **kilos retirados**
+  de las medias reses recortadas. Se muestra al lado del rinde y se abre **por motivo**, que es el
+  informe que mira la inspección.
+
+  Las dos formas de decomiso se cuentan distinto y por eso van en columnas separadas: la res
+  condenada se cuenta en **animales** y aporta todos sus kilos; el recorte se cuenta en **medias
+  reses** y aporta solo los kilos retirados. La res condenada tampoco entra en la tipificación
+  consolidada ni en la dispersión de pesos: no se tipificó, y no hay rango contra el cual
+  compararla.
 
 ## 6. Temas abiertos
 
-- **O-A1 (decomisos) — PENDIENTE, acordado con el usuario que se hará más adelante.**
-  `MotivoDecomiso` existe como catálogo pero está **huérfano**: no hay captura ni uso en handlers.
-  Falta decidir el grano (por animal o por pieza, total o parcial), dónde se registra (Tipificador,
-  o un puesto sanitario propio) y cómo impacta el rinde (¿el decomiso baja el numerador, o se
-  informa aparte como merma sanitaria?). Hasta entonces el rinde no los descuenta y la jornada con
-  decomisos muestra un rinde bajo sin explicación visible.
+- **O-A1 (decomisos) — RESUELTA (2026-09-10): implementada.** Las cuatro decisiones que estaban
+  pendientes quedaron así:
+
+  | Pregunta | Decisión |
+  |---|---|
+  | Grano | **Total por animal** (`Romaneo.DecomisoTotal`) y **parcial por media res** (`RomaneoPieza.PesoDecomisado`). |
+  | Dónde se registra | En el **Tipificador**, en el mismo momento en que se ve la res. Un puesto sanitario propio escribiría en las mismas columnas (O-E2 en `EjecucionFaena.md`). |
+  | Impacto en el rinde | **Merma sanitaria aparte** (R-A6): la definición del rinde no cambia. |
+  | Peso de la res condenada | **Se pesa.** Sin kilos, la pérdida quedaría en cabezas y no se podría comparar con el rinde. |
+
+  Falta todavía el decomiso de **vísceras y subproductos**, que depende de abrir ese dominio
+  (O-3 en `EvaluacionFaena.md`).
 - **O-A2 (rinde frío).** Requiere una segunda pesada tras el oreo: un `TipoMedicion` nuevo (hoy
   `TiposMediciones` solo tiene `PESO`) y la pantalla para capturarlo en cámara. Habilitaría además
   la **merma de oreo** como indicador propio.
 - **O-A3 (desbaste).** Requiere balanza en playa previa al sacrificio. Con ese dato el rinde pasaría
   a calcularse sobre el peso real de faena y dejaría de estar subestimado.
+- **O-A5 (decomiso de vísceras).** Hoy la merma sanitaria cubre la carne. El hígado decomisado, que
+  en la práctica es el decomiso más frecuente, no se registra: depende del dominio de subproductos
+  (O-3 en `EvaluacionFaena.md`).
 - **O-A4 (comparativo entre jornadas).** Hoy el análisis es de una jornada. Una vista de evolución
   (rinde por fecha, por cliente, por categoría) es el paso natural siguiente, cuando haya volumen.
 

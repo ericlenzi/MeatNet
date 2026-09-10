@@ -20,6 +20,12 @@ namespace Meat.Application.Romaneos.CrearRomaneo
         public string GradoEngrasamientoId { get; set; }
         public string DenticionId { get; set; }
 
+        // Decomiso total (R-E23): la inspeccion condena la res entera. El animal se faena igual,
+        // sus piezas se pesan y el motivo pasa a ser obligatorio; a cambio, la res condenada no
+        // se clasifica (ni datos del palco ni tipificacion) porque no va a ser carne.
+        public bool DecomisoTotal { get; set; }
+        public string MotivoDecomisoId { get; set; }
+
         public List<PiezaRomaneoInput> Piezas { get; set; } = new List<PiezaRomaneoInput>();
     }
 
@@ -31,6 +37,11 @@ namespace Meat.Application.Romaneos.CrearRomaneo
         public string TipoContusionId { get; set; }         // contusion de esta media res; el golpe es de la pieza, no del animal
         public double Peso { get; set; }
         public bool ForzarFueraRango { get; set; }          // confirmacion explicita del operario para pesar fuera del rango de la tipificacion
+
+        // Decomiso parcial de esta media res (R-E24): van juntos, motivo y kilos. No descuentan
+        // el Peso: la pieza sigue a camara y los kilos se informan como merma sanitaria.
+        public string MotivoDecomisoId { get; set; }
+        public double PesoDecomisado { get; set; }
     }
 
     public class CrearRomaneoResponse

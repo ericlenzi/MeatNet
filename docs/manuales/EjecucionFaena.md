@@ -20,7 +20,7 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 - Anulación de romaneo (corrección de errores, devuelve el stock).
 
 **Fuera de alcance (se documentan / implementan aparte):**
-- **Fase 2b:** decomisos y mediciones adicionales por pieza; otras especies.
+- **Fase 2b:** mediciones adicionales por pieza; otras especies.
 - **Evaluación de Faena** (Ciclo I Paso 4): rindes, tipificación consolidada, plan vs. real. Es
   **análisis post-faena** (read/BI) sobre los datos que genera este paso; no forma parte de la Fase 2.
 - Integración con balanza/hardware de puesto (en MVP el peso es carga manual).
@@ -113,6 +113,13 @@ LM EN_EJECUCION  ──►  abrir Tipificador
       • Si cae fuera y el operador NO eligió a mano, y otra candidata cubre ese peso → cambia a esa.
       • Si ninguna candidata lo cubre → aviso de fuera de rango + confirmación explícita (R-E15).
     El operador puede cambiarla manualmente (y esa elección se respeta: el peso ya no la mueve).
+    │
+    ▼
+[4b] Decomiso, si la inspección lo dispuso (R-E23 / R-E24):
+    - TOTAL: se tilda "Decomiso total" y se elige el motivo. La res se pesa igual (son los
+      kilos condenados), pero no se clasifica ni se tipifica, y no va a ir a cámara.
+    - PARCIAL: por media res, motivo + kilos retirados. La pieza sigue su curso a cámara y
+      los kilos NO se descuentan de su peso: se informan como merma sanitaria.
     │
     ▼
 [5] Confirmar romaneo  ──►  CrearRomaneo:
@@ -230,6 +237,46 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   Si en el futuro se quiere capturar el magro, el lugar natural es `RomaneoPiezaMedicion`, que ya
   existe con un `Valor` numérico y hoy solo guarda `PESO`: alcanza con sumar un `TipoMedicion`,
   sin tocar el esquema.
+- **R-E23 (decomiso total: la res se faenó, pero no es carne).** Cuando la inspección condena la
+  res entera, el romaneo se registra igual **con la marca `DecomisoTotal` y su motivo obligatorio**.
+  Que se registre no es un tecnicismo: el animal se faenó, consumió el renglón de la Lista de
+  Matanza y gastó su número de romaneo, así que borrarlo del sistema dejaría la jornada sin cuadrar.
+
+  | Qué pasa | Por qué |
+  |---|---|
+  | **Se pesan las piezas** | Esos kilos son la **merma sanitaria** de la jornada. Sin peso, la pérdida queda en cabezas y no se puede comparar contra el rinde. |
+  | **No se piden los datos del palco ni la tipificación** | Una res condenada no se clasifica: no va a ser carne. Si el puesto los manda igual, el alta los descarta en vez de frenar la línea. |
+  | **No suma `Puntos`** | La tipificación que se venía proponiendo no se usó, y no tiene que ganar peso en la propuesta del próximo romaneo. |
+  | **No genera existencia de cámara** | La Liberación aparta estas piezas antes de buscarles material (R-L8 en `EvaluacionFaena.md`) y las fija igual, para que la jornada quede cerrada entera. |
+
+  La **cámara de destino se sigue pidiendo** y queda guardada, aunque no se use: es la del renglón,
+  ya viene autocompletada, y no se modeló un almacén de decomisos porque el destino físico (el
+  digestor) no es un almacén del sistema.
+- **R-E24 (decomiso parcial: kilos, no piezas).** La inspección también retira **parte** de una
+  media res. Eso se registra **por pieza**, con **motivo y kilos juntos**: si hay uno tiene que
+  haber el otro. La pieza **sigue su curso a cámara**.
+
+  **Los kilos decomisados no ajustan el peso de la pieza.** `Peso` es lo que dio la balanza y lo
+  que entra a cámara; `PesoDecomisado` es la merma sanitaria, y se informa aparte. Los kilos
+  decomisados **no pueden alcanzar el peso de la pieza**: eso ya es una condena y va por R-E23.
+
+  Un motivo por pieza y uno por res condenada. Si en la práctica aparecen dos causas sobre la
+  misma media res, hay que partir el registro en una tabla hija; hoy no se modeló porque no hay
+  caso que lo pida (O-E1).
+- **R-E25 (el catálogo de motivos manda, igual que en el palco).** `MotivosDecomisos` es un
+  **catálogo global por especie** con la misma forma que los cuatro del palco, y rige la misma
+  regla derivada: **si la especie de la jornada no tiene motivos activos, no se pueden registrar
+  decomisos** y el Tipificador ni siquiera muestra el check. Cargar ovinos o porcinos es cargar
+  filas, no tocar código.
+
+  A diferencia de los del palco, el decomiso **no es obligatorio**: es la excepción de la jornada,
+  no un dato que haya que completar res por res. Por eso tampoco **persiste entre romaneos**:
+  después de registrar una res condenada, la marca vuelve a apagarse sola. Dejarla tildada
+  condenaría la res siguiente sin que nadie lo pida.
+
+  El mismo motivo sirve para los dos alcances y **no lleva marcado si es total o parcial**: una
+  contusión condena la res cuando es extensa y es un recorte cuando está localizada. `Orden` acá
+  no es una escala: es la posición en la lista del puesto, los motivos frecuentes primero.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
@@ -361,6 +408,8 @@ PK: Guid Id
 - ConformacionId (string?, FK)         [dato del palco: desarrollo muscular (R-E20)]
 - GradoEngrasamientoId (string?, FK)   [dato del palco: cobertura de grasa (R-E20)]
 - DenticionId (string?, FK)            [dato del palco: incisivos permanentes, estima la edad (R-E20)]
+- DecomisoTotal (bool, default false)  [la inspección condenó la res entera (R-E23)]
+- MotivoDecomisoId (string?, FK)       [causa sanitaria; obligatorio si DecomisoTotal (R-E23)]
 - NumeroGarron (int)                   [físico; único por LM]
 - NumeroRomaneo (long)                 [correlativo Numerador ROMANEO por Estab+Especie; reserva atómica (R-E4)]
 - Fecha (DateTime), UsuarioId (Guid?)
@@ -382,6 +431,8 @@ PK: Guid Id
 - TipoContusionId (string?, FK)        [dato del palco: el golpe es de ESTA media res, no del animal (R-E20)]
 - Peso (double)                        [caché de la medición PESO; canónico p/ tipificación y KG]
 - PesoFueraRango (bool, default false) [el peso quedó fuera del rango de la tipificación y se forzó (R-E15)]
+- MotivoDecomisoId (string?, FK)       [decomiso parcial de ESTA media res (R-E24)]
+- PesoDecomisado (double, default 0)   [kilos retirados; NO descuentan Peso (R-E24)]
 Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
 ```
 
@@ -406,11 +457,22 @@ usuario autenticado, porque el Tipificador necesita llenar sus combos al romanea
 | Engrasamiento | `GradosEngrasamiento` | `/GradosEngrasamiento` | `/grados-engrasamiento` |
 | Dentición | `Denticiones` | `/Denticiones` | `/denticiones` |
 | Contusión | `TiposContusiones` | `/TiposContusiones` | `/tipos-contusiones` |
+| *(Motivo de decomiso)* | `MotivosDecomisos` | `/MotivosDecomisos` | `/motivos-decomisos` |
 
 Las cuatro pantallas son **la misma pantalla**: `EjeTipificacionListPage` y
 `EjeTipificacionFormPage` reciben cuál es por prop, y el servicio `ejesTipificacion.service.ts`
 resuelve el endpoint. Agregar un quinto dato de este tipo es sumar una entrada a los mapas `RUTAS`
 y `ETIQUETAS`, más su ruta, no escribir pantallas nuevas.
+
+**Los motivos de decomiso son ese quinto caso, y no son un dato del palco.** Comparten la forma
+(código, nombre, especie, orden, activo) y por eso comparten pantalla, pero no son una escala ni
+se completan res por res: son la causa por la que la inspección condena (R-E23) o recorta (R-E24),
+y solo se eligen cuando hay decomiso. En ellos `Orden` es la posición en la lista del puesto.
+
+Los motivos cargados para vacuno (seed de la migración 71) son un **juego inicial de causas
+frecuentes en playa, no el nomenclador oficial completo**: contusiones, abscesos, adherencias,
+contaminación, mala sangría, ictericia, caquexia, tuberculosis, cisticercosis, hidatidosis,
+septicemia y "otros". La lista definitiva la ajusta el SUPERADMIN desde la pantalla.
 
 **Qué está cargado hoy** (seed de la migración 69 para dentición y contusión, migración 67 para los
 otros dos). Todo es **solo vacuno**: el resto de las especies no tiene ninguna fila.
@@ -477,10 +539,10 @@ Controller `RomaneosController` (patrón `MeatBaseController`, `[Authorize]`, `C
 | GET | `/Romaneos/sugerir-tipificacion?especieId=&tipoEspecieId=&unidadFaenaId=&destinoComercialId=&peso=` | Devuelve la `Tipificacion` propuesta (match por rango de peso, orden Puntos) y la lista de candidatas para el combo. |
 | GET | `/Romaneos/jornada?listaMatanzaId=` | Romaneos de la jornada (grilla del Tipificador). |
 | GET | `/Romaneos/monitor?listaMatanzaId=` | Totales en vivo: faenado/planificado global y por tropa/categoría, KG, ritmo. |
-| POST | `/Romaneos` | Crea un romaneo; el animal lleva **conformación + engrasamiento + dentición** y cada pieza lleva **peso + tipificación + cámara destino** (R-E13) **+ contusión** + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). |
+| POST | `/Romaneos` | Crea un romaneo; el animal lleva **conformación + engrasamiento + dentición** y cada pieza lleva **peso + tipificación + cámara destino** (R-E13) **+ contusión** + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). Con `DecomisoTotal` la res se condena entera y solo se piden **motivo + pesos** (R-E23); por pieza acepta el **decomiso parcial** (motivo + kilos, R-E24). |
 | POST | `/Romaneos/{id}/anular` | Anula el romaneo; revierte el consumo. |
 
-Los cuatro **catálogos del palco** son globales y viven fuera de `RomaneosController`. Todos exponen
+Los **catálogos globales por especie** viven fuera de `RomaneosController`. Todos exponen
 la misma superficie: `GET` (lista paginada, filtra por `EspecieId` y `Estado`), `GET /{codigo}`,
 `POST`, `PUT /{codigo}` y `DELETE /{codigo}`. **Lectura abierta** a cualquier usuario autenticado
 porque el Tipificador la necesita; **escritura `[Authorize(Roles = "SUPERADMIN")]`**. Ver §9.4.
@@ -491,14 +553,15 @@ porque el Tipificador la necesita; **escritura `[Authorize(Roles = "SUPERADMIN")
 | `GradosEngrasamientoController` | `/GradosEngrasamiento` |
 | `DenticionesController` | `/Denticiones` |
 | `TiposContusionesController` | `/TiposContusiones` |
+| `MotivosDecomisosController` | `/MotivosDecomisos` |
 
 ## 11. Frontend (pantallas)
 
 | Página | Ruta | Menú | Descripción |
 |---|---|---|---|
-| `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Captura res por res: renglón sugerido con override, garrón, UF, los **datos del palco** del animal (conformación, engrasamiento, dentición) y piezas (1 P / 2 A-B V) con peso, **contusión**, cámara y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. Los combos del palco solo aparecen si la especie los tiene cargados (R-E22). |
-| `EjeTipificacionListPage` / `EjeTipificacionFormPage` | `/conformaciones`, `/grados-engrasamiento`, `/denticiones`, `/tipos-contusiones` | Administración *(solo SUPERADMIN)* | Un **único par de pantallas** para los cuatro catálogos del palco; cuál es lo define una prop. ABM con filtro por especie y estado. Ver §9.4. |
-| `MonitorFaenaPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/monitor` | Ejecución de Faena | Tablero **read-only** de supervisión: totales en vivo (faenado vs planificado, por tropa/categoría, KG, ritmo). Refresco por **polling** (intervalo corto). |
+| `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Captura res por res: renglón sugerido con override, garrón, UF, los **datos del palco** del animal (conformación, engrasamiento, dentición) y piezas (1 P / 2 A-B V) con peso, **contusión**, cámara y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. Los combos del palco solo aparecen si la especie los tiene cargados (R-E22). El check **Decomiso total** condena la res y esconde la clasificación (R-E23); cada pieza puede llevar un **decomiso parcial** con motivo y kilos (R-E24). |
+| `EjeTipificacionListPage` / `EjeTipificacionFormPage` | `/conformaciones`, `/grados-engrasamiento`, `/denticiones`, `/tipos-contusiones`, `/motivos-decomisos` | Administración *(solo SUPERADMIN)* | Un **único par de pantallas** para los cuatro catálogos del palco y los motivos de decomiso; cuál es lo define una prop. ABM con filtro por especie y estado. Ver §9.4. |
+| `MonitorFaenaPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/monitor` | Ejecución de Faena | Tablero **read-only** de supervisión: totales en vivo (faenado vs planificado, por tropa/categoría, KG, ritmo) y las **reses condenadas**, cuyos kilos quedan fuera del total. Refresco por **polling** (intervalo corto). |
 
 Acceso desde el detalle de la LM `EN_EJECUCION` (botones "Ejecutar / Tipificar" y "Monitor").
 El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por renglón.
@@ -516,6 +579,13 @@ El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por r
   Tipificador lo avisa y **bloquea** el
   registro (R-E14). Que el peso caiga fuera del rango de la que corresponde **no** bloquea: se
   registra con confirmación y queda marcado (R-E15).
+- **O-E1 (un motivo por decomiso).** Hoy la res condenada lleva un motivo y la media res
+  recortada lleva otro, como columnas. Si aparece el caso de dos causas sobre la misma pieza
+  (contusión más absceso, por ejemplo), hay que pasarlo a una tabla hija de decomisos. Se dejó
+  como está porque ningún caso lo pide y las columnas siguen el patrón de los datos del palco.
+- **O-E2 (quién registra el decomiso).** Lo registra el **Tipificador**, en el mismo momento en que
+  ve la res, aunque quien condena es la inspección veterinaria. El modelo no depende de eso: si
+  más adelante hay un puesto sanitario propio, escribe en las mismas columnas.
 - **Balanza:** integración de hardware de puesto fuera de MVP (peso manual).
 - **Grano de trazabilidad:** adoptado grano grueso (§8); si se necesita el detalle por animal en el
   timeline, se evaluará en Evaluación de Faena (Paso 4).
@@ -526,7 +596,10 @@ El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por r
   comercial definido al planificar) o queda totalmente implícito. Por ahora se deja como está.
 
 ## 13. Fuera de alcance
-- Fase 2b (dentición, contusiones, decomisos, más mediciones, otras especies).
+- Más mediciones por pieza (hoy solo `PESO`) y otras especies. Dentición, contusiones y decomisos
+  ya están implementados.
+- **Decomiso de vísceras y subproductos** (hígado, pulmón): requiere abrir el dominio de
+  subproductos, hoy cerrado como fuera del MVP (O-3 en `EvaluacionFaena.md`).
 - Integración con balanza / captura automática en puesto.
 
 ### Próximo paso: Evaluación de Faena (Ciclo I – Paso 4)

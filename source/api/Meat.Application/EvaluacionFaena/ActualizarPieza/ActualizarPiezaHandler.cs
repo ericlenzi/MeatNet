@@ -53,6 +53,27 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
             if (request.Peso <= 0)
                 throw new ValidationException("El peso debe ser mayor a cero.");
 
+            // La res condenada entera (R-E23) no se tipifica ni entra a camara: lo unico
+            // corregible de su pieza es el peso, que son los kilos que la inspeccion condeno.
+            // Sin esta salida, la correccion le exigiria una tipificacion que no debe tener.
+            if (pieza.Romaneo.DecomisoTotal)
+            {
+                pieza.Peso = request.Peso;
+                pieza.PesoFueraRango = false;
+                ActualizarMedicionPeso(pieza, request.Peso);
+
+                await this.context.SaveChangesAsync(cancellationToken);
+
+                return new ActualizarPiezaResponse
+                {
+                    Id = pieza.Id,
+                    Peso = pieza.Peso,
+                    PesoFueraRango = pieza.PesoFueraRango,
+                    TipificacionId = pieza.TipificacionId,
+                    AlmacenDestinoId = pieza.AlmacenDestinoId
+                };
+            }
+
             if (!request.TipificacionId.HasValue)
                 throw new ValidationException("La pieza debe tener una tipificacion.");
 
@@ -104,11 +125,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
             pieza.TipificacionId = tipificacion.Id;
             pieza.AlmacenDestinoId = request.AlmacenDestinoId;
 
-            // Peso es cache de la medicion PESO: si no se actualiza, la medicion queda mintiendo.
-            var medicionPeso = pieza.Mediciones
-                .FirstOrDefault(m => m.TipoMedicionId == RomaneoConstantes.MedicionPeso);
-            if (medicionPeso != null)
-                medicionPeso.Valor = request.Peso;
+            ActualizarMedicionPeso(pieza, request.Peso);
 
             await this.context.SaveChangesAsync(cancellationToken);
 
@@ -120,6 +137,17 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
                 TipificacionId = pieza.TipificacionId,
                 AlmacenDestinoId = pieza.AlmacenDestinoId
             };
+        }
+
+        /// <summary>
+        /// Peso es cache de la medicion PESO: si no se actualiza, la medicion queda mintiendo.
+        /// </summary>
+        private static void ActualizarMedicionPeso(Meat.Domain.Romaneos.RomaneoPieza pieza, double peso)
+        {
+            var medicionPeso = pieza.Mediciones
+                .FirstOrDefault(m => m.TipoMedicionId == RomaneoConstantes.MedicionPeso);
+            if (medicionPeso != null)
+                medicionPeso.Valor = peso;
         }
     }
 }

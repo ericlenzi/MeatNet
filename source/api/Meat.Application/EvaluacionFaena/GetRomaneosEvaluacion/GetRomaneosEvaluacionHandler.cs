@@ -56,6 +56,8 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                     Anulado = r.Anulado,
                     Liberado = r.Liberado,
                     FechaLiberacion = r.FechaLiberacion,
+                    DecomisoTotal = r.DecomisoTotal,
+                    MotivoDecomisoNombre = r.MotivoDecomiso != null ? r.MotivoDecomiso.Nombre : null,
                     PesoTotal = r.Piezas.Sum(p => p.Peso),
                     Piezas = r.Piezas
                         .OrderBy(p => p.Letra)
@@ -72,7 +74,9 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                             TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null,
                             MaterialId = p.Tipificacion != null ? p.Tipificacion.MaterialId : null,
                             MaterialCodigo = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.CodigoMaterial : null,
-                            MaterialNombre = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.Nombre : null
+                            MaterialNombre = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.Nombre : null,
+                            MotivoDecomisoNombre = p.MotivoDecomiso != null ? p.MotivoDecomiso.Nombre : null,
+                            PesoDecomisado = p.PesoDecomisado
                         }).ToList()
                 })
                 .ToListAsync(cancellationToken);
@@ -102,6 +106,12 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                 TotalPiezas = vigentes.Sum(r => r.Piezas.Count()),
                 TotalKg = vigentes.Sum(r => r.PesoTotal),
                 PiezasLiberadas = vigentes.Sum(r => r.Piezas.Count(p => p.Liberado)),
+                // Merma sanitaria de la jornada: la res condenada aporta todos sus kilos, la
+                // media res con recorte parcial solo los que retiro la inspeccion.
+                TotalDecomisosTotales = vigentes.Count(r => r.DecomisoTotal),
+                TotalKgDecomisados = vigentes.Sum(r => r.DecomisoTotal
+                    ? r.PesoTotal
+                    : r.Piezas.Sum(p => p.PesoDecomisado)),
                 Data = data,
                 Camaras = camaras
             };

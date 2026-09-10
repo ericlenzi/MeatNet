@@ -88,8 +88,12 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
                 this.context.MovimientosCamaras.Add(movimiento);
             }
 
-            // R-L3: las piezas liberadas quedan inmutables.
-            var piezasIds = plan.Movimientos.Select(m => m.PiezaId).Distinct().ToList();
+            // R-L3: las piezas liberadas quedan inmutables. Las de reses condenadas (R-E23) se
+            // fijan tambien: no generaron movimiento, pero la jornada se cierra completa y el
+            // romaneo condenado tampoco se edita ni se anula despues de liberar.
+            var piezasIds = plan.Movimientos.Select(m => m.PiezaId)
+                .Concat(plan.Decomisadas.Select(d => d.PiezaId))
+                .Distinct().ToList();
             var piezas = await this.context.RomaneosPiezas
                 .Where(p => piezasIds.Contains(p.Id))
                 .ToListAsync(cancellationToken);
@@ -97,7 +101,9 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
                 pieza.Liberado = true;
 
             // El romaneo queda definitivo cuando todas sus piezas lo estan.
-            var romaneosIds = plan.Movimientos.Select(m => m.RomaneoId).Distinct().ToList();
+            var romaneosIds = plan.Movimientos.Select(m => m.RomaneoId)
+                .Concat(plan.Decomisadas.Select(d => d.RomaneoId))
+                .Distinct().ToList();
             var romaneos = await this.context.Romaneos
                 .Include(r => r.Piezas)
                 .Where(r => romaneosIds.Contains(r.Id))
@@ -126,7 +132,10 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
                 Fecha = ahora,
                 UsuarioId = request.UsuarioId,
                 TipoMovimiento = TiposMovimientoLM.LiberacionCamara,
-                Motivo = $"Liberacion: {piezas.Count} piezas a camara en {plan.Movimientos.Count} movimientos ({kilosIngresados:0.##} kg)."
+                Motivo = $"Liberacion: {piezas.Count - plan.Decomisadas.Count} piezas a camara en {plan.Movimientos.Count} movimientos ({kilosIngresados:0.##} kg)."
+                    + (plan.Decomisadas.Count > 0
+                        ? $" {plan.Decomisadas.Count} pieza(s) de reses condenadas ({plan.KilosDecomisados:0.##} kg) no generaron existencia."
+                        : string.Empty)
             });
 
             lm.FechaActualizacion = ahora;
@@ -140,7 +149,9 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
                 PiezasLiberadas = piezas.Count,
                 RomaneosLiberados = romaneosLiberados,
                 PiezasYaLiberadas = plan.PiezasYaLiberadas,
-                KilosIngresados = kilosIngresados
+                KilosIngresados = kilosIngresados,
+                PiezasDecomisadas = plan.Decomisadas.Count,
+                KilosDecomisados = plan.KilosDecomisados
             };
         }
 

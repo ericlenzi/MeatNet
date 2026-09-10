@@ -164,6 +164,8 @@ LM FINALIZADA (jornada cerrada)  ──►  abrir Evaluación de Faena
     │
     ▼
 [4] Liberar  ──►  por cada RomaneoPieza no anulada de la jornada:
+      • apartar las piezas de reses condenadas enteras (R-L9): se fijan, pero no generan
+        existencia ni se les busca material
       • resolver Material por Tipificacion.MaterialId (R-L1)
       • buscar Despiece activo del material (R-L4):
           - sin despiece  → 1 movimiento INGRESO (material, cámara destino, cantidad 1, peso)
@@ -299,6 +301,18 @@ o un estado. Una pieza liberada no admite edición (R-L3) y ya generó su existe
   las piezas liberadas se saltean).
 - **R-L8 (piezas sin cuartear que igual cambian de material).** El despiece admite `MaterialDestino`
   distinto sin ser "cuarto" (ej. reclasificación); el mecanismo es el mismo (transformación 1→1).
+- **R-L9 (la res condenada se libera sin entrar a cámara).** Las piezas de un romaneo con
+  `DecomisoTotal` (R-E23 en `EjecucionFaena.md`) **se apartan antes** de resolverles material, y
+  **no generan ningún movimiento**: esa carne no llega a la cámara.
+
+  Apartarlas es lo que evita que bloqueen la jornada. La res condenada no tiene tipificación a
+  propósito, así que si llegara al cálculo sería un problema por cada media res, y como la
+  liberación es **todo o nada**, una sola res condenada dejaría la jornada entera sin liberar.
+
+  Aun así **se marcan como liberadas**, con su romaneo: la jornada se cierra completa y el romaneo
+  condenado queda tan definitivo como el resto, sin quedar editable ni anulable después. La
+  previsualización y la respuesta de liberar las informan aparte, en piezas y kilos, para que la
+  diferencia entre lo faenado y lo que entró a cámara se lea sin buscarla.
 
 ## 10. Superficie de API (implementada)
 
@@ -308,9 +322,9 @@ o un estado. Una pieza liberada no admite edición (R-L3) y ya generó su existe
 | Verbo | Ruta | Descripción |
 |---|---|---|
 | GET | `/EvaluacionFaena/romaneos?listaMatanzaId=` | Romaneos de la jornada con material resultante, estado de liberación y cámaras del establecimiento. |
-| GET | `/EvaluacionFaena/previsualizar?listaMatanzaId=` | Qué quedaría en cada cámara y qué piezas lo impiden. No exige jornada finalizada. |
-| PUT | `/EvaluacionFaena/pieza/{id}` | Editar peso/tipificación/cámara de una pieza no liberada. |
-| POST | `/EvaluacionFaena/liberar` | Libera la jornada: genera los movimientos de cámara y fija los romaneos. |
+| GET | `/EvaluacionFaena/previsualizar?listaMatanzaId=` | Qué quedaría en cada cámara y qué piezas lo impiden, más las piezas y kilos de reses condenadas que se liberan sin entrar a cámara (R-L9). No exige jornada finalizada. |
+| PUT | `/EvaluacionFaena/pieza/{id}` | Editar peso/tipificación/cámara de una pieza no liberada. De una **res condenada** lo único corregible es el peso: no se tipifica ni va a cámara. |
+| POST | `/EvaluacionFaena/liberar` | Libera la jornada: genera los movimientos de cámara y fija los romaneos, condenados incluidos (R-L9). |
 | GET | `/ExistenciaCamara?establecimientoId=&almacenId=&materialId=&clienteId=&agruparPor=` | Saldo derivado del log. `agruparPor`: `MATERIAL` (cámara+material, default), `PROVEEDOR` (cliente+material) o `CAMARA` (cámara+cliente). |
 | GET | `/ExistenciaCamara/movimientos?almacenId=&materialId=&clienteId=&tropaId=&romaneoPiezaOrigenId=` | Detalle detrás del saldo, con el origen hasta el garrón (R-L5). |
 
@@ -329,8 +343,8 @@ destino a cámaras, todo abierto por cliente. Es **read-only** y va después de 
 
 **Reglas del rinde — RESUELTAS (2026-09-07).** Se calcula **solo rinde caliente**, sobre el peso
 vivo **de ingreso** prorrateado por tropa. No se descuenta desbaste (no hay balanza en playa) ni
-merma de oreo (no hay segunda pesada), y no se imputan decomisos. La definición completa y sus
-supuestos están en `AnalisisFaena.md` §2; el rinde frío, el desbaste y los decomisos quedan como
+merma de oreo (no hay segunda pesada). La definición completa y sus
+supuestos están en `AnalisisFaena.md` §2; el rinde frío y el desbaste quedan como
 temas abiertos O-A2, O-A3 y O-A1 de ese manual.
 
 ## 12. Temas abiertos
@@ -340,15 +354,20 @@ temas abiertos O-A2, O-A3 y O-A1 de ese manual.
   liberado. Si la operación en planta pide cargar la cámara sobre la marcha, se reevalúa.
 - **O-2 (saldo materializado).** ¿Alcanza el saldo derivado del log, o el Ciclo II necesita una tabla
   de saldo cacheada con reservas? Se decide al diseñar el consumo de Despostada.
-- **O-3 (subproductos y decomisos) — RESUELTA (2026-09-07): fuera del MVP.** El MVP de liberación
+- **O-3 (subproductos) — RESUELTA (2026-09-07): fuera del MVP.** El MVP de liberación
   cubre solo la carne (media res / res / cuartos). Los materiales de subproducto (Cuero Vacuno, Sebo,
   Menudencias) ya están cargados en el catálogo y quedan listos para una fase posterior, que deberá
   definir de dónde sale su peso (no sale de un despiece por rendimiento de la media res) y a qué
   almacén ingresan.
+
+  **Los decomisos de carne salieron de esta resuelta:** se capturan en el Tipificador (R-E23 y
+  R-E24 en `EjecucionFaena.md`) y la Liberación los contempla en R-L9. Lo que sigue afuera es el
+  decomiso de **vísceras y subproductos**, que depende de este mismo tema.
 - **O-4 (reverso post-liberación).** Contramovimiento para corregir una liberación equivocada
   (hoy: anular antes de liberar). A evaluar cuando aparezca la necesidad operativa.
 
 ## 13. Fuera de alcance
 - Ciclo II (Despostada): consumo de la existencia de cámara.
 - Envío/sincronización efectiva con el ERP (el `ERP_Codigo` queda como puente listo).
-- Subproductos/decomisos como existencia (O-3), reverso de liberación (O-4).
+- Subproductos como existencia, y el decomiso de vísceras que depende de ellos (O-3).
+- Reverso de liberación (O-4).

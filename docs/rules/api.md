@@ -94,13 +94,15 @@ UsosHaciendas, TiposMateriales, UnidadesMedidas, NumeradoresTropas, TiposEstados
 TiposEstadosTropas, TiposEstadosHacienda, IngresosHaciendas, IngresosHaciendasPesadas,
 IngresosHaciendasUbicaciones, Tropas, TropasMovimientos, TiposEstadosListasMatanzas,
 ListasMatanzas, ListasMatanzasDetalles, ListasMatanzasMovimientos, TiposPuestos,
-TiposMediciones, DestinosComerciales, TipificacionesOficiales, TiposDenticiones, Denticiones,
-TiposContusiones, MotivosDecomisos, Numeradores, UnidadesFaenas, Tipificaciones,
+TiposMediciones, DestinosComerciales, TipificacionesOficiales, Conformaciones,
+GradosEngrasamiento, Denticiones, TiposContusiones, MotivosDecomisos, Numeradores,
+UnidadesFaenas, Tipificaciones,
 DespiecesMateriales, Romaneos, RomaneosPiezas, RomaneosPiezasMediciones,
 TiposMovimientosCamaras, MovimientosCamaras
 
-> Son los 56 `DbSet` de `MeatContext`. La lista anterior habia quedado en 19 e incluia
-> `AlmacenesMateriales`, que se elimino en la migracion 31.
+> Son los 57 `DbSet` de `MeatContext`. La lista anterior habia quedado en 19 e incluia
+> `AlmacenesMateriales`, que se elimino en la migracion 31, y `TiposDenticiones`, que se
+> elimino con la migracion 68.
 
 ## Autenticación y Autorización
 - JWT con clave simétrica (HMAC SHA-256), configurada en `JwtOptions:SigninKey`

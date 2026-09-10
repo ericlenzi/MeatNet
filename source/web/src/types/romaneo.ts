@@ -59,6 +59,9 @@ export interface RomaneoPiezaItem {
   tipificacionId: string
   tipificacionDescripcion: string | null
   pesoFueraRango: boolean
+  /** Decomiso parcial de esta media res: la inspeccion retiro kilos y la pieza sigue a camara. */
+  motivoDecomisoNombre?: string | null
+  pesoDecomisado?: number
 }
 
 export interface RomaneoJornadaItem {
@@ -69,6 +72,9 @@ export interface RomaneoJornadaItem {
   tipoEspecieNombre: string
   unidadFaenaNombre: string
   anulado: boolean
+  /** Res condenada entera: se peso, pero no va a camara. */
+  decomisoTotal?: boolean
+  motivoDecomisoNombre?: string | null
   fecha: string
   pesoTotal: number
   piezas: RomaneoPiezaItem[]
@@ -99,6 +105,9 @@ export interface MonitorFaena {
   totalPendiente: number
   animalesRomaneados: number
   kgTotales: number
+  /** Reses condenadas enteras: faenadas, pero fuera de kgTotales. */
+  animalesDecomisados: number
+  kgDecomisados: number
   ritmoPorHora: number
   porRenglon: RenglonMonitorItem[]
 }
@@ -106,11 +115,15 @@ export interface MonitorFaena {
 // --- Requests (PascalCase: matchean el backend) ---
 export interface PiezaRomaneoInput {
   AlmacenDestinoId: string
-  TipificacionId: string
+  /** Vacio cuando la res esta condenada entera: esa pieza no se tipifica. */
+  TipificacionId?: string
   /** Contusion de esta media res: el golpe es de la pieza, no del animal. */
   TipoContusionId?: string
   Peso: number
   ForzarFueraRango: boolean
+  /** Decomiso parcial: motivo y kilos van juntos, y no descuentan el peso de la pieza. */
+  MotivoDecomisoId?: string
+  PesoDecomisado?: number
 }
 
 export interface CrearRomaneoRequest {
@@ -123,5 +136,8 @@ export interface CrearRomaneoRequest {
   ConformacionId?: string
   GradoEngrasamientoId?: string
   DenticionId?: string
+  /** Decomiso total: la res se condena entera. Exige motivo y deja sin pedir el resto. */
+  DecomisoTotal?: boolean
+  MotivoDecomisoId?: string
   Piezas: PiezaRomaneoInput[]
 }

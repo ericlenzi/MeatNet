@@ -5,6 +5,7 @@ using Meat.Domain.Tropas;
 using Meat.Domain.Conformaciones;
 using Meat.Domain.Denticiones;
 using Meat.Domain.GradosEngrasamiento;
+using Meat.Domain.MotivosDecomisos;
 using Meat.Domain.UnidadesFaenas;
 using System;
 using System.Collections.Generic;
@@ -60,6 +61,14 @@ namespace Meat.Domain.Romaneos
         public virtual Denticion Denticion { get; set; }
 
         public virtual UnidadFaena UnidadFaena { get; set; }
+
+        // Decomiso total (R-E23): la inspeccion condena la res entera. El animal se faeno igual
+        // (consume el renglon de la LM y gasta numero de romaneo) y sus piezas se pesan, porque
+        // esos kilos son la merma sanitaria de la jornada; pero no se tipifican ni generan
+        // existencia de camara al liberar. El motivo es obligatorio cuando la marca esta puesta.
+        public bool DecomisoTotal { get; set; }
+        public string MotivoDecomisoId { get; set; }
+        public virtual MotivoDecomiso MotivoDecomiso { get; set; }
 
         public int NumeroGarron { get; set; }                  // nro fisico de gancho; unico por LM
         public long NumeroRomaneo { get; set; }                // correlativo Numerador ROMANEO (Estab+Especie)

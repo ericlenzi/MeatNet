@@ -26,5 +26,11 @@ namespace Meat.Application.EvaluacionFaena.LiberarJornada
 
         /// <summary>Kilos netos que quedaron en camara (el cuarteo no duplica: la media res se cancela con su baja).</summary>
         public double KilosIngresados { get; set; }
+
+        /// <summary>Piezas de reses condenadas (R-E23): se fijaron sin generar existencia.</summary>
+        public int PiezasDecomisadas { get; set; }
+
+        /// <summary>Kilos condenados que no entraron a camara.</summary>
+        public double KilosDecomisados { get; set; }
     }
 }

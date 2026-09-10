@@ -81,10 +81,33 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             var contusiones = await this.context.TiposContusiones
                 .Where(t => t.Activo && t.EspecieId == lm.EspecieId)
                 .Select(t => t.Codigo).ToListAsync(cancellationToken);
+            var motivosDecomiso = await this.context.MotivosDecomisos
+                .Where(m => m.Activo && m.EspecieId == lm.EspecieId)
+                .Select(m => m.Codigo).ToListAsync(cancellationToken);
 
-            ValidarDatoDePalco("la conformacion de la res", conformaciones, request.ConformacionId);
-            ValidarDatoDePalco("el grado de engrasamiento de la res", gradosEngrasamiento, request.GradoEngrasamientoId);
-            ValidarDatoDePalco("la denticion del animal", denticiones, request.DenticionId);
+            // 5d) Decomiso total (R-E23): la inspeccion condena la res entera. El motivo es
+            //     obligatorio, y la res condenada no se clasifica: no se piden los datos del
+            //     palco ni la tipificacion, porque no va a ser carne. Si el puesto los manda
+            //     igual, se descartan aca en vez de frenar la linea con un error.
+            var decomisoTotal = request.DecomisoTotal;
+            var motivoTotal = Normalizar(request.MotivoDecomisoId);
+
+            if (decomisoTotal)
+            {
+                if (motivoTotal == null)
+                    throw new ValidationException("Debe indicar el motivo por el que se condena la res.");
+                if (!motivosDecomiso.Contains(motivoTotal))
+                    throw new ValidationException("El motivo de decomiso indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
+            }
+            else
+            {
+                if (motivoTotal != null)
+                    throw new ValidationException("El motivo de decomiso de la res solo se registra cuando se la condena entera.");
+
+                ValidarDatoDePalco("la conformacion de la res", conformaciones, request.ConformacionId);
+                ValidarDatoDePalco("el grado de engrasamiento de la res", gradosEngrasamiento, request.GradoEngrasamientoId);
+                ValidarDatoDePalco("la denticion del animal", denticiones, request.DenticionId);
+            }
 
             var piezasEsperadas = Math.Max(1, uf.PiezasPorAnimal);
             var piezas = request.Piezas ?? new List<PiezaRomaneoInput>();
@@ -92,13 +115,45 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 throw new ValidationException($"Se esperaban {piezasEsperadas} pieza(s) para la unidad de faena '{uf.Nombre}' y se recibieron {piezas.Count}.");
             if (piezas.Any(p => p.Peso <= 0))
                 throw new ValidationException("El peso de cada pieza debe ser mayor a cero.");
-            if (piezas.Any(p => !p.TipificacionId.HasValue))
+
+            // La res condenada se pesa igual: esos kilos son la merma sanitaria de la jornada.
+            // Lo que no lleva es tipificacion ni contusion.
+            if (!decomisoTotal && piezas.Any(p => !p.TipificacionId.HasValue))
                 throw new ValidationException("Cada pieza debe tener una tipificacion.");
 
             // La contusion es el unico de los cuatro datos del palco que va por pieza: el golpe
             // esta en una media res concreta. Se valida con la misma regla derivada del catalogo.
+            if (!decomisoTotal)
+            {
+                foreach (var p in piezas)
+                    ValidarDatoDePalco("la contusion de cada media res", contusiones, p.TipoContusionId);
+            }
+
+            // 5e) Decomiso parcial (R-E24): la inspeccion retira kilos de una media res y la
+            //     pieza sigue su curso a camara. Motivo y kilos van juntos, y los kilos no pueden
+            //     alcanzar el peso de la pieza: eso ya es una condena y va por decomiso total.
             foreach (var p in piezas)
-                ValidarDatoDePalco("la contusion de cada media res", contusiones, p.TipoContusionId);
+            {
+                var motivoPieza = Normalizar(p.MotivoDecomisoId);
+
+                if (decomisoTotal)
+                {
+                    if (motivoPieza != null || p.PesoDecomisado > 0)
+                        throw new ValidationException("La res condenada entera no lleva ademas decomisos parciales por pieza.");
+                    continue;
+                }
+
+                if (motivoPieza == null && p.PesoDecomisado <= 0)
+                    continue;
+                if (motivoPieza == null)
+                    throw new ValidationException("Indique el motivo del decomiso parcial de la pieza.");
+                if (!motivosDecomiso.Contains(motivoPieza))
+                    throw new ValidationException("El motivo de decomiso indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
+                if (p.PesoDecomisado <= 0)
+                    throw new ValidationException("Los kilos decomisados de la pieza deben ser mayores a cero.");
+                if (p.PesoDecomisado >= p.Peso)
+                    throw new ValidationException("Los kilos decomisados no pueden alcanzar el peso de la pieza. Si se condena la res entera, use el decomiso total.");
+            }
 
             // 5b) Camara destino por pieza (default del renglon, editable en el puesto): obligatoria
             //     y valida (camara activa del establecimiento de la LM). Cada media res puede ir a
@@ -125,8 +180,11 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             if (garronRepetido)
                 throw new ValidationException($"El garron {request.NumeroGarron} ya fue usado en esta jornada.");
 
-            // 7) Tipificaciones validas (activas, de la empresa)
-            var tipIds = piezas.Select(p => p.TipificacionId.Value).Distinct().ToList();
+            // 7) Tipificaciones validas (activas, de la empresa). La res condenada no tiene:
+            //    la lista queda vacia y todo este bloque se saltea solo.
+            var tipIds = decomisoTotal
+                ? new List<Guid>()
+                : piezas.Select(p => p.TipificacionId.Value).Distinct().ToList();
             var tipificaciones = await this.context.Tipificaciones
                 .Where(t => tipIds.Contains(t.Id) && t.Activo)
                 .ToListAsync(cancellationToken);
@@ -138,6 +196,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             // se permite si el operario lo confirma (ForzarFueraRango) y queda registrado en la pieza.
             foreach (var p in piezas)
             {
+                if (decomisoTotal) break;
                 var t = tipPorId[p.TipificacionId.Value];
                 if (p.Peso >= t.PesoDesde && p.Peso <= t.PesoHasta) continue;
                 if (!p.ForzarFueraRango)
@@ -163,6 +222,16 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             romaneo.ConformacionId = string.IsNullOrWhiteSpace(request.ConformacionId) ? null : request.ConformacionId;
             romaneo.GradoEngrasamientoId = string.IsNullOrWhiteSpace(request.GradoEngrasamientoId) ? null : request.GradoEngrasamientoId;
             romaneo.DenticionId = string.IsNullOrWhiteSpace(request.DenticionId) ? null : request.DenticionId;
+            romaneo.DecomisoTotal = decomisoTotal;
+            romaneo.MotivoDecomisoId = motivoTotal;
+
+            // La res condenada no se clasifica (R-E23): lo que haya llegado del puesto se descarta.
+            if (decomisoTotal)
+            {
+                romaneo.ConformacionId = null;
+                romaneo.GradoEngrasamientoId = null;
+                romaneo.DenticionId = null;
+            }
             romaneo.NumeroGarron = request.NumeroGarron;
             romaneo.NumeroRomaneo = numeroRomaneo;
             romaneo.UsuarioId = request.UsuarioId;
@@ -173,11 +242,15 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 pieza.RomaneoId = romaneo.Id;
                 pieza.Letra = piezasEsperadas > 1 ? RomaneoConstantes.Letras[idx] : null;
                 pieza.AlmacenDestinoId = p.AlmacenDestinoId;
-                pieza.TipificacionId = p.TipificacionId;
-                pieza.TipoContusionId = string.IsNullOrWhiteSpace(p.TipoContusionId) ? null : p.TipoContusionId;
+                pieza.TipificacionId = decomisoTotal ? null : p.TipificacionId;
+                pieza.TipoContusionId = decomisoTotal || string.IsNullOrWhiteSpace(p.TipoContusionId) ? null : p.TipoContusionId;
                 pieza.Peso = p.Peso;
-                var tipPieza = tipPorId[p.TipificacionId.Value];
-                pieza.PesoFueraRango = p.Peso < tipPieza.PesoDesde || p.Peso > tipPieza.PesoHasta;
+                pieza.MotivoDecomisoId = decomisoTotal ? null : Normalizar(p.MotivoDecomisoId);
+                pieza.PesoDecomisado = decomisoTotal ? 0 : p.PesoDecomisado;
+
+                // Sin tipificacion no hay rango contra el cual comparar el peso.
+                var tipPieza = decomisoTotal ? null : tipPorId[p.TipificacionId.Value];
+                pieza.PesoFueraRango = tipPieza != null && (p.Peso < tipPieza.PesoDesde || p.Peso > tipPieza.PesoHasta);
 
                 var medicion = RomaneoFactory.CreateMedicion();
                 medicion.RomaneoPiezaId = pieza.Id;
@@ -193,9 +266,11 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             // 10) Consumo de stock: sube CantidadFaenada del renglon
             renglon.CantidadFaenada += 1;
 
-            // 11) Puntos: +1 por cada tipificacion usada (cada pieza)
+            // 11) Puntos: +1 por cada tipificacion usada (cada pieza). La res condenada no usa
+            //     ninguna, asi que no mueve la propuesta del proximo romaneo.
             foreach (var p in piezas)
             {
+                if (decomisoTotal) break;
                 var tip = tipPorId[p.TipificacionId.Value];
                 tip.Puntos += 1;
                 tip.FechaActualizacion = DateTime.Now;
@@ -214,6 +289,10 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 NumeroGarron = romaneo.NumeroGarron
             };
         }
+
+        /// <summary>Recorta el codigo y devuelve null si quedo vacio.</summary>
+        private static string Normalizar(string valor)
+            => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
 
         /// <summary>
         /// Valida uno de los cuatro datos del palco contra su catalogo (R-E20). El catalogo es la

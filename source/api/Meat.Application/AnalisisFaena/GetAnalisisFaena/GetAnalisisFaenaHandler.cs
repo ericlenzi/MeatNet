@@ -16,8 +16,12 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
     /// lectura (R-A1). Ver docs/manuales/AnalisisFaena.md.
     ///
     /// El rinde es CALIENTE y contra el peso VIVO DE INGRESO: no hay pesada en playa (desbaste)
-    /// ni segunda pesada tras el oreo, asi que sale subestimado y no descuenta decomisos. La
-    /// pantalla muestra esos supuestos junto al numero.
+    /// ni segunda pesada tras el oreo, asi que sale subestimado. La pantalla muestra esos
+    /// supuestos junto al numero.
+    ///
+    /// Los decomisos no retocan la formula del rinde: la res condenada sale del numerador porque
+    /// esa carne no existe, el animal sigue en el denominador porque se faeno, y la diferencia se
+    /// informa aparte como merma sanitaria (R-A6).
     /// </summary>
     public class GetAnalisisFaenaHandler : IRequestHandler<GetAnalisisFaenaRequest, GetAnalisisFaenaResponse>
     {
@@ -54,6 +58,12 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                     p.PesoFueraRango,
                     p.Liberado,
                     p.TipificacionId,
+                    r.DecomisoTotal,
+                    MotivoTotalCodigo = r.MotivoDecomisoId,
+                    MotivoTotalNombre = r.MotivoDecomiso != null ? r.MotivoDecomiso.Nombre : null,
+                    MotivoParcialCodigo = p.MotivoDecomisoId,
+                    MotivoParcialNombre = p.MotivoDecomiso != null ? p.MotivoDecomiso.Nombre : null,
+                    p.PesoDecomisado,
                     TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null,
                     MaterialNombre = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.Nombre : null,
                     TipoEspecieId = te.Codigo,
@@ -93,8 +103,20 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                         select (double?)u.PesoPromedio).FirstOrDefault()
                 }).ToListAsync(cancellationToken);
 
-            var kgFaena = piezas.Sum(p => p.Peso);
+            // R-A6: la carne de una res condenada no llega a camara, asi que no entra al
+            // numerador del rinde. El animal si se faeno, y por eso sigue contando como faenado
+            // y sus kilos vivos quedan en el denominador: es justamente lo que hace caer el
+            // rinde, y lo que la merma sanitaria explica.
+            var piezasCarne = piezas.Where(p => !p.DecomisoTotal).ToList();
+
+            var kgFaena = piezasCarne.Sum(p => p.Peso);
             var animalesFaenados = piezas.Select(p => p.RomaneoId).Distinct().Count();
+
+            var kgDecomisoTotal = piezas.Where(p => p.DecomisoTotal).Sum(p => p.Peso);
+            var animalesDecomisados = piezas.Where(p => p.DecomisoTotal).Select(p => p.RomaneoId).Distinct().Count();
+            var parciales = piezasCarne.Where(p => p.PesoDecomisado > 0 && p.MotivoParcialCodigo != null).ToList();
+            var kgDecomisoParcial = parciales.Sum(p => p.PesoDecomisado);
+            var kgDecomisados = kgDecomisoTotal + kgDecomisoParcial;
 
             // Kg vivos: se prorratea el promedio de la ubicacion por los animales faenados. Los
             // renglones sin peso de ingreso no suman y se informan aparte (R-A3).
@@ -113,12 +135,18 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                 EstablecimientoNombre = lm.Establecimiento.Nombre,
                 AnimalesFaenados = animalesFaenados,
-                Piezas = piezas.Count,
+                Piezas = piezasCarne.Count,
                 KgFaena = kgFaena,
                 KgVivos = kgVivos > 0 ? kgVivos : (double?)null,
                 RindeCaliente = kgVivos > 0 ? Math.Round(kgFaena / kgVivos * 100, 2) : (double?)null,
                 AnimalesSinPesoVivo = animalesSinPesoVivo,
-                PiezasLiberadas = piezas.Count(p => p.Liberado)
+                PiezasLiberadas = piezas.Count(p => p.Liberado),
+                AnimalesDecomisados = animalesDecomisados,
+                KgDecomisoTotal = kgDecomisoTotal,
+                PiezasConDecomisoParcial = parciales.Count,
+                KgDecomisoParcial = kgDecomisoParcial,
+                KgDecomisados = kgDecomisados,
+                MermaSanitaria = kgVivos > 0 ? Math.Round(kgDecomisados / kgVivos * 100, 2) : (double?)null
             };
 
             // --- Por cliente: el corte por el que se discute el resultado ---
@@ -126,22 +154,27 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 .GroupBy(r => r.ClienteId)
                 .ToDictionary(g => g.Key, g => g.Sum(r => r.CantidadFaenada * r.PesoPromedioVivo.Value));
 
+            // Se agrupa sobre todas las piezas, condenadas incluidas: el cliente cuyos animales
+            // se condenaron enteros tiene que aparecer igual, con sus kilos vivos y su merma.
             response.PorCliente = piezas
                 .GroupBy(p => new { p.ClienteId, p.ClienteNombre })
                 .Select(g =>
                 {
-                    var kg = g.Sum(x => x.Peso);
+                    var kg = g.Where(x => !x.DecomisoTotal).Sum(x => x.Peso);
+                    var kgCondenados = g.Where(x => x.DecomisoTotal).Sum(x => x.Peso)
+                        + g.Where(x => !x.DecomisoTotal).Sum(x => x.PesoDecomisado);
                     kgVivosPorCliente.TryGetValue(g.Key.ClienteId, out var vivos);
                     return new AnalisisClienteItem
                     {
                         ClienteId = g.Key.ClienteId,
                         ClienteNombre = g.Key.ClienteNombre,
                         AnimalesFaenados = g.Select(x => x.RomaneoId).Distinct().Count(),
-                        Piezas = g.Count(),
+                        Piezas = g.Count(x => !x.DecomisoTotal),
                         KgFaena = kg,
                         KgVivos = vivos > 0 ? vivos : (double?)null,
                         RindeCaliente = vivos > 0 ? Math.Round(kg / vivos * 100, 2) : (double?)null,
-                        ParticipacionKg = kgFaena > 0 ? Math.Round(kg / kgFaena * 100, 2) : 0
+                        ParticipacionKg = kgFaena > 0 ? Math.Round(kg / kgFaena * 100, 2) : 0,
+                        KgDecomisados = kgCondenados
                     };
                 })
                 .OrderByDescending(x => x.KgFaena)
@@ -166,8 +199,8 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 })
                 .ToList();
 
-            // --- Tipificacion consolidada ---
-            response.Tipificaciones = piezas
+            // --- Tipificacion consolidada (la res condenada no se tipifica) ---
+            response.Tipificaciones = piezasCarne
                 .GroupBy(p => new { p.TipificacionId, p.TipificacionDescripcion, p.MaterialNombre })
                 .Select(g =>
                 {
@@ -186,8 +219,8 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 .OrderByDescending(x => x.KgFaena)
                 .ToList();
 
-            // --- Pesos y dispersion ---
-            response.Dispersion = piezas
+            // --- Pesos y dispersion (sobre la carne: la res condenada no se compara con nada) ---
+            response.Dispersion = piezasCarne
                 .GroupBy(p => new { p.TipoEspecieId, p.TipoEspecieNombre })
                 .Select(g => new DispersionPesoItem
                 {
@@ -200,6 +233,32 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                     PiezasFueraRango = g.Count(x => x.PesoFueraRango)
                 })
                 .OrderBy(x => x.TipoEspecieNombre)
+                .ToList();
+
+            // --- Merma sanitaria por motivo: el informe que pide la inspeccion ---
+            // Los dos decomisos se cuentan distinto y por eso van en columnas separadas: la res
+            // condenada se cuenta en animales y aporta todos sus kilos; el recorte se cuenta en
+            // medias reses y aporta solo los kilos retirados.
+            var porMotivo = new Dictionary<string, DecomisoMotivoItem>();
+
+            foreach (var g in piezas.Where(x => x.DecomisoTotal && x.MotivoTotalCodigo != null)
+                .GroupBy(x => new { Codigo = x.MotivoTotalCodigo, Nombre = x.MotivoTotalNombre }))
+            {
+                var item = Motivo(porMotivo, g.Key.Codigo, g.Key.Nombre);
+                item.Animales += g.Select(x => x.RomaneoId).Distinct().Count();
+                item.Kg += g.Sum(x => x.Peso);
+            }
+
+            foreach (var g in parciales
+                .GroupBy(x => new { Codigo = x.MotivoParcialCodigo, Nombre = x.MotivoParcialNombre }))
+            {
+                var item = Motivo(porMotivo, g.Key.Codigo, g.Key.Nombre);
+                item.Piezas += g.Count();
+                item.Kg += g.Sum(x => x.PesoDecomisado);
+            }
+
+            response.Decomisos = porMotivo.Values
+                .OrderByDescending(x => x.Kg)
                 .ToList();
 
             // --- Destino a camaras: lo que dejo la Liberacion. Vacio si todavia no se libero. ---
@@ -225,6 +284,18 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 .ToList();
 
             return response;
+        }
+
+        /// <summary>Toma (o crea) la fila del motivo en el desglose de decomisos.</summary>
+        private static DecomisoMotivoItem Motivo(Dictionary<string, DecomisoMotivoItem> acumulado, string codigo, string nombre)
+        {
+            if (!acumulado.TryGetValue(codigo, out var item))
+            {
+                item = new DecomisoMotivoItem { MotivoCodigo = codigo, MotivoNombre = nombre ?? codigo };
+                acumulado[codigo] = item;
+            }
+
+            return item;
         }
     }
 }

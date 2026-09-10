@@ -67,8 +67,16 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
         <Stat label="Faenado" value={m.totalFaenado} hint={`${avance}%`} />
         <Stat label="Pendiente" value={m.totalPendiente} />
         <Stat label="Animales" value={m.animalesRomaneados} />
+        {/* Los kg son los de carne: la res condenada se faenó pero no va a cámara. */}
         <Stat label="Kg totales" value={m.kgTotales.toFixed(0)} />
         <Stat label="Ritmo" value={m.ritmoPorHora} hint="animales/hora" />
+        {m.animalesDecomisados > 0 && (
+          <Stat
+            label="Reses condenadas"
+            value={m.animalesDecomisados}
+            hint={`${m.kgDecomisados.toFixed(0)} kg fuera del total`}
+          />
+        )}
       </div>
 
       {/* Barra de avance */}

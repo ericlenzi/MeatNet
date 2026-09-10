@@ -52,11 +52,16 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
             // Romaneos no anulados de la jornada: conteo, KG y ventana temporal (para el ritmo).
             var romaneos = await this.context.Romaneos
                 .Where(r => r.ListaMatanzaId == lm.Id && !r.Anulado)
-                .Select(r => new { r.Fecha, r.ListaMatanzaDetalleId, r.NumeroRomaneo, Peso = r.Piezas.Sum(p => p.Peso) })
+                .Select(r => new { r.Fecha, r.ListaMatanzaDetalleId, r.NumeroRomaneo, r.DecomisoTotal, Peso = r.Piezas.Sum(p => p.Peso) })
                 .ToListAsync(cancellationToken);
 
             var animales = romaneos.Count;
-            var kg = romaneos.Sum(r => r.Peso);
+
+            // Los kilos del monitor son los de carne: la res condenada se faeno pero no va a
+            // camara, asi que se cuenta aparte y no infla el total (R-E23).
+            var kg = romaneos.Where(r => !r.DecomisoTotal).Sum(r => r.Peso);
+            var decomisados = romaneos.Count(r => r.DecomisoTotal);
+            var kgDecomisados = romaneos.Where(r => r.DecomisoTotal).Sum(r => r.Peso);
 
             // Rango de numeros de romaneo ya registrados en cada renglon.
             var rangos = romaneos
@@ -91,6 +96,8 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
                 TotalPendiente = porRenglon.Sum(r => r.Pendiente),
                 AnimalesRomaneados = animales,
                 KgTotales = kg,
+                AnimalesDecomisados = decomisados,
+                KgDecomisados = kgDecomisados,
                 RitmoPorHora = Math.Round(ritmo, 1),
                 PorRenglon = porRenglon
             };

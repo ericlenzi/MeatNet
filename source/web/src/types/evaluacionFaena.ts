@@ -1,4 +1,4 @@
-export interface PiezaEvaluacionItem {
+﻿export interface PiezaEvaluacionItem {
   id: string
   letra: string | null
   peso: number
@@ -11,6 +11,9 @@ export interface PiezaEvaluacionItem {
   materialId: string | null
   materialCodigo: string | null
   materialNombre: string | null
+  /** Decomiso parcial de esta media res: kilos retirados por la inspeccion. */
+  motivoDecomisoNombre: string | null
+  pesoDecomisado: number
 }
 
 export interface RomaneoEvaluacionItem {
@@ -26,6 +29,9 @@ export interface RomaneoEvaluacionItem {
   anulado: boolean
   liberado: boolean
   fechaLiberacion: string | null
+  /** Res condenada entera: se pesa y se libera, pero no entra a camara. */
+  decomisoTotal: boolean
+  motivoDecomisoNombre: string | null
   pesoTotal: number
   piezas: PiezaEvaluacionItem[]
 }
@@ -46,6 +52,8 @@ export interface RomaneosEvaluacionResponse {
   totalPiezas: number
   totalKg: number
   piezasLiberadas: number
+  totalDecomisosTotales: number
+  totalKgDecomisados: number
   data: RomaneoEvaluacionItem[]
   camaras: CamaraOpcion[]
 }
@@ -78,6 +86,9 @@ export interface PrevisualizacionLiberacion {
   piezasAProcesar: number
   piezasYaLiberadas: number
   kilosAIngresar: number
+  /** Reses condenadas: se liberan sin generar existencia. */
+  piezasDecomisadas: number
+  kilosDecomisados: number
   resumen: ResumenExistenciaItem[]
   problemas: ProblemaItem[]
 }
@@ -88,6 +99,8 @@ export interface LiberarJornadaResponse {
   romaneosLiberados: number
   piezasYaLiberadas: number
   kilosIngresados: number
+  piezasDecomisadas: number
+  kilosDecomisados: number
 }
 
 export interface ActualizarPiezaRequest {

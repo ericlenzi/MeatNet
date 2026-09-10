@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getAnalisisFaena } from '@/services/analisisFaena.service'
 import { useToast } from '@/components/ui/Toast'
@@ -93,15 +93,29 @@ export default function AnalisisFaenaPage() {
             {data.rindeCaliente != null ? pct(data.rindeCaliente) : 's/d'}
           </p>
         </div>
+        {data.kgDecomisados > 0 && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 shadow-sm">
+            <p className="text-xs text-danger">Merma sanitaria</p>
+            <p className="font-mono text-lg font-semibold text-danger">
+              {data.mermaSanitaria != null ? pct(data.mermaSanitaria) : 's/d'}
+            </p>
+            <p className="mt-0.5 text-xs text-text-light">{kg(data.kgDecomisados)} kg condenados</p>
+          </div>
+        )}
       </div>
 
       <div className="mb-4 rounded-md bg-amber-50 px-4 py-3 text-xs text-amber-900">
         <p className="mb-1 font-semibold">Cómo leer el rinde</p>
         <p>
           Kg de romaneo sobre kg vivos <strong>de ingreso</strong>, prorrateados por el peso promedio
-          de cada tropa. No descuenta el desbaste previo al sacrificio (no hay balanza en playa), es
-          peso <strong>caliente</strong> (sin merma de oreo) y no descuenta decomisos. Sirve para
-          comparar jornadas entre sí, no contra un rinde frío de referencia.
+          de cada tropa. No descuenta el desbaste previo al sacrificio (no hay balanza en playa) y es
+          peso <strong>caliente</strong> (sin merma de oreo). Sirve para comparar jornadas entre sí,
+          no contra un rinde frío de referencia.
+        </p>
+        <p className="mt-1">
+          La res condenada entera <strong>no suma kg de faena</strong>, porque esa carne no llega a
+          la cámara, pero el animal sigue contando en los kg vivos: por eso el rinde baja y la
+          merma sanitaria es la que explica cuánto.
         </p>
         {data.animalesSinPesoVivo > 0 && (
           <p className="mt-1 font-medium">
@@ -120,6 +134,7 @@ export default function AnalisisFaenaPage() {
               <th className={thr}>Kg vivos</th>
               <th className={thr}>Kg faena</th>
               <th className={thr}>Rinde</th>
+              <th className={thr}>Kg decom.</th>
               <th className={thr}>Partic.</th>
             </tr>
           </thead>
@@ -134,12 +149,51 @@ export default function AnalisisFaenaPage() {
                 <td className={`${tdr} font-semibold`}>
                   {c.rindeCaliente != null ? pct(c.rindeCaliente) : 's/d'}
                 </td>
+                <td className={`${tdr} ${c.kgDecomisados > 0 ? 'text-danger' : 'text-text-light'}`}>
+                  {c.kgDecomisados > 0 ? kg(c.kgDecomisados) : '—'}
+                </td>
                 <td className={`${tdr} text-text-light`}>{pct(c.participacionKg)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </Seccion>
+
+      {data.decomisos.length > 0 && (
+        <Seccion titulo="Decomisos por motivo">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-gray-50 text-text-light">
+              <tr>
+                <th className={th}>Motivo</th>
+                <th className={thr}>Reses condenadas</th>
+                <th className={thr}>Medias reses recortadas</th>
+                <th className={thr}>Kg</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.decomisos.map((d) => (
+                <tr key={d.motivoCodigo} className="border-b border-border/60">
+                  <td className={td}>{d.motivoNombre}</td>
+                  <td className={tdr}>{d.animales > 0 ? d.animales : '—'}</td>
+                  <td className={tdr}>{d.piezas > 0 ? d.piezas : '—'}</td>
+                  <td className={`${tdr} font-semibold`}>{kg(d.kg)}</td>
+                </tr>
+              ))}
+              <tr className="bg-gray-50 font-semibold">
+                <td className={td}>Total</td>
+                <td className={tdr}>{data.animalesDecomisados}</td>
+                <td className={tdr}>{data.piezasConDecomisoParcial}</td>
+                <td className={tdr}>{kg(data.kgDecomisados)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="px-4 py-3 text-xs text-text-light">
+            La res condenada aporta todos sus kilos ({kg(data.kgDecomisoTotal)} kg) y no llega a la
+            cámara. El recorte parcial aporta solo los kilos retirados ({kg(data.kgDecomisoParcial)} kg)
+            y su media res sigue su curso.
+          </p>
+        </Seccion>
+      )}
 
       <Seccion titulo="Plan vs. real">
         <table className="w-full text-sm">

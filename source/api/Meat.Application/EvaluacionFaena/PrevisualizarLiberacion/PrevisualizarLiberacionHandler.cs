@@ -51,6 +51,10 @@ namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
                 // Neto: en un cuarteo el ingreso de la media res y su baja se cancelan, y quedan
                 // los kilos de los cuartos. Sumar solo las altas contaria la carne dos veces.
                 KilosAIngresar = plan.Movimientos.Sum(m => m.Peso),
+                // Las reses condenadas se liberan igual, pero su carne no entra a camara: se
+                // informan aparte para que la diferencia entre lo faenado y lo ingresado se lea.
+                PiezasDecomisadas = plan.Decomisadas.Count,
+                KilosDecomisados = plan.KilosDecomisados,
                 Problemas = plan.Problemas.Select(p => new ProblemaItem
                 {
                     PiezaId = p.PiezaId,

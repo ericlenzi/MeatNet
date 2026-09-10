@@ -7,20 +7,24 @@ import type {
   UpdateEjeTipificacionRequest,
 } from '@/types'
 
-// Los cuatro catalogos que el Tipificador registra en el palco. Comparten forma (codigo, nombre,
-// especie, orden) y reglas, asi que comparten servicio y pantallas.
+// Catalogos que el Tipificador consulta al romanear. Comparten forma (codigo, nombre, especie,
+// orden) y reglas, asi que comparten servicio y pantallas.
+// Los cuatro primeros son los datos del palco; el quinto son los motivos de decomiso, que no son
+// una escala pero se administran igual (en ellos Orden es solo el orden de la lista del puesto).
 // Catalogos globales: lectura abierta (el Tipificador los necesita), escritura del SUPERADMIN.
 export type EjeTipificacionId =
   | 'conformaciones'
   | 'grados-engrasamiento'
   | 'denticiones'
   | 'tipos-contusiones'
+  | 'motivos-decomisos'
 
 const RUTAS: Record<EjeTipificacionId, string> = {
   conformaciones: '/Conformaciones',
   'grados-engrasamiento': '/GradosEngrasamiento',
   denticiones: '/Denticiones',
   'tipos-contusiones': '/TiposContusiones',
+  'motivos-decomisos': '/MotivosDecomisos',
 }
 
 export const ETIQUETAS: Record<EjeTipificacionId, { singular: string; plural: string }> = {
@@ -28,6 +32,7 @@ export const ETIQUETAS: Record<EjeTipificacionId, { singular: string; plural: st
   'grados-engrasamiento': { singular: 'Grado de Engrasamiento', plural: 'Grados de Engrasamiento' },
   denticiones: { singular: 'Denticion', plural: 'Denticiones' },
   'tipos-contusiones': { singular: 'Tipo de Contusion', plural: 'Tipos de Contusion' },
+  'motivos-decomisos': { singular: 'Motivo de Decomiso', plural: 'Motivos de Decomiso' },
 }
 
 interface GetEjesParams extends PaginatedRequest {

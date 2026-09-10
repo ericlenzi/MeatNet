@@ -20,6 +20,15 @@ namespace Meat.Application.EvaluacionFaena.Shared
         /// <summary>Piezas de la jornada que ya estaban liberadas y se saltean (R-L7).</summary>
         public int PiezasYaLiberadas { get; set; }
 
+        /// <summary>
+        /// Piezas de reses condenadas enteras (R-E23). Se fijan igual al liberar, porque la
+        /// jornada queda cerrada, pero no generan existencia: esa carne no entra a camara.
+        /// </summary>
+        public List<PiezaDecomisada> Decomisadas { get; set; } = new List<PiezaDecomisada>();
+
+        /// <summary>Kilos condenados de la jornada: la merma sanitaria que no llega a camara.</summary>
+        public double KilosDecomisados => this.Decomisadas.Sum(d => d.Peso);
+
         public bool TieneProblemas => this.Problemas.Count > 0;
 
         /// <summary>Piezas distintas que llegaron a generar movimientos.</summary>
@@ -49,6 +58,18 @@ namespace Meat.Application.EvaluacionFaena.Shared
         public string EspecieId { get; set; }
         public string TipoEspecieId { get; set; }
         public string Referencia { get; set; }
+    }
+
+    /// <summary>Pieza de una res condenada: se libera sin generar movimiento de camara.</summary>
+    public class PiezaDecomisada
+    {
+        public Guid PiezaId { get; set; }
+        public Guid RomaneoId { get; set; }
+        public long NumeroRomaneo { get; set; }
+        public int NumeroGarron { get; set; }
+        public string Letra { get; set; }
+        public double Peso { get; set; }
+        public string MotivoDecomisoNombre { get; set; }
     }
 
     /// <summary>Una pieza que no se puede liberar, con el motivo en lenguaje del operario.</summary>
@@ -85,6 +106,10 @@ namespace Meat.Application.EvaluacionFaena.Shared
         public string EspecieId { get; set; }
         public string TipoEspecieId { get; set; }
         public bool YaLiberada { get; set; }
+
+        /// <summary>La res fue condenada entera (R-E23): esta pieza no genera existencia.</summary>
+        public bool DecomisoTotal { get; set; }
+        public string MotivoDecomisoNombre { get; set; }
     }
 
     /// <summary>Regla de despiece ya resuelta con los nombres de su material destino.</summary>

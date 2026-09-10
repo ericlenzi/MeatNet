@@ -32,6 +32,12 @@ namespace Meat.Application.EvaluacionFaena.PrevisualizarLiberacion
         /// <summary>Kilos netos que quedarian en camara (el cuarteo no duplica).</summary>
         public double KilosAIngresar { get; set; }
 
+        /// <summary>Piezas de reses condenadas (R-E23): se liberan sin generar existencia.</summary>
+        public int PiezasDecomisadas { get; set; }
+
+        /// <summary>Kilos condenados que no van a entrar a camara.</summary>
+        public double KilosDecomisados { get; set; }
+
         /// <summary>Resumen de lo que quedaria en camara, por material y almacen.</summary>
         public List<ResumenExistenciaItem> Resumen { get; set; } = new List<ResumenExistenciaItem>();
 

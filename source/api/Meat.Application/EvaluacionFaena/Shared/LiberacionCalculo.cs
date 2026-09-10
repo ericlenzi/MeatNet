@@ -16,7 +16,11 @@ namespace Meat.Application.EvaluacionFaena.Shared
     /// Lo comparten la previsualizacion (muestra el plan y los problemas) y la liberacion
     /// efectiva (escribe el plan), de modo que las dos ven exactamente lo mismo.
     ///
-    /// Por cada pieza no anulada y no liberada:
+    /// Las piezas de una res condenada entera (R-E23) se apartan antes: no tienen tipificacion
+    /// ni material, y su carne no entra a camara. Se informan como decomisadas y la Liberacion
+    /// las fija igual, para que la jornada quede cerrada entera.
+    ///
+    /// Por cada pieza no anulada, no liberada y no condenada:
     ///   - material = Tipificacion.MaterialId (R-L1)
     ///   - sin despiece activo  -> 1 INGRESO del material a la camara de la pieza
     ///   - con despiece activo  -> cuarteo: 1 INGRESO del origen (para que su saldo no quede
@@ -67,7 +71,9 @@ namespace Meat.Application.EvaluacionFaena.Shared
                     TropaId = r.TropaId,
                     EspecieId = r.EspecieId,
                     TipoEspecieId = p.Tipificacion.TipoEspecieId,
-                    YaLiberada = p.Liberado
+                    YaLiberada = p.Liberado,
+                    DecomisoTotal = r.DecomisoTotal,
+                    MotivoDecomisoNombre = r.MotivoDecomiso != null ? r.MotivoDecomiso.Nombre : null
                 }).ToListAsync(cancellationToken);
 
             plan.PiezasYaLiberadas = piezas.Count(p => p.YaLiberada);
@@ -75,6 +81,28 @@ namespace Meat.Application.EvaluacionFaena.Shared
             // Idempotencia (R-L7): lo ya liberado se saltea, no se vuelve a generar.
             var pendientes = piezas.Where(p => !p.YaLiberada).ToList();
             plan.PiezasAProcesar = pendientes.Count;
+            if (pendientes.Count == 0)
+                return plan;
+
+            // R-L9: la res condenada entera (R-E23) no genera existencia. Sale del calculo antes
+            // de que le pidan tipificacion o material, que justamente no tiene: si se quedara,
+            // cada media res condenada seria un problema y bloquearia la jornada completa. Igual
+            // se lleva a liberar, para que la jornada quede cerrada de punta a punta.
+            plan.Decomisadas = pendientes
+                .Where(p => p.DecomisoTotal)
+                .Select(p => new PiezaDecomisada
+                {
+                    PiezaId = p.PiezaId,
+                    RomaneoId = p.RomaneoId,
+                    NumeroRomaneo = p.NumeroRomaneo,
+                    NumeroGarron = p.NumeroGarron,
+                    Letra = p.Letra,
+                    Peso = p.Peso,
+                    MotivoDecomisoNombre = p.MotivoDecomisoNombre
+                })
+                .ToList();
+
+            pendientes = pendientes.Where(p => !p.DecomisoTotal).ToList();
             if (pendientes.Count == 0)
                 return plan;
 

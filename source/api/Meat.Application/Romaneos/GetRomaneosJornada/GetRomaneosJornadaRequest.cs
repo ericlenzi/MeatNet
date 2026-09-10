@@ -25,6 +25,11 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
         public string TipoEspecieNombre { get; set; }
         public string UnidadFaenaNombre { get; set; }
         public bool Anulado { get; set; }
+
+        // Decomiso total (R-E23): la res fue condenada entera y no va a camara.
+        public bool DecomisoTotal { get; set; }
+        public string MotivoDecomisoNombre { get; set; }
+
         public DateTime Fecha { get; set; }
         public double PesoTotal { get; set; }
         public IEnumerable<RomaneoPiezaItem> Piezas { get; set; } = new List<RomaneoPiezaItem>();
@@ -39,5 +44,9 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
         public string TipificacionDescripcion { get; set; }
         public string TipoContusionNombre { get; set; }
         public bool PesoFueraRango { get; set; }
+
+        // Decomiso parcial de la media res (R-E24): kilos retirados por la inspeccion.
+        public string MotivoDecomisoNombre { get; set; }
+        public double PesoDecomisado { get; set; }
     }
 }

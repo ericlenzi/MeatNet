@@ -5,7 +5,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Meat.Domain.MotivosDecomisos
 {
     /// <summary>
-    /// Catalogo: motivos de decomisos por Especie.
+    /// Catalogo: motivos de decomiso por Especie. Es la causa sanitaria por la que la inspeccion
+    /// condena una res entera (decomiso total, en el Romaneo) o retira kilos de una media res
+    /// concreta (decomiso parcial, en la RomaneoPieza). Ver R-E23 en EjecucionFaena.md.
+    ///
+    /// Comparte forma con los cuatro catalogos del palco (Codigo, Nombre, Especie, Orden, Activo)
+    /// y por eso comparte pantalla con ellos, pero no es una escala: Orden es solo la posicion en
+    /// la lista del puesto, para que los motivos frecuentes queden arriba.
     /// </summary>
     public class MotivoDecomiso
     {
@@ -15,6 +21,9 @@ namespace Meat.Domain.MotivosDecomisos
         public string Nombre { get; set; }
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
+
+        /// <summary>Posicion en la lista del puesto: los motivos mas frecuentes primero.</summary>
+        public int Orden { get; set; }
         public bool Activo { get; set; }
     }
 }

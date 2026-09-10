@@ -1,4 +1,4 @@
-export interface AnalisisClienteItem {
+﻿export interface AnalisisClienteItem {
   clienteId: string
   clienteNombre: string
   animalesFaenados: number
@@ -7,6 +7,8 @@ export interface AnalisisClienteItem {
   kgVivos: number | null
   rindeCaliente: number | null
   participacionKg: number
+  /** Kg condenados de este cliente: res entera o recorte parcial. */
+  kgDecomisados: number
 }
 
 export interface PlanVsRealItem {
@@ -43,6 +45,15 @@ export interface DispersionPesoItem {
   piezasFueraRango: number
 }
 
+/** Los decomisos de la jornada agrupados por su causa sanitaria. */
+export interface DecomisoMotivoItem {
+  motivoCodigo: string
+  motivoNombre: string
+  animales: number
+  piezas: number
+  kg: number
+}
+
 export interface DestinoCamaraItem {
   almacenNombre: string
   materialNombre: string
@@ -64,9 +75,17 @@ export interface AnalisisFaenaResponse {
   rindeCaliente: number | null
   animalesSinPesoVivo: number
   piezasLiberadas: number
+  // Merma sanitaria: el rinde no se retoca, los decomisos se informan al lado.
+  animalesDecomisados: number
+  kgDecomisoTotal: number
+  piezasConDecomisoParcial: number
+  kgDecomisoParcial: number
+  kgDecomisados: number
+  mermaSanitaria: number | null
   porCliente: AnalisisClienteItem[]
   planVsReal: PlanVsRealItem[]
   tipificaciones: TipificacionConsolidadaItem[]
   dispersion: DispersionPesoItem[]
   camaras: DestinoCamaraItem[]
+  decomisos: DecomisoMotivoItem[]
 }

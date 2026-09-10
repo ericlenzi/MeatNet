@@ -26,6 +26,12 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public double TotalKg { get; set; }
         public int PiezasLiberadas { get; set; }
 
+        /// <summary>Reses condenadas enteras de la jornada (R-E23), sin contar anuladas.</summary>
+        public int TotalDecomisosTotales { get; set; }
+
+        /// <summary>Kilos condenados: los de las reses condenadas mas los recortes parciales.</summary>
+        public double TotalKgDecomisados { get; set; }
+
         public IEnumerable<RomaneoEvaluacionItem> Data { get; set; } = new List<RomaneoEvaluacionItem>();
 
         /// <summary>Camaras del establecimiento, para el selector al editar una pieza.</summary>
@@ -48,6 +54,10 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public bool Liberado { get; set; }
         public DateTime? FechaLiberacion { get; set; }
 
+        // Res condenada entera (R-E23): se pesa y se libera, pero no entra a camara.
+        public bool DecomisoTotal { get; set; }
+        public string MotivoDecomisoNombre { get; set; }
+
         public double PesoTotal { get; set; }
 
         public IEnumerable<PiezaEvaluacionItem> Piezas { get; set; } = new List<PiezaEvaluacionItem>();
@@ -67,10 +77,15 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public Guid? TipificacionId { get; set; }
         public string TipificacionDescripcion { get; set; }
 
-        // Material que produciria esta pieza al liberar. Vacio = la liberacion se va a bloquear.
+        // Material que produciria esta pieza al liberar. Vacio = la liberacion se va a bloquear,
+        // salvo que la res este condenada: esas piezas no producen material a proposito.
         public Guid? MaterialId { get; set; }
         public string MaterialCodigo { get; set; }
         public string MaterialNombre { get; set; }
+
+        // Decomiso parcial de esta media res (R-E24): kilos retirados por la inspeccion.
+        public string MotivoDecomisoNombre { get; set; }
+        public double PesoDecomisado { get; set; }
     }
 
     public class CamaraOpcion

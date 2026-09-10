@@ -138,6 +138,9 @@ function AppRoutes() {
                   <Route path="tipos-contusiones" element={<EjeTipificacionListPage eje="tipos-contusiones" />} />
                   <Route path="tipos-contusiones/create" element={<EjeTipificacionFormPage eje="tipos-contusiones" />} />
                   <Route path="tipos-contusiones/:codigo/edit" element={<EjeTipificacionFormPage eje="tipos-contusiones" />} />
+                  <Route path="motivos-decomisos" element={<EjeTipificacionListPage eje="motivos-decomisos" />} />
+                  <Route path="motivos-decomisos/create" element={<EjeTipificacionFormPage eje="motivos-decomisos" />} />
+                  <Route path="motivos-decomisos/:codigo/edit" element={<EjeTipificacionFormPage eje="motivos-decomisos" />} />
                   <Route path="unidades-faenas" element={<UnidadesFaenasListPage />} />
                   <Route path="unidades-faenas/create" element={<UnidadFaenaFormPage />} />
                   <Route path="unidades-faenas/:id/edit" element={<UnidadFaenaFormPage />} />
