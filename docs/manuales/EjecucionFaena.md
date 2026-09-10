@@ -293,7 +293,7 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   **Cuáles son los motivos "de golpe" lo dice el catálogo, no el código.** `MotivoDecomiso` lleva
   la marca **`ExigeContusion`**, que el SUPERADMIN prende en la pantalla del catálogo. Con ella
   prendida, la pieza que se decomise por ese motivo tiene que traer una contusión distinta de la
-  primera de la escala. Hoy la única marcada es `CONT` (Contusiones) de vacuno.
+  primera de la escala. Hoy las marcadas son `V-CONT` y `P-CONT` (Contusiones).
 
   Escribir la lista de códigos en el handler hubiera sido más corto y habría durado hasta el
   primer nomenclador distinto: el catálogo es editable y cada especie nombra sus motivos como
@@ -528,17 +528,25 @@ Los motivos cargados para vacuno (seed de la migración 71) son un **juego inici
 frecuentes en playa, no el nomenclador oficial completo**: contusiones, abscesos, adherencias,
 contaminación, mala sangría, ictericia, caquexia, tuberculosis, cisticercosis, hidatidosis,
 septicemia y "otros". La lista definitiva la ajusta el SUPERADMIN desde la pantalla. De todos
-ellos, el único con `ExigeContusion` prendida es **`CONT`** (migración 72).
+ellos, el único con `ExigeContusion` prendida es **`V-CONT`** (migración 72).
 
 **Porcino también tiene los suyos** (migración 75), así que las jornadas de cerdos ya pueden
 registrar decomisos. A las causas comunes se suman las que en playa porcina pesan más que en
 vacuna: pericarditis y pleuritis, neumonía, artritis, erisipela, dermatitis y sarna.
 
-> **Cuidado con los códigos al sumar una especie.** La PK de `MotivosDecomisos` es el **`Codigo`
-> solo**, no `(Codigo, Especie)`, así que `CONT` ya está tomado por la contusión de vacuno y no se
-> puede repetir. Por eso los de porcino van con prefijo **`P-`** (`P-CONT`, `P-ABS`, …). No es
-> cosmético: sin prefijo, la carga falla con violación de clave primaria. Lo mismo vale para los
-> cuatro catálogos del palco, que comparten esa forma.
+> **Los códigos van prefijados por especie: `V-` y `P-`.** La PK de `MotivosDecomisos` es el
+> **`Codigo` solo**, no `(Codigo, Especie)`, así que la misma causa en dos especies no puede
+> compartir código: `V-CONT` y `P-CONT`, no `CONT` dos veces. Sin prefijo, la carga de la segunda
+> especie falla con violación de clave primaria.
+>
+> Vacuno nació sin prefijo (migración 71) y se lo pusieron después (migración 76), que además tuvo
+> que **repuntar los romaneos** que ya apuntaban a los códigos viejos: como el código es la PK y
+> las FK son `Restrict`, no se renombra en el lugar. Se insertan los códigos nuevos, se repuntan
+> las dos referencias — `Romaneos` y `RomaneosPiezas` — y recién ahí se borran los viejos.
+>
+> Quien sume ovinos o caprinos sigue la convención (`O-`, `C-`) y no tiene que rehacer nada. Lo
+> mismo vale para los cuatro catálogos del palco, que comparten esa forma y todavía tienen sus
+> códigos de vacuno sin prefijo.
 
 **Qué está cargado hoy** en los cuatro datos del palco (seed de la migración 69 para dentición y
 contusión, migración 67 para los otros dos). Los cuatro son **solo vacuno**: el resto de las
