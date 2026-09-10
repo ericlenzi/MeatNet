@@ -358,6 +358,9 @@ PK: Guid Id
 - TropaId (Guid, FK)                   [denormalizado del renglón; trazabilidad directa]
 - EspecieId (string, FK)
 - UnidadFaenaId (Guid, FK)             [RES / MEDIA RES; define nº de piezas (R-E2)]
+- ConformacionId (string?, FK)         [dato del palco: desarrollo muscular (R-E20)]
+- GradoEngrasamientoId (string?, FK)   [dato del palco: cobertura de grasa (R-E20)]
+- DenticionId (string?, FK)            [dato del palco: incisivos permanentes, estima la edad (R-E20)]
 - NumeroGarron (int)                   [físico; único por LM]
 - NumeroRomaneo (long)                 [correlativo Numerador ROMANEO por Estab+Especie; reserva atómica (R-E4)]
 - Fecha (DateTime), UsuarioId (Guid?)
@@ -376,6 +379,7 @@ PK: Guid Id
 - Letra (string?, "A"/"B"; null porcino)
 - AlmacenDestinoId (Guid, FK)          [cámara destino de la pieza; default del renglón, editable y obligatoria (R-E13)]
 - TipificacionId (Guid?, FK)           [tipificación elegida para la pieza (R-E7)]
+- TipoContusionId (string?, FK)        [dato del palco: el golpe es de ESTA media res, no del animal (R-E20)]
 - Peso (double)                        [caché de la medición PESO; canónico p/ tipificación y KG]
 - PesoFueraRango (bool, default false) [el peso quedó fuera del rango de la tipificación y se forzó (R-E15)]
 Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
@@ -389,14 +393,64 @@ PK: Guid Id
 - Valor (double)
 ```
 
-### 9.4 Catálogo `TiposEstadosTropas` (agregar estado)
+### 9.4 Cómo se cargan los cuatro datos del palco
+
+Los cuatro son **catálogos globales por especie**: PK `Codigo`, más `Nombre`, `EspecieId`, `Orden`
+y `Activo`. No llevan `EmpresaId`, así que **una fila la comparten todas las empresas** y la
+mantiene el **SUPERADMIN** parado en la empresa `ADM`. La **lectura queda abierta** a cualquier
+usuario autenticado, porque el Tipificador necesita llenar sus combos al romanear.
+
+| Dato | Tabla | Endpoint | Pantalla |
+|---|---|---|---|
+| Conformación | `Conformaciones` | `/Conformaciones` | `/conformaciones` |
+| Engrasamiento | `GradosEngrasamiento` | `/GradosEngrasamiento` | `/grados-engrasamiento` |
+| Dentición | `Denticiones` | `/Denticiones` | `/denticiones` |
+| Contusión | `TiposContusiones` | `/TiposContusiones` | `/tipos-contusiones` |
+
+Las cuatro pantallas son **la misma pantalla**: `EjeTipificacionListPage` y
+`EjeTipificacionFormPage` reciben cuál es por prop, y el servicio `ejesTipificacion.service.ts`
+resuelve el endpoint. Agregar un quinto dato de este tipo es sumar una entrada a los mapas `RUTAS`
+y `ETIQUETAS`, más su ruta, no escribir pantallas nuevas.
+
+**Qué está cargado hoy** (seed de la migración 69 para dentición y contusión, migración 67 para los
+otros dos). Todo es **solo vacuno**: el resto de las especies no tiene ninguna fila.
+
+| `Orden` | Conformación | Engrasamiento | Dentición | Contusión |
+|---|---|---|---|---|
+| 0 | — | `0` Sin grasa | `D0` Diente de leche | `SC` Sin contusión |
+| 1 | `A` Superior | `1` Escaso | `D2` Dos dientes | `LEV` Leve |
+| 2 | `B` Buena | `2` Adecuado | `D4` Cuatro dientes | `MOD` Moderada |
+| 3 | `C` Intermedia | `3` Abundante | `D6` Seis dientes | `GRA` Grave |
+| 4 | `D` Deficiente | `4` Excesivo | `D8` Boca llena | — |
+| 5 | `E` Inferior | — | — | — |
+
+**Cómo habilitar (o deshabilitar) una especie.** No se toca código: la especie entera se gobierna
+desde estas pantallas, y la regla que lo hace posible es R-E22.
+
+- **Habilitar.** Cargar las filas del catálogo con esa `EspecieId`. Desde el próximo romaneo de esa
+  especie el combo aparece y el dato pasa a ser **obligatorio**.
+- **Deshabilitar.** Desactivar (`Activo = false`) todas las filas de esa especie. El combo
+  desaparece y el dato deja de exigirse. **Desactivar, no eliminar**, si ya hay romaneos: el
+  `Delete` rechaza el borrado de una fila en uso y pide desactivarla, justamente para no dejar un
+  romaneo apuntando a un código inexistente.
+- **Ojo con el `Orden`.** Es la posición en la escala y **el primer valor es el que el Tipificador
+  propone por defecto en contusión**. Si cargás contusiones para otra especie, la fila de "sin
+  contusión" tiene que quedar en `Orden = 0`.
+
+**Por qué porcino no tiene ninguna.** Conformación, engrasamiento y dentición no le aplican por una
+razón del rubro (ver R-E21): la res porcina se clasifica por **porcentaje de carne magra**, no con
+escalas visuales. La contusión es un caso distinto, un cerdo también se golpea, y quedó fuera por
+decisión de negocio, no por una limitación del modelo: alcanza con cargar las filas con
+`EspecieId = P` para que el Tipificador la pida en las jornadas de cerdos.
+
+### 9.5 Catálogo `TiposEstadosTropas` (agregar estado)
 | Codigo | Nombre |
 |---|---|
 | `RECEPCIONADA` | Recepcionada *(ya existe)* |
 | `ANULADA` | Anulada *(ya existe)* |
 | `FAENADA` | Faenada *(nuevo — seed migración 43)* |
 
-### 9.5 Índices únicos filtrados
+### 9.6 Índices únicos filtrados
 ```csharp
 // Garrón único por jornada (LM).
 modelBuilder.Entity<Romaneo>()
@@ -423,14 +477,27 @@ Controller `RomaneosController` (patrón `MeatBaseController`, `[Authorize]`, `C
 | GET | `/Romaneos/sugerir-tipificacion?especieId=&tipoEspecieId=&unidadFaenaId=&destinoComercialId=&peso=` | Devuelve la `Tipificacion` propuesta (match por rango de peso, orden Puntos) y la lista de candidatas para el combo. |
 | GET | `/Romaneos/jornada?listaMatanzaId=` | Romaneos de la jornada (grilla del Tipificador). |
 | GET | `/Romaneos/monitor?listaMatanzaId=` | Totales en vivo: faenado/planificado global y por tropa/categoría, KG, ritmo. |
-| POST | `/Romaneos` | Crea un romaneo; cada pieza lleva **peso + tipificación + cámara destino** (R-E13) + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). |
+| POST | `/Romaneos` | Crea un romaneo; el animal lleva **conformación + engrasamiento + dentición** y cada pieza lleva **peso + tipificación + cámara destino** (R-E13) **+ contusión** + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). |
 | POST | `/Romaneos/{id}/anular` | Anula el romaneo; revierte el consumo. |
+
+Los cuatro **catálogos del palco** son globales y viven fuera de `RomaneosController`. Todos exponen
+la misma superficie: `GET` (lista paginada, filtra por `EspecieId` y `Estado`), `GET /{codigo}`,
+`POST`, `PUT /{codigo}` y `DELETE /{codigo}`. **Lectura abierta** a cualquier usuario autenticado
+porque el Tipificador la necesita; **escritura `[Authorize(Roles = "SUPERADMIN")]`**. Ver §9.4.
+
+| Controller | Ruta base |
+|---|---|
+| `ConformacionesController` | `/Conformaciones` |
+| `GradosEngrasamientoController` | `/GradosEngrasamiento` |
+| `DenticionesController` | `/Denticiones` |
+| `TiposContusionesController` | `/TiposContusiones` |
 
 ## 11. Frontend (pantallas)
 
 | Página | Ruta | Menú | Descripción |
 |---|---|---|---|
-| `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Captura res por res: renglón sugerido con override, garrón, UF, piezas (1 P / 2 A-B V) con peso y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. |
+| `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Captura res por res: renglón sugerido con override, garrón, UF, los **datos del palco** del animal (conformación, engrasamiento, dentición) y piezas (1 P / 2 A-B V) con peso, **contusión**, cámara y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. Los combos del palco solo aparecen si la especie los tiene cargados (R-E22). |
+| `EjeTipificacionListPage` / `EjeTipificacionFormPage` | `/conformaciones`, `/grados-engrasamiento`, `/denticiones`, `/tipos-contusiones` | Administración *(solo SUPERADMIN)* | Un **único par de pantallas** para los cuatro catálogos del palco; cuál es lo define una prop. ABM con filtro por especie y estado. Ver §9.4. |
 | `MonitorFaenaPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/monitor` | Ejecución de Faena | Tablero **read-only** de supervisión: totales en vivo (faenado vs planificado, por tropa/categoría, KG, ritmo). Refresco por **polling** (intervalo corto). |
 
 Acceso desde el detalle de la LM `EN_EJECUCION` (botones "Ejecutar / Tipificar" y "Monitor").
