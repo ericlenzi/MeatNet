@@ -364,6 +364,22 @@ temas abiertos O-A2, O-A3 y O-A1 de ese manual.
   **Los decomisos de carne salieron de esta resuelta:** se capturan en el Tipificador (R-E23 y
   R-E24 en `EjecucionFaena.md`) y la Liberación los contempla en R-L9. Lo que sigue afuera es el
   decomiso de **vísceras y subproductos**, que depende de este mismo tema.
+
+  **La pregunta que ordena el tema es de dónde sale el peso del subproducto**, y hay dos respuestas
+  posibles con consecuencias muy distintas:
+
+  | Si el peso viene de… | Lo que implica |
+  |---|---|
+  | Una **pesada propia** en playa (balanza de menudencias, cuero, sebo) | Es un **puesto de captura nuevo**, con su pantalla y su momento en la línea. Un paso entero, no un ajuste. |
+  | Un **rendimiento** sobre el animal | Entra por el **mecanismo de despiece que ya existe** (`DespieceMaterial`), sumando reglas cuyo origen es el material de la res. Fase corta. |
+
+  Casi seguro conviven las dos: el cuero se pesa, el sebo se estima. Por eso la decisión no es
+  "cuál de las dos", sino **cuáles subproductos van por cada camino**, y esa lista es la que hay
+  que cerrar con la planta antes de escribir nada.
+
+  Lo que sí está decidido y no conviene retocar: los subproductos son **`Material`**, entran a un
+  **almacén** y su existencia vive en el mismo log de movimientos que la carne (§7). El dominio ya
+  los admite; lo que falta es el hecho que los produce.
 - **O-4 (reverso post-liberación).** Contramovimiento para corregir una liberación equivocada
   (hoy: anular antes de liberar). A evaluar cuando aparezca la necesidad operativa.
 
