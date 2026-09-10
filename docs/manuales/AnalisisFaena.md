@@ -75,7 +75,8 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
    estimación `PesoIngreso / EmpresaTipoEspecie.PesoTeorico`. Si el operador la acepta sin contar
    los animales, el promedio queda pegado al peso teórico que la empresa tiene configurado para esa
    categoría, y el rinde termina midiendo el parámetro en vez de la hacienda. El número gana sentido
-   recién cuando la cantidad de la ubicación es la contada, no la estimada.
+   recién cuando la cantidad de la ubicación es la contada, no la estimada. Cuando ese dato está
+   directamente mal cargado, el rinde se dispara y la pantalla lo avisa (R-A7).
 
 > El punto 5 tiene una consecuencia práctica: **cambiar el peso teórico de una categoría no
 > reescribe el histórico**, porque `PesoPromedio` se calculó y se guardó en el momento del ingreso.
