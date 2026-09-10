@@ -191,8 +191,8 @@ export default function AnalisisFaenaPage() {
               <tr>
                 <th className={th}>Motivo</th>
                 <th className={thr}>Reses condenadas</th>
-                <th className={thr}>Medias reses condenadas</th>
-                <th className={thr}>Medias reses recortadas</th>
+                <th className={thr}>Piezas condenadas</th>
+                <th className={thr}>Piezas recortadas</th>
                 <th className={thr}>Kg</th>
               </tr>
             </thead>
@@ -217,9 +217,10 @@ export default function AnalisisFaenaPage() {
           </table>
           <p className="px-4 py-3 text-xs text-text-light">
             Lo condenado aporta su peso entero y no llega a la cámara: {kg(data.kgDecomisoTotal)} kg
-            de reses condenadas y {kg(data.kgDecomisoPieza)} kg de medias reses condenadas. El
-            recorte parcial aporta solo los kilos retirados ({kg(data.kgDecomisoParcial)} kg) y su
-            media res sigue su curso.
+            de reses condenadas y {kg(data.kgDecomisoPieza)} kg de piezas condenadas. El recorte
+            parcial aporta solo los kilos retirados ({kg(data.kgDecomisoParcial)} kg) y su pieza
+            sigue su curso. La pieza es la <strong>media res</strong> en vacuno y la{' '}
+            <strong>res entera</strong> en porcino, según la unidad de faena de la jornada.
           </p>
         </Seccion>
       )}
