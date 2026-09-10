@@ -530,8 +530,20 @@ contaminación, mala sangría, ictericia, caquexia, tuberculosis, cisticercosis,
 septicemia y "otros". La lista definitiva la ajusta el SUPERADMIN desde la pantalla. De todos
 ellos, el único con `ExigeContusion` prendida es **`CONT`** (migración 72).
 
-**Qué está cargado hoy** (seed de la migración 69 para dentición y contusión, migración 67 para los
-otros dos). Todo es **solo vacuno**: el resto de las especies no tiene ninguna fila.
+**Porcino también tiene los suyos** (migración 75), así que las jornadas de cerdos ya pueden
+registrar decomisos. A las causas comunes se suman las que en playa porcina pesan más que en
+vacuna: pericarditis y pleuritis, neumonía, artritis, erisipela, dermatitis y sarna.
+
+> **Cuidado con los códigos al sumar una especie.** La PK de `MotivosDecomisos` es el **`Codigo`
+> solo**, no `(Codigo, Especie)`, así que `CONT` ya está tomado por la contusión de vacuno y no se
+> puede repetir. Por eso los de porcino van con prefijo **`P-`** (`P-CONT`, `P-ABS`, …). No es
+> cosmético: sin prefijo, la carga falla con violación de clave primaria. Lo mismo vale para los
+> cuatro catálogos del palco, que comparten esa forma.
+
+**Qué está cargado hoy** en los cuatro datos del palco (seed de la migración 69 para dentición y
+contusión, migración 67 para los otros dos). Los cuatro son **solo vacuno**: el resto de las
+especies no tiene ninguna fila. Los motivos de decomiso, en cambio, ya están cargados para vacuno
+y para porcino.
 
 | `Orden` | Conformación | Engrasamiento | Dentición | Contusión |
 |---|---|---|---|---|
@@ -559,10 +571,11 @@ desde estas pantallas, y la regla que lo hace posible es R-E22.
   siquiera aparezca el check. Nunca se exige completarlo: el decomiso es la excepción de la
   jornada, no un dato de cada res (R-E25).
 
-**Por qué porcino no tiene ninguna.** Conformación, engrasamiento y dentición no le aplican por una
-razón del rubro (ver R-E21): la res porcina se clasifica por **porcentaje de carne magra**, no con
-escalas visuales. La contusión es un caso distinto, un cerdo también se golpea, y quedó fuera por
-decisión de negocio, no por una limitación del modelo: alcanza con cargar las filas con
+**Por qué porcino no tiene ninguna de las cuatro.** Conformación, engrasamiento y dentición no le
+aplican por una razón del rubro (ver R-E21): la res porcina se clasifica por **porcentaje de carne
+magra**, no con escalas visuales. La contusión es un caso distinto, un cerdo también se golpea, y
+quedó fuera por decisión de negocio, no por una limitación del modelo: alcanza con cargar las filas
+con
 `EspecieId = P` para que el Tipificador la pida en las jornadas de cerdos.
 
 ### 9.5 Catálogo `TiposEstadosTropas` (agregar estado)
