@@ -50,6 +50,7 @@ namespace Meat.Controllers
                 Nombre = body.Nombre,
                 EspecieId = body.EspecieId,
                 Orden = body.Orden,
+                ExigeContusion = body.ExigeContusion,
                 Activo = body.Activo,
             });
 

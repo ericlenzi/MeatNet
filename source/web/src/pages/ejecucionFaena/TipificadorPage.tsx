@@ -422,6 +422,20 @@ export default function TipificadorPage() {
           toast('error', 'Los kilos decomisados no pueden alcanzar el peso de la pieza. Si se condena la res entera, use el decomiso total.')
           return
         }
+        // El motivo que describe un golpe no cierra con una media res declarada sana. Cuáles son
+        // esos motivos lo dice el catálogo, no una lista de códigos escrita acá (R-E26).
+        const motivo = motivosDecomiso.find((m) => m.codigo === parcial.motivoDecomisoId)
+        if (
+          motivo?.exigeContusion &&
+          defaultContusion &&
+          (!parcial.tipoContusionId || parcial.tipoContusionId === defaultContusion)
+        ) {
+          toast(
+            'error',
+            'El decomiso es por contusion, asi que la media res no puede quedar registrada sin contusion. Indique la contusion que corresponde.',
+          )
+          return
+        }
       }
     }
     if (hayFueraRango && !forzarFueraRango) {

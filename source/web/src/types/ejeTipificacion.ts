@@ -7,6 +7,8 @@ export interface EjeTipificacion {
   especieId: string
   /** Posicion en la escala. Es el orden con el que se listan, no el alfabetico. */
   orden: number
+  /** Solo motivos de decomiso: el motivo describe un golpe y exige contusion en la pieza (R-E26). */
+  exigeContusion?: boolean
   activo: boolean
 }
 
@@ -15,11 +17,13 @@ export interface CreateEjeTipificacionRequest {
   Nombre: string
   EspecieId: string
   Orden: number
+  ExigeContusion?: boolean
 }
 
 export interface UpdateEjeTipificacionRequest {
   Nombre: string
   EspecieId: string
   Orden: number
+  ExigeContusion?: boolean
   Activo: boolean
 }

@@ -9,6 +9,7 @@ namespace Meat.Application.MotivosDecomisos.UpdateMotivoDecomiso
         [Required]
         public string EspecieId { get; set; }
         public int Orden { get; set; }
+        public bool ExigeContusion { get; set; }
         public bool Activo { get; set; }
     }
 }

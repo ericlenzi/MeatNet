@@ -282,6 +282,23 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   El mismo motivo sirve para los dos alcances y **no lleva marcado si es total o parcial**: una
   contusión condena la res cuando es extensa y es un recorte cuando está localizada. `Orden` acá
   no es una escala: es la posición en la lista del puesto, los motivos frecuentes primero.
+- **R-E26 (el decomiso por golpe no cierra con una media res sana).** Registrar un decomiso
+  parcial **por contusión** sobre una pieza cuya contusión quedó en el primer valor de la escala
+  ("sin contusión") es una contradicción: se retiran kilos por un golpe de una media res que el
+  mismo romaneo declara intacta. El alta lo rechaza.
+
+  **Cuáles son los motivos "de golpe" lo dice el catálogo, no el código.** `MotivoDecomiso` lleva
+  la marca **`ExigeContusion`**, que el SUPERADMIN prende en la pantalla del catálogo. Con ella
+  prendida, la pieza que se decomise por ese motivo tiene que traer una contusión distinta de la
+  primera de la escala. Hoy la única marcada es `CONT` (Contusiones) de vacuno.
+
+  Escribir la lista de códigos en el handler hubiera sido más corto y habría durado hasta el
+  primer nomenclador distinto: el catálogo es editable y cada especie nombra sus motivos como
+  quiere. Es la misma razón por la que la obligatoriedad de los datos del palco sale del catálogo
+  (R-E22) y no de un `if` por especie.
+
+  La regla **no aplica al decomiso total**, porque la res condenada no registra contusión, ni a
+  los motivos sin la marca: un absceso o una contaminación no dicen nada sobre golpes.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
@@ -474,10 +491,15 @@ y `ETIQUETAS`, más su ruta, no escribir pantallas nuevas.
 se completan res por res: son la causa por la que la inspección condena (R-E23) o recorta (R-E24),
 y solo se eligen cuando hay decomiso. En ellos `Orden` es la posición en la lista del puesto.
 
+Llevan además una columna propia, **`ExigeContusion`**, que el formulario muestra solo para este
+catálogo: marca los motivos que describen un **golpe**, y es lo que permite a R-E26 detectar la
+media res que se decomisa por contusión y a la vez se declara sin contusión.
+
 Los motivos cargados para vacuno (seed de la migración 71) son un **juego inicial de causas
 frecuentes en playa, no el nomenclador oficial completo**: contusiones, abscesos, adherencias,
 contaminación, mala sangría, ictericia, caquexia, tuberculosis, cisticercosis, hidatidosis,
-septicemia y "otros". La lista definitiva la ajusta el SUPERADMIN desde la pantalla.
+septicemia y "otros". La lista definitiva la ajusta el SUPERADMIN desde la pantalla. De todos
+ellos, el único con `ExigeContusion` prendida es **`CONT`** (migración 72).
 
 **Qué está cargado hoy** (seed de la migración 69 para dentición y contusión, migración 67 para los
 otros dos). Todo es **solo vacuno**: el resto de las especies no tiene ninguna fila.

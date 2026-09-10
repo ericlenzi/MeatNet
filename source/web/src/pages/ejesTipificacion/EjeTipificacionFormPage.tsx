@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getEje, createEje, updateEje, ETIQUETAS } from '@/services/ejesTipificacion.service'
@@ -18,6 +18,8 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
   const { toast } = useToast()
   const isEdit = !!codigo
   const etiqueta = ETIQUETAS[eje]
+  // La marca de golpe es propia de los motivos de decomiso: los datos del palco no la tienen.
+  const esMotivoDecomiso = eje === 'motivos-decomisos'
 
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -27,6 +29,7 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
     Nombre: '',
     EspecieId: '',
     Orden: '0',
+    ExigeContusion: false,
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -45,6 +48,7 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
             Nombre: entity.nombre || '',
             EspecieId: entity.especieId || '',
             Orden: String(entity.orden ?? 0),
+            ExigeContusion: entity.exigeContusion ?? false,
             Activo: entity.activo,
           })
         }
@@ -77,6 +81,7 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           Orden: Number(form.Orden || 0),
+          ExigeContusion: esMotivoDecomiso ? form.ExigeContusion : undefined,
           Activo: form.Activo,
         })
         toast('success', etiqueta.singular + ' actualizada')
@@ -86,6 +91,7 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
           Nombre: form.Nombre,
           EspecieId: form.EspecieId,
           Orden: Number(form.Orden || 0),
+          ExigeContusion: esMotivoDecomiso ? form.ExigeContusion : undefined,
         })
         toast('success', etiqueta.singular + ' creada')
       }
@@ -157,6 +163,25 @@ export default function EjeTipificacionFormPage({ eje }: { eje: EjeTipificacionI
                  a mayor severidad, y el primero de la escala es el que el Tipificador propone por
                  defecto.`}
           </p>
+
+          {esMotivoDecomiso && (
+            <div className="mt-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-text">
+                <input
+                  type="checkbox"
+                  checked={form.ExigeContusion}
+                  onChange={(e) => updateField('ExigeContusion', e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary-600 focus:ring-primary-500"
+                />
+                El motivo describe un golpe
+              </label>
+              <p className="mt-1 text-sm text-text-light">
+                Con esta marca, la media res que se decomise por este motivo no puede quedar
+                registrada como "sin contusion": decomisar kilos por un golpe sobre una pieza
+                declarada sana es una contradiccion.
+              </p>
+            </div>
+          )}
 
           {isEdit && (
             <div className="mt-4">

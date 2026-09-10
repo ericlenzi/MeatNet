@@ -29,6 +29,7 @@ namespace Meat.Application.MotivosDecomisos.GetMotivoDecomiso
                 Nombre = entity.Nombre,
                 EspecieId = entity.EspecieId,
                 Orden = entity.Orden,
+                ExigeContusion = entity.ExigeContusion,
                 Activo = entity.Activo,
             };
         }

@@ -78,12 +78,20 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             var denticiones = await this.context.Denticiones
                 .Where(d => d.Activo && d.EspecieId == lm.EspecieId)
                 .Select(d => d.Codigo).ToListAsync(cancellationToken);
-            var contusiones = await this.context.TiposContusiones
+            var escalaContusiones = await this.context.TiposContusiones
                 .Where(t => t.Activo && t.EspecieId == lm.EspecieId)
+                .OrderBy(t => t.Orden)
                 .Select(t => t.Codigo).ToListAsync(cancellationToken);
+            var contusiones = escalaContusiones;
+
+            // La primera de la escala es "sin contusion" (Orden mas bajo): la usa R-E26 para
+            // detectar la media res que se declara sana y a la vez se decomisa por un golpe.
+            var contusionSana = escalaContusiones.FirstOrDefault();
+
             var motivosDecomiso = await this.context.MotivosDecomisos
                 .Where(m => m.Activo && m.EspecieId == lm.EspecieId)
-                .Select(m => m.Codigo).ToListAsync(cancellationToken);
+                .Select(m => new { m.Codigo, m.ExigeContusion })
+                .ToDictionaryAsync(m => m.Codigo, m => m.ExigeContusion, cancellationToken);
 
             // 5d) Decomiso total (R-E23): la inspeccion condena la res entera. El motivo es
             //     obligatorio, y la res condenada no se clasifica: no se piden los datos del
@@ -96,7 +104,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             {
                 if (motivoTotal == null)
                     throw new ValidationException("Debe indicar el motivo por el que se condena la res.");
-                if (!motivosDecomiso.Contains(motivoTotal))
+                if (!motivosDecomiso.ContainsKey(motivoTotal))
                     throw new ValidationException("El motivo de decomiso indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
             }
             else
@@ -147,12 +155,22 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                     continue;
                 if (motivoPieza == null)
                     throw new ValidationException("Indique el motivo del decomiso parcial de la pieza.");
-                if (!motivosDecomiso.Contains(motivoPieza))
+                if (!motivosDecomiso.TryGetValue(motivoPieza, out var exigeContusion))
                     throw new ValidationException("El motivo de decomiso indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
                 if (p.PesoDecomisado <= 0)
                     throw new ValidationException("Los kilos decomisados de la pieza deben ser mayores a cero.");
                 if (p.PesoDecomisado >= p.Peso)
                     throw new ValidationException("Los kilos decomisados no pueden alcanzar el peso de la pieza. Si se condena la res entera, use el decomiso total.");
+
+                // R-E26: el motivo que describe un golpe no cierra con una media res declarada
+                // sana. Quien decide cuales son esos motivos es el catalogo (ExigeContusion), no
+                // una lista de codigos escrita aca.
+                if (exigeContusion && contusionSana != null
+                    && (string.IsNullOrWhiteSpace(p.TipoContusionId) || p.TipoContusionId == contusionSana))
+                {
+                    throw new ValidationException(
+                        "El decomiso es por contusion, asi que la media res no puede quedar registrada sin contusion. Indique la contusion que corresponde.");
+                }
             }
 
             // 5b) Camara destino por pieza (default del renglon, editable en el puesto): obligatoria

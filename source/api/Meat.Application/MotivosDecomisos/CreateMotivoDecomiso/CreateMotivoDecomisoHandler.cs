@@ -35,6 +35,7 @@ namespace Meat.Application.MotivosDecomisos.CreateMotivoDecomiso
                 Nombre = (request.Nombre ?? string.Empty).Trim(),
                 EspecieId = request.EspecieId,
                 Orden = request.Orden,
+                ExigeContusion = request.ExigeContusion,
                 Activo = true,
             };
 

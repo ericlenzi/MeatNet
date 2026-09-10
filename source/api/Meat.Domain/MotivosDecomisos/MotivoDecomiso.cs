@@ -24,6 +24,17 @@ namespace Meat.Domain.MotivosDecomisos
 
         /// <summary>Posicion en la lista del puesto: los motivos mas frecuentes primero.</summary>
         public int Orden { get; set; }
+
+        /// <summary>
+        /// El motivo describe un golpe. Si esta marcado, la media res que se decomisa por el
+        /// tiene que traer una contusion registrada distinta de la primera de la escala
+        /// ("sin contusion"): decomisar kilos por contusion sobre una pieza declarada sana es
+        /// una contradiccion (R-E26).
+        ///
+        /// Es una marca del catalogo y no un codigo escrito en la logica, por la misma razon que
+        /// los datos del palco: el nomenclador lo administra el SUPERADMIN y puede cambiar.
+        /// </summary>
+        public bool ExigeContusion { get; set; }
         public bool Activo { get; set; }
     }
 }

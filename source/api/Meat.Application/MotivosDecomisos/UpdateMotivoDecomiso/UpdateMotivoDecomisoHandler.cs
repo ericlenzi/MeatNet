@@ -30,6 +30,7 @@ namespace Meat.Application.MotivosDecomisos.UpdateMotivoDecomiso
             entity.Nombre = (request.Nombre ?? string.Empty).Trim();
             entity.EspecieId = request.EspecieId;
             entity.Orden = request.Orden;
+            entity.ExigeContusion = request.ExigeContusion;
             entity.Activo = request.Activo;
 
             await this.context.SaveChangesAsync(cancellationToken);
