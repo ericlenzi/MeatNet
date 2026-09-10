@@ -45,7 +45,8 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
         public string TipoContusionNombre { get; set; }
         public bool PesoFueraRango { get; set; }
 
-        // Decomiso parcial de la media res (R-E24): kilos retirados por la inspeccion.
+        // Decomiso de la media res: condenada entera (R-E27) o recorte de kilos (R-E24).
+        public bool Decomisada { get; set; }
         public string MotivoDecomisoNombre { get; set; }
         public double PesoDecomisado { get; set; }
     }

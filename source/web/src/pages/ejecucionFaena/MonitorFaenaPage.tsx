@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { getMonitorFaena } from '@/services/romaneos.service'
 import { useToast } from '@/components/ui/Toast'
@@ -70,11 +70,17 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
         {/* Los kg son los de carne: la res condenada se faenó pero no va a cámara. */}
         <Stat label="Kg totales" value={m.kgTotales.toFixed(0)} />
         <Stat label="Ritmo" value={m.ritmoPorHora} hint="animales/hora" />
-        {m.animalesDecomisados > 0 && (
+        {(m.animalesDecomisados > 0 || m.piezasDecomisadas > 0) && (
           <Stat
-            label="Reses condenadas"
-            value={m.animalesDecomisados}
-            hint={`${m.kgDecomisados.toFixed(0)} kg fuera del total`}
+            label="Condenados"
+            value={
+              m.animalesDecomisados > 0 && m.piezasDecomisadas > 0
+                ? `${m.animalesDecomisados} + ${m.piezasDecomisadas}`
+                : m.animalesDecomisados > 0
+                  ? m.animalesDecomisados
+                  : m.piezasDecomisadas
+            }
+            hint={`${m.animalesDecomisados} res(es) y ${m.piezasDecomisadas} media(s) res(es) · ${m.kgDecomisados.toFixed(0)} kg fuera del total`}
           />
         )}
       </div>

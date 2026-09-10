@@ -27,7 +27,10 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
         /// <summary>Reses condenadas enteras de la jornada (R-E23): faenadas, pero no son carne.</summary>
         public int AnimalesDecomisados { get; set; }
 
-        /// <summary>Kg de esas reses condenadas, fuera de KgTotales.</summary>
+        /// <summary>Medias reses condenadas por separado (R-E27).</summary>
+        public int PiezasDecomisadas { get; set; }
+
+        /// <summary>Kg condenados de la jornada, fuera de KgTotales.</summary>
         public double KgDecomisados { get; set; }
         public double RitmoPorHora { get; set; }            // animales/hora desde el 1er romaneo
 

@@ -14,9 +14,10 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 - Especies **V (VACUNO)** y **P (PORCINO)** únicamente.
 - Captura de romaneo: **garrón + peso (medición) + tipificación**.
 - Los **cuatro datos del palco**: conformación, engrasamiento, dentición y contusión (ver R-E20).
-- **Decomisos**: condena total de la res (R-E23) y recorte parcial de una media res (R-E24), con
-  su motivo sanitario. Los kilos condenados se informan como **merma sanitaria** en el Análisis de
-  Faena, sin cambiar la definición del rinde.
+- **Decomisos** en tres niveles, con su motivo sanitario: condena de la res entera (R-E23),
+  condena de **una media res** dejando la otra en pie (R-E27) y recorte parcial de kilos (R-E24).
+  Los kilos condenados se informan como **merma sanitaria** en el Análisis de Faena, sin cambiar
+  la definición del rinde.
 - Consumo real de stock, trazabilidad de la tropa (`FAENA`) e incremento de `Tipificacion.Puntos`.
 - **Tipificador** (pantalla de captura por res) y **Monitor de Faena** (tablero de supervisión en
   vivo, solo lectura).
@@ -42,7 +43,7 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 | **Tipificación oficial** | La clasificación de la **res** según el organismo, sobre tres ejes: **categoría** (que aporta la Tipificación), **conformación** (desarrollo muscular) y **engrasamiento** (cobertura de grasa). No confundir con `TipoEspecie`, que clasifica al **animal vivo** al ingresar. Ver R-E20. |
 | **Dentición** | Recuento de incisivos permanentes con el que se estima la edad del animal (de diente de leche a boca llena). Catálogo global `Denticiones`, escala ordinal. Se mira la boca, así que es del **animal**. |
 | **Contusión** | Golpe visible en la media res. Catálogo global `TiposContusiones`, escala ordinal que arranca en "sin contusión". Es el único de los cuatro datos del palco que va **por pieza**. |
-| **Decomiso** | Retiro sanitario dispuesto por la inspección. **Total** cuando condena la res entera (marca del `Romaneo`, R-E23) y **parcial** cuando retira kilos de una media res que igual sigue a cámara (columnas de la `RomaneoPieza`, R-E24). La causa sale del catálogo global `MotivosDecomisos`. |
+| **Decomiso** | Retiro sanitario dispuesto por la inspección, en tres niveles: **res condenada** (marca del `Romaneo`, R-E23), **media res condenada**, que retira una pieza y deja la otra en pie (marca de la `RomaneoPieza`, R-E27), y **recorte parcial**, que retira kilos de una media res que igual sigue a cámara (R-E24). La causa sale del catálogo global `MotivosDecomisos`. |
 | **Merma sanitaria** | Los kilos condenados de la jornada: los de las reses condenadas enteras más los retirados en los recortes. Se informa aparte del rinde, que conserva su definición (R-A6 en `AnalisisFaena.md`). |
 | **Medición** | Valor capturado de un `TipoMedicion` del catálogo. En MVP la única medición es **`PESO`**. |
 | **Tipificador** | Puesto/pantalla donde se captura el romaneo res por res. |
@@ -120,11 +121,13 @@ LM EN_EJECUCION  ──►  abrir Tipificador
     El operador puede cambiarla manualmente (y esa elección se respeta: el peso ya no la mueve).
     │
     ▼
-[4b] Decomiso, si la inspección lo dispuso (R-E23 / R-E24):
-    - TOTAL: se tilda "Decomiso total" y se elige el motivo. La res se pesa igual (son los
-      kilos condenados), pero no se clasifica ni se tipifica, y no va a ir a cámara.
-    - PARCIAL: por media res, motivo + kilos retirados. La pieza sigue su curso a cámara y
-      los kilos NO se descuentan de su peso: se informan como merma sanitaria.
+[4b] Decomiso, si la inspección lo dispuso (R-E23 / R-E27 / R-E24):
+    - RES CONDENADA: se tilda "Decomiso total" y se elige el motivo. La res se pesa igual (son
+      los kilos condenados), pero no se clasifica ni se tipifica, y no va a ir a cámara.
+    - MEDIA RES CONDENADA: en la pieza se elige "Condenada entera" y su motivo. Se pesa igual,
+      no se tipifica, y la otra media res del animal sigue su curso normal.
+    - RECORTE: en la pieza se elige "Recorte de kilos", con motivo y kilos retirados. La pieza
+      sigue su curso a cámara y los kilos NO se descuentan de su peso: se informan como merma.
     │
     ▼
 [5] Confirmar romaneo  ──►  CrearRomaneo:
@@ -263,7 +266,7 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
 
   **Los kilos decomisados no ajustan el peso de la pieza.** `Peso` es lo que dio la balanza y lo
   que entra a cámara; `PesoDecomisado` es la merma sanitaria, y se informa aparte. Los kilos
-  decomisados **no pueden alcanzar el peso de la pieza**: eso ya es una condena y va por R-E23.
+  decomisados **no pueden alcanzar el peso de la pieza**: eso ya es condenarla, y va por R-E27.
 
   Un motivo por pieza y uno por res condenada. Si en la práctica aparecen dos causas sobre la
   misma media res, hay que partir el registro en una tabla hija; hoy no se modeló porque no hay
@@ -299,6 +302,30 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
 
   La regla **no aplica al decomiso total**, porque la res condenada no registra contusión, ni a
   los motivos sin la marca: un absceso o una contaminación no dicen nada sobre golpes.
+- **R-E27 (media res condenada: el nivel del medio).** La inspección también condena **una sola
+  media res** y deja la otra en pie. Ni el decomiso total (que se lleva el animal entero) ni el
+  recorte de kilos (que asume que la pieza sigue viva) cubren ese caso, así que la pieza lleva su
+  propia marca, `RomaneoPieza.Decomisada`.
+
+  Se comporta como la res condenada, pero en el grano de la pieza: **se pesa** (esos kilos son
+  merma sanitaria), **exige motivo**, no se tipifica, no lleva contusión, no suma `Puntos` y la
+  Liberación la aparta (R-L9 en `EvaluacionFaena.md`). Su hermana no se entera: sigue con su
+  tipificación, su contusión y su destino a cámara.
+
+  | | Res condenada (R-E23) | Media res condenada (R-E27) | Recorte (R-E24) |
+  |---|---|---|---|
+  | Marca | `Romaneo.DecomisoTotal` | `RomaneoPieza.Decomisada` | `RomaneoPieza.PesoDecomisado` |
+  | Kilos condenados | Todas sus piezas | El `Peso` de la pieza | Solo los kilos retirados |
+  | ¿Va a cámara? | No | Esa pieza no; la otra sí | Sí |
+  | Se cuenta en | Animales | Medias reses | Medias reses |
+
+  **No lleva columna de kilos propia.** Sus kilos condenados son el `Peso` de la pieza; guardar el
+  mismo número dos veces solo abre la puerta a que difieran. Por eso el alta rechaza que una media
+  res condenada traiga además kilos de recorte.
+
+  **Si se condenan todas las medias reses, el alta pide registrarlo como decomiso total de la
+  res.** El hecho es el mismo y el dato tiene que ser uno solo: si no, la misma jornada contaría
+  a veces un animal condenado y a veces dos medias reses, y el informe sanitario dejaría de cerrar.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
@@ -453,8 +480,10 @@ PK: Guid Id
 - TipoContusionId (string?, FK)        [dato del palco: el golpe es de ESTA media res, no del animal (R-E20)]
 - Peso (double)                        [caché de la medición PESO; canónico p/ tipificación y KG]
 - PesoFueraRango (bool, default false) [el peso quedó fuera del rango de la tipificación y se forzó (R-E15)]
-- MotivoDecomisoId (string?, FK)       [decomiso parcial de ESTA media res (R-E24)]
-- PesoDecomisado (double, default 0)   [kilos retirados; NO descuentan Peso (R-E24)]
+- Decomisada (bool, default false)     [esta media res se condenó entera (R-E27)]
+- MotivoDecomisoId (string?, FK)       [motivo del decomiso de la pieza: condena (R-E27) o recorte (R-E24)]
+- PesoDecomisado (double, default 0)   [kilos retirados en el recorte; NO descuentan Peso (R-E24).
+                                        Queda en 0 en la media res condenada: sus kilos son el Peso]
 Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
 ```
 
@@ -570,7 +599,7 @@ Controller `RomaneosController` (patrón `MeatBaseController`, `[Authorize]`, `C
 | GET | `/Romaneos/sugerir-tipificacion?especieId=&tipoEspecieId=&unidadFaenaId=&destinoComercialId=&peso=` | Devuelve la `Tipificacion` propuesta (match por rango de peso, orden Puntos) y la lista de candidatas para el combo. |
 | GET | `/Romaneos/jornada?listaMatanzaId=` | Romaneos de la jornada (grilla del Tipificador). |
 | GET | `/Romaneos/monitor?listaMatanzaId=` | Totales en vivo: faenado/planificado global y por tropa/categoría, KG, ritmo. |
-| POST | `/Romaneos` | Crea un romaneo; el animal lleva **conformación + engrasamiento + dentición** y cada pieza lleva **peso + tipificación + cámara destino** (R-E13) **+ contusión** + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). Con `DecomisoTotal` la res se condena entera y solo se piden **motivo + pesos** (R-E23); por pieza acepta el **decomiso parcial** (motivo + kilos, R-E24). |
+| POST | `/Romaneos` | Crea un romaneo; el animal lleva **conformación + engrasamiento + dentición** y cada pieza lleva **peso + tipificación + cámara destino** (R-E13) **+ contusión** + mediciones; aplica el consumo de stock (§7) y trazabilidad (§8). Con `DecomisoTotal` la res se condena entera y solo se piden **motivo + pesos** (R-E23); por pieza acepta la **condena de la media res** (`Decomisada` + motivo, R-E27) y el **recorte parcial** (motivo + kilos, R-E24). |
 | POST | `/Romaneos/{id}/anular` | Anula el romaneo; revierte el consumo. |
 
 Los **catálogos globales por especie** viven fuera de `RomaneosController`. Todos exponen
@@ -590,7 +619,7 @@ porque el Tipificador la necesita; **escritura `[Authorize(Roles = "SUPERADMIN")
 
 | Página | Ruta | Menú | Descripción |
 |---|---|---|---|
-| `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Captura res por res: renglón sugerido con override, garrón, UF, los **datos del palco** del animal (conformación, engrasamiento, dentición) y piezas (1 P / 2 A-B V) con peso, **contusión**, cámara y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. Los combos del palco solo aparecen si la especie los tiene cargados (R-E22). El check **Decomiso total** condena la res y esconde la clasificación (R-E23); cada pieza puede llevar un **decomiso parcial** con motivo y kilos (R-E24). |
+| `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Captura res por res: renglón sugerido con override, garrón, UF, los **datos del palco** del animal (conformación, engrasamiento, dentición) y piezas (1 P / 2 A-B V) con peso, **contusión**, cámara y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. Los combos del palco solo aparecen si la especie los tiene cargados (R-E22). El check **Decomiso total** condena la res y esconde la clasificación (R-E23); cada pieza elige entre **sin decomiso**, **condenada entera** (R-E27, que esconde su tipificación y su contusión) y **recorte de kilos** (R-E24). |
 | `EjeTipificacionListPage` / `EjeTipificacionFormPage` | `/conformaciones`, `/grados-engrasamiento`, `/denticiones`, `/tipos-contusiones`, `/motivos-decomisos` | Administración *(solo SUPERADMIN)* | Un **único par de pantallas** para los cuatro catálogos del palco y los motivos de decomiso; cuál es lo define una prop. ABM con filtro por especie y estado. Ver §9.4. |
 | `MonitorFaenaPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/monitor` | Ejecución de Faena | Tablero **read-only** de supervisión: totales en vivo (faenado vs planificado, por tropa/categoría, KG, ritmo) y las **reses condenadas**, cuyos kilos quedan fuera del total. Refresco por **polling** (intervalo corto). |
 

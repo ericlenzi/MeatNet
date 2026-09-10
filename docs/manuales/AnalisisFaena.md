@@ -63,11 +63,12 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
    no significa nada.
 3. **El peso de faena es caliente.** Comparado contra un rinde frío de referencia, este da más
    alto (la merma de oreo ronda el 2%, pero eso se mide, no se supone).
-4. **El decomiso hace bajar el rinde, y la merma sanitaria dice cuánto.** La res condenada entera
-   sale del numerador (esa carne no llega a la cámara) pero el animal sigue en el denominador,
-   porque se faenó. Eso hace caer el rinde a propósito, y la **merma sanitaria** que se informa al
-   lado es la que explica la caída. El recorte parcial no toca ninguno de los dos: el peso de la
-   pieza es el que entró a la cámara, y los kilos retirados se suman a la merma (R-A6).
+4. **El decomiso hace bajar el rinde, y la merma sanitaria dice cuánto.** Lo condenado sale del
+   numerador (esa carne no llega a la cámara), sea la res entera o una media res, pero el animal
+   sigue en el denominador, porque se faenó. Eso hace caer el rinde a propósito, y la **merma
+   sanitaria** que se informa al lado es la que explica la caída. El recorte parcial no toca
+   ninguno de los dos: el peso de la pieza es el que entró a la cámara, y los kilos retirados se
+   suman a la merma (R-A6).
 5. **Si nadie ajustó la cantidad en el Ingreso, el denominador es el peso teórico configurado.**
    `PesoPromedio` sale de `PesoIngreso / Cantidad`, y esa `Cantidad` viene precargada con la
    estimación `PesoIngreso / EmpresaTipoEspecie.PesoTeorico`. Si el operador la acepta sin contar
@@ -124,13 +125,14 @@ generó la Liberación. Antes de liberar, la sección está vacía.
 
 ### 3.7 Merma sanitaria
 Los decomisos de la jornada, **abiertos por motivo**, que es el informe que mira la inspección. Las
-dos formas se cuentan distinto y por eso van en columnas separadas: la **res condenada entera** se
-cuenta en animales y aporta todos sus kilos, y el **recorte parcial** se cuenta en medias reses y
-aporta solo los kilos retirados. La sección no aparece si la jornada no tuvo decomisos.
+tres formas se cuentan distinto y por eso van en columnas separadas: la **res condenada entera** se
+cuenta en animales y aporta todos sus kilos, la **media res condenada** se cuenta en medias reses y
+aporta su peso entero, y el **recorte parcial** también se cuenta en medias reses pero aporta solo
+los kilos retirados. La sección no aparece si la jornada no tuvo decomisos.
 
-La res condenada no figura en la tipificación consolidada (§3.4) ni en la dispersión de pesos
-(§3.5): no se tipificó, así que no hay rango contra el cual compararla. Ver R-A6 y, para cómo se
-capturan, R-E23 y R-E24 en `EjecucionFaena.md`.
+Lo condenado no figura en la tipificación consolidada (§3.4) ni en la dispersión de pesos (§3.5):
+no se tipificó, así que no hay rango contra el cual compararlo. Ver R-A6 y, para cómo se capturan,
+R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 
 ## 4. Fuentes de datos
 
@@ -145,6 +147,7 @@ capturan, R-E23 y R-E24 en `EjecucionFaena.md`.
 | Fuera de rango | `RomaneoPieza.PesoFueraRango` |
 | Existencia en cámara | `MovimientoCamara` (saldo derivado) |
 | Res condenada | `Romaneo.DecomisoTotal` + `Romaneo.MotivoDecomisoId` |
+| Media res condenada | `RomaneoPieza.Decomisada` + `RomaneoPieza.MotivoDecomisoId` |
 | Recorte parcial | `RomaneoPieza.PesoDecomisado` + `RomaneoPieza.MotivoDecomisoId` |
 
 ## 5. Reglas
@@ -164,15 +167,15 @@ capturan, R-E23 y R-E24 en `EjecucionFaena.md`.
   Merma sanitaria (%) = (kg condenados / kg vivos) × 100
   ```
 
-  …donde los kg condenados son los de las **reses condenadas enteras** más los **kilos retirados**
-  de las medias reses recortadas. Se muestra al lado del rinde y se abre **por motivo**, que es el
-  informe que mira la inspección.
+  …donde los kg condenados son los de las **reses condenadas enteras**, más los de las **medias
+  reses condenadas**, más los **kilos retirados** en los recortes. Se muestra al lado del rinde y
+  se abre **por motivo**, que es el informe que mira la inspección.
 
-  Las dos formas de decomiso se cuentan distinto y por eso van en columnas separadas: la res
-  condenada se cuenta en **animales** y aporta todos sus kilos; el recorte se cuenta en **medias
-  reses** y aporta solo los kilos retirados. La res condenada tampoco entra en la tipificación
-  consolidada ni en la dispersión de pesos: no se tipificó, y no hay rango contra el cual
-  compararla.
+  Las tres formas se cuentan distinto y por eso van en columnas separadas: la res condenada se
+  cuenta en **animales** y aporta todos sus kilos; la media res condenada se cuenta en **medias
+  reses** y aporta su peso entero; el recorte también se cuenta en medias reses pero aporta solo
+  los kilos retirados. Nada de lo condenado entra en la tipificación consolidada ni en la
+  dispersión de pesos: no se tipificó, y no hay rango contra el cual compararlo.
 
 ## 6. Temas abiertos
 
@@ -181,7 +184,7 @@ capturan, R-E23 y R-E24 en `EjecucionFaena.md`.
 
   | Pregunta | Decisión |
   |---|---|
-  | Grano | **Total por animal** (`Romaneo.DecomisoTotal`) y **parcial por media res** (`RomaneoPieza.PesoDecomisado`). |
+  | Grano | **Total por animal** (`Romaneo.DecomisoTotal`), **condena de una media res** (`RomaneoPieza.Decomisada`, R-E27) y **recorte parcial** (`RomaneoPieza.PesoDecomisado`). |
   | Dónde se registra | En el **Tipificador**, en el mismo momento en que se ve la res. Un puesto sanitario propio escribiría en las mismas columnas (O-E2 en `EjecucionFaena.md`). |
   | Impacto en el rinde | **Merma sanitaria aparte** (R-A6): la definición del rinde no cambia. |
   | Peso de la res condenada | **Se pesa.** Sin kilos, la pérdida quedaría en cabezas y no se podría comparar con el rinde. |

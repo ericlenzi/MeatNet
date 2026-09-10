@@ -124,22 +124,30 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             if (piezas.Any(p => p.Peso <= 0))
                 throw new ValidationException("El peso de cada pieza debe ser mayor a cero.");
 
-            // La res condenada se pesa igual: esos kilos son la merma sanitaria de la jornada.
-            // Lo que no lleva es tipificacion ni contusion.
-            if (!decomisoTotal && piezas.Any(p => !p.TipificacionId.HasValue))
+            // Lo condenado se pesa igual, sea la res entera o una media res: esos kilos son la
+            // merma sanitaria de la jornada. Lo que no lleva es tipificacion ni contusion.
+            //
+            // R-E27: si TODAS las medias reses estan condenadas, el hecho es que se condeno la res
+            // entera, y se pide registrarlo asi. Deja el dato sin ambiguedad: el analisis cuenta
+            // animales condenados por un lado y medias reses por otro.
+            if (!decomisoTotal && piezasEsperadas > 1 && piezas.All(p => p.Decomisada))
+                throw new ValidationException("Se estan condenando todas las medias reses del animal. Registrelo como decomiso total de la res.");
+            if (decomisoTotal && piezas.Any(p => p.Decomisada))
+                throw new ValidationException("La res ya esta condenada entera: sus medias reses no se condenan por separado.");
+
+            var esCarne = new Func<PiezaRomaneoInput, bool>(p => !decomisoTotal && !p.Decomisada);
+
+            if (piezas.Any(p => esCarne(p) && !p.TipificacionId.HasValue))
                 throw new ValidationException("Cada pieza debe tener una tipificacion.");
 
             // La contusion es el unico de los cuatro datos del palco que va por pieza: el golpe
             // esta en una media res concreta. Se valida con la misma regla derivada del catalogo.
-            if (!decomisoTotal)
-            {
-                foreach (var p in piezas)
-                    ValidarDatoDePalco("la contusion de cada media res", contusiones, p.TipoContusionId);
-            }
+            foreach (var p in piezas.Where(esCarne))
+                ValidarDatoDePalco("la contusion de cada media res", contusiones, p.TipoContusionId);
 
-            // 5e) Decomiso parcial (R-E24): la inspeccion retira kilos de una media res y la
-            //     pieza sigue su curso a camara. Motivo y kilos van juntos, y los kilos no pueden
-            //     alcanzar el peso de la pieza: eso ya es una condena y va por decomiso total.
+            // 5e) Decomiso por pieza: la media res condenada entera (R-E27) y el recorte parcial
+            //     (R-E24). En el recorte, motivo y kilos van juntos y los kilos no pueden alcanzar
+            //     el peso de la pieza: eso ya es una condena y va por R-E27.
             foreach (var p in piezas)
             {
                 var motivoPieza = Normalizar(p.MotivoDecomisoId);
@@ -147,7 +155,18 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 if (decomisoTotal)
                 {
                     if (motivoPieza != null || p.PesoDecomisado > 0)
-                        throw new ValidationException("La res condenada entera no lleva ademas decomisos parciales por pieza.");
+                        throw new ValidationException("La res condenada entera no lleva ademas decomisos por media res.");
+                    continue;
+                }
+
+                if (p.Decomisada)
+                {
+                    if (motivoPieza == null)
+                        throw new ValidationException("Debe indicar el motivo por el que se condena la media res.");
+                    if (!motivosDecomiso.ContainsKey(motivoPieza))
+                        throw new ValidationException("El motivo de decomiso indicado no existe, no esta activo o no corresponde a la especie de la jornada.");
+                    if (p.PesoDecomisado > 0)
+                        throw new ValidationException("La media res condenada no lleva kilos de recorte: sus kilos condenados son su peso entero.");
                     continue;
                 }
 
@@ -200,9 +219,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
             // 7) Tipificaciones validas (activas, de la empresa). La res condenada no tiene:
             //    la lista queda vacia y todo este bloque se saltea solo.
-            var tipIds = decomisoTotal
-                ? new List<Guid>()
-                : piezas.Select(p => p.TipificacionId.Value).Distinct().ToList();
+            var tipIds = piezas.Where(esCarne).Select(p => p.TipificacionId.Value).Distinct().ToList();
             var tipificaciones = await this.context.Tipificaciones
                 .Where(t => tipIds.Contains(t.Id) && t.Activo)
                 .ToListAsync(cancellationToken);
@@ -212,9 +229,8 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
             // 7b) Peso dentro del rango de su tipificacion. Fuera de rango no bloquea la linea:
             // se permite si el operario lo confirma (ForzarFueraRango) y queda registrado en la pieza.
-            foreach (var p in piezas)
+            foreach (var p in piezas.Where(esCarne))
             {
-                if (decomisoTotal) break;
                 var t = tipPorId[p.TipificacionId.Value];
                 if (p.Peso >= t.PesoDesde && p.Peso <= t.PesoHasta) continue;
                 if (!p.ForzarFueraRango)
@@ -260,14 +276,17 @@ namespace Meat.Application.Romaneos.CrearRomaneo
                 pieza.RomaneoId = romaneo.Id;
                 pieza.Letra = piezasEsperadas > 1 ? RomaneoConstantes.Letras[idx] : null;
                 pieza.AlmacenDestinoId = p.AlmacenDestinoId;
-                pieza.TipificacionId = decomisoTotal ? null : p.TipificacionId;
-                pieza.TipoContusionId = decomisoTotal || string.IsNullOrWhiteSpace(p.TipoContusionId) ? null : p.TipoContusionId;
+                var carne = esCarne(p);
+
+                pieza.Decomisada = !decomisoTotal && p.Decomisada;
+                pieza.TipificacionId = carne ? p.TipificacionId : null;
+                pieza.TipoContusionId = carne && !string.IsNullOrWhiteSpace(p.TipoContusionId) ? p.TipoContusionId : null;
                 pieza.Peso = p.Peso;
                 pieza.MotivoDecomisoId = decomisoTotal ? null : Normalizar(p.MotivoDecomisoId);
-                pieza.PesoDecomisado = decomisoTotal ? 0 : p.PesoDecomisado;
+                pieza.PesoDecomisado = carne ? p.PesoDecomisado : 0;
 
                 // Sin tipificacion no hay rango contra el cual comparar el peso.
-                var tipPieza = decomisoTotal ? null : tipPorId[p.TipificacionId.Value];
+                var tipPieza = carne ? tipPorId[p.TipificacionId.Value] : null;
                 pieza.PesoFueraRango = tipPieza != null && (p.Peso < tipPieza.PesoDesde || p.Peso > tipPieza.PesoHasta);
 
                 var medicion = RomaneoFactory.CreateMedicion();
@@ -286,9 +305,8 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
             // 11) Puntos: +1 por cada tipificacion usada (cada pieza). La res condenada no usa
             //     ninguna, asi que no mueve la propuesta del proximo romaneo.
-            foreach (var p in piezas)
+            foreach (var p in piezas.Where(esCarne))
             {
-                if (decomisoTotal) break;
                 var tip = tipPorId[p.TipificacionId.Value];
                 tip.Puntos += 1;
                 tip.FechaActualizacion = DateTime.Now;

@@ -75,6 +75,7 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                             MaterialId = p.Tipificacion != null ? p.Tipificacion.MaterialId : null,
                             MaterialCodigo = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.CodigoMaterial : null,
                             MaterialNombre = p.Tipificacion != null && p.Tipificacion.Material != null ? p.Tipificacion.Material.Nombre : null,
+                            Decomisada = p.Decomisada,
                             MotivoDecomisoNombre = p.MotivoDecomiso != null ? p.MotivoDecomiso.Nombre : null,
                             PesoDecomisado = p.PesoDecomisado
                         }).ToList()
@@ -106,12 +107,13 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
                 TotalPiezas = vigentes.Sum(r => r.Piezas.Count()),
                 TotalKg = vigentes.Sum(r => r.PesoTotal),
                 PiezasLiberadas = vigentes.Sum(r => r.Piezas.Count(p => p.Liberado)),
-                // Merma sanitaria de la jornada: la res condenada aporta todos sus kilos, la
-                // media res con recorte parcial solo los que retiro la inspeccion.
+                // Merma sanitaria de la jornada: lo condenado aporta su peso entero (la res o la
+                // media res) y el recorte parcial solo los kilos que retiro la inspeccion.
                 TotalDecomisosTotales = vigentes.Count(r => r.DecomisoTotal),
+                TotalPiezasDecomisadas = vigentes.Sum(r => r.DecomisoTotal ? 0 : r.Piezas.Count(p => p.Decomisada)),
                 TotalKgDecomisados = vigentes.Sum(r => r.DecomisoTotal
                     ? r.PesoTotal
-                    : r.Piezas.Sum(p => p.PesoDecomisado)),
+                    : r.Piezas.Sum(p => p.Decomisada ? p.Peso : p.PesoDecomisado)),
                 Data = data,
                 Camaras = camaras
             };

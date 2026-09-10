@@ -39,18 +39,21 @@ interface PiezaState {
   tipificacionId: string
   almacenDestinoId: string
   tipoContusionId: string
-  // Decomiso parcial: la inspeccion retira kilos de esta media res y la pieza sigue a camara.
-  decomisoParcial: boolean
+  // Decomiso de esta media res. NINGUNO es el caso normal; CONDENADA la retira entera de la
+  // faena (R-E27) y PARCIAL retira kilos y la pieza sigue a camara (R-E24).
+  decomiso: DecomisoPieza
   motivoDecomisoId: string
   pesoDecomisado: string
 }
+
+type DecomisoPieza = 'NINGUNO' | 'CONDENADA' | 'PARCIAL'
 
 const nuevaPieza = (almacenDestinoId = '', tipoContusionId = ''): PiezaState => ({
   peso: '',
   tipificacionId: '',
   almacenDestinoId,
   tipoContusionId,
-  decomisoParcial: false,
+  decomiso: 'NINGUNO',
   motivoDecomisoId: '',
   pesoDecomisado: '',
 })
@@ -257,6 +260,7 @@ export default function TipificadorPage() {
   const piezaFueraRango = useCallback(
     (p: PiezaState): boolean => {
       const peso = Number(p.peso)
+      if (p.decomiso === 'CONDENADA') return false
       if (!(peso > 0) || !p.tipificacionId) return false
       const c = candidatas.find((x) => x.id === p.tipificacionId)
       return !!c && (peso < c.pesoDesde || peso > c.pesoHasta)
@@ -305,16 +309,20 @@ export default function TipificadorPage() {
     })
   }
 
-  // Decomiso parcial de una media res: motivo y kilos van juntos, asi que al destildar se
-  // limpian los dos y la pieza vuelve a viajar sin decomiso.
-  const onDecomisoParcialChange = (idx: number, decomisoParcial: boolean) => {
+  // Al cambiar de tipo de decomiso se limpia lo que ya no aplica: el motivo cuando se vuelve a
+  // "sin decomiso" y los kilos cuando la media res pasa a estar condenada entera (sus kilos
+  // condenados son su peso, no un recorte).
+  const onDecomisoPiezaTipoChange = (idx: number, decomiso: DecomisoPieza) => {
     setPiezas((prev) => {
       const current = prev[idx]
       if (!current) return prev
       const next = [...prev]
-      next[idx] = decomisoParcial
-        ? { ...current, decomisoParcial: true }
-        : { ...current, decomisoParcial: false, motivoDecomisoId: '', pesoDecomisado: '' }
+      next[idx] =
+        decomiso === 'NINGUNO'
+          ? { ...current, decomiso, motivoDecomisoId: '', pesoDecomisado: '' }
+          : decomiso === 'CONDENADA'
+            ? { ...current, decomiso, pesoDecomisado: '' }
+            : { ...current, decomiso }
       return next
     })
   }
@@ -383,7 +391,7 @@ export default function TipificadorPage() {
         return
       }
     } else {
-      if (piezas.some((p) => !p.tipificacionId)) {
+      if (piezas.some((p) => p.decomiso !== 'CONDENADA' && !p.tipificacionId)) {
         toast('error', 'Cada pieza requiere una tipificacion.')
         return
       }
@@ -401,13 +409,28 @@ export default function TipificadorPage() {
         toast('error', 'Indique la denticion del animal.')
         return
       }
-      if (tiposContusiones.length > 0 && piezas.some((p) => !p.tipoContusionId)) {
+      if (
+        tiposContusiones.length > 0 &&
+        piezas.some((p) => p.decomiso !== 'CONDENADA' && !p.tipoContusionId)
+      ) {
         toast('error', 'Indique la contusion de cada media res.')
         return
       }
+      // Media res condenada entera: solo pide motivo. Si estan todas condenadas, lo que pasó
+      // es que se condeno la res, y se registra asi (R-E27).
+      if (nroPiezas > 1 && piezas.every((p) => p.decomiso === 'CONDENADA')) {
+        toast('error', 'Se estan condenando todas las medias reses del animal. Use el decomiso total de la res.')
+        return
+      }
+      const condenada = piezas.find((p) => p.decomiso === 'CONDENADA' && !p.motivoDecomisoId)
+      if (condenada) {
+        toast('error', 'Indique el motivo por el que se condena la media res.')
+        return
+      }
+
       // Decomiso parcial: motivo y kilos van juntos, y los kilos no pueden alcanzar el peso de
-      // la pieza; eso ya seria una condena y va por decomiso total.
-      const parcial = piezas.find((p) => p.decomisoParcial)
+      // la pieza; eso ya es condenarla, y va por el decomiso de la media res.
+      const parcial = piezas.find((p) => p.decomiso === 'PARCIAL')
       if (parcial) {
         if (!parcial.motivoDecomisoId) {
           toast('error', 'Indique el motivo del decomiso parcial de la pieza.')
@@ -419,7 +442,7 @@ export default function TipificadorPage() {
           return
         }
         if (kg >= Number(parcial.peso)) {
-          toast('error', 'Los kilos decomisados no pueden alcanzar el peso de la pieza. Si se condena la res entera, use el decomiso total.')
+          toast('error', 'Los kilos decomisados no pueden alcanzar el peso de la pieza. Si la media res se condena entera, marcala como condenada.')
           return
         }
         // El motivo que describe un golpe no cierra con una media res declarada sana. Cuáles son
@@ -456,17 +479,22 @@ export default function TipificadorPage() {
         DenticionId: decomisoTotal ? undefined : denticionId || undefined,
         DecomisoTotal: decomisoTotal,
         MotivoDecomisoId: decomisoTotal ? motivoDecomisoId : undefined,
-        Piezas: piezas.map((p) => ({
-          AlmacenDestinoId: p.almacenDestinoId,
-          TipificacionId: decomisoTotal ? undefined : p.tipificacionId,
-          TipoContusionId: decomisoTotal ? undefined : p.tipoContusionId || undefined,
-          Peso: Number(p.peso),
-          ForzarFueraRango: !decomisoTotal && piezaFueraRango(p) && forzarFueraRango,
-          MotivoDecomisoId:
-            !decomisoTotal && p.decomisoParcial ? p.motivoDecomisoId : undefined,
-          PesoDecomisado:
-            !decomisoTotal && p.decomisoParcial ? Number(p.pesoDecomisado) : undefined,
-        })),
+        Piezas: piezas.map((p) => {
+          // La media res condenada viaja como la res condenada: sin clasificar.
+          const carne = !decomisoTotal && p.decomiso !== 'CONDENADA'
+          return {
+            AlmacenDestinoId: p.almacenDestinoId,
+            TipificacionId: carne ? p.tipificacionId : undefined,
+            TipoContusionId: carne ? p.tipoContusionId || undefined : undefined,
+            Peso: Number(p.peso),
+            ForzarFueraRango: carne && piezaFueraRango(p) && forzarFueraRango,
+            Decomisada: !decomisoTotal && p.decomiso === 'CONDENADA',
+            MotivoDecomisoId:
+              !decomisoTotal && p.decomiso !== 'NINGUNO' ? p.motivoDecomisoId : undefined,
+            PesoDecomisado:
+              carne && p.decomiso === 'PARCIAL' ? Number(p.pesoDecomisado) : undefined,
+          }
+        }),
       })
       toast('success', `Romaneo N° ${res.numeroRomaneo} (garron ${res.numeroGarron}) registrado`)
       await cargar()
@@ -700,7 +728,7 @@ export default function TipificadorPage() {
                 </div>
                 <div
                   className={
-                    decomisoTotal
+                    decomisoTotal || p.decomiso === 'CONDENADA'
                       ? 'sm:col-span-9'
                       : tiposContusiones.length > 0
                         ? 'sm:col-span-3'
@@ -719,7 +747,7 @@ export default function TipificadorPage() {
                     ))}
                   </select>
                 </div>
-                {!decomisoTotal && tiposContusiones.length > 0 && (
+                {!decomisoTotal && p.decomiso !== 'CONDENADA' && tiposContusiones.length > 0 && (
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs text-text-light">Contusion *</label>
                     <select
@@ -736,7 +764,7 @@ export default function TipificadorPage() {
                     </select>
                   </div>
                 )}
-                {!decomisoTotal && (
+                {!decomisoTotal && p.decomiso !== 'CONDENADA' && (
                 <div className={tiposContusiones.length > 0 ? 'sm:col-span-4' : 'sm:col-span-5'}>
                   <label className="mb-1 block text-xs text-text-light">Tipificacion</label>
                   <select
@@ -755,20 +783,31 @@ export default function TipificadorPage() {
                 </div>
                 )}
 
-                {/* Decomiso parcial: la inspeccion retira kilos de esta media res y la pieza
-                    sigue su curso a camara. Los kilos no descuentan el peso: se informan como
-                    merma sanitaria. */}
+                {/* Decomiso de esta media res: condenada entera (no va a cámara) o recorte de
+                    kilos (la pieza sigue su curso y los kilos se informan como merma). */}
                 {!decomisoTotal && motivosDecomiso.length > 0 && (
                   <div className="sm:col-span-12">
-                    <label className="flex items-center gap-2 text-xs text-text-light">
-                      <input
-                        type="checkbox"
-                        checked={p.decomisoParcial}
-                        onChange={(e) => onDecomisoParcialChange(idx, e.target.checked)}
-                      />
-                      <span>Decomiso parcial de esta pieza</span>
-                    </label>
-                    {p.decomisoParcial && (
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-text-light">
+                      <span>Decomiso de esta media res:</span>
+                      {(
+                        [
+                          ['NINGUNO', 'Sin decomiso'],
+                          ['CONDENADA', 'Condenada entera'],
+                          ['PARCIAL', 'Recorte de kilos'],
+                        ] as const
+                      ).map(([valor, etiqueta]) => (
+                        <label key={valor} className="flex items-center gap-1">
+                          <input
+                            type="radio"
+                            name={`decomiso-pieza-${idx}`}
+                            checked={p.decomiso === valor}
+                            onChange={() => onDecomisoPiezaTipoChange(idx, valor)}
+                          />
+                          <span>{etiqueta}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {p.decomiso !== 'NINGUNO' && (
                       <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-12">
                         <div className="sm:col-span-6">
                           <label className="mb-1 block text-xs text-text-light">Motivo *</label>
@@ -787,6 +826,7 @@ export default function TipificadorPage() {
                             ))}
                           </select>
                         </div>
+                        {p.decomiso === 'PARCIAL' && (
                         <div className="sm:col-span-3">
                           <label className="mb-1 block text-xs text-text-light">Kg decomisados *</label>
                           <input
@@ -804,8 +844,11 @@ export default function TipificadorPage() {
                             }
                           />
                         </div>
+                        )}
                         <p className="self-end text-xs text-text-light sm:col-span-3">
-                          No descuentan el peso de la pieza.
+                          {p.decomiso === 'CONDENADA'
+                            ? 'Se pesa igual, pero no se tipifica ni va a cámara.'
+                            : 'No descuentan el peso de la pieza.'}
                         </p>
                       </div>
                     )}
@@ -902,9 +945,14 @@ export default function TipificadorPage() {
                           {p.motivoDecomisoNombre && (
                             <span
                               className="ml-1 rounded bg-red-100 px-1 text-xs text-danger"
-                              title="Decomiso parcial: kilos retirados por la inspeccion"
+                              title={
+                                p.decomisada
+                                  ? 'Media res condenada: no entra a camara'
+                                  : 'Decomiso parcial: kilos retirados por la inspeccion'
+                              }
                             >
-                              -{p.pesoDecomisado}kg {p.motivoDecomisoNombre}
+                              {p.decomisada ? 'condenada' : `-${p.pesoDecomisado}kg`}{' '}
+                              {p.motivoDecomisoNombre}
                             </span>
                           )}
                           {p.pesoFueraRango && (

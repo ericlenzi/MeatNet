@@ -16,9 +16,10 @@ namespace Meat.Application.EvaluacionFaena.Shared
     /// Lo comparten la previsualizacion (muestra el plan y los problemas) y la liberacion
     /// efectiva (escribe el plan), de modo que las dos ven exactamente lo mismo.
     ///
-    /// Las piezas de una res condenada entera (R-E23) se apartan antes: no tienen tipificacion
-    /// ni material, y su carne no entra a camara. Se informan como decomisadas y la Liberacion
-    /// las fija igual, para que la jornada quede cerrada entera.
+    /// Las piezas condenadas se apartan antes: las de una res condenada entera (R-E23) y las
+    /// medias reses condenadas por separado (R-E27). No tienen tipificacion ni material, y su
+    /// carne no entra a camara. Se informan como decomisadas y la Liberacion las fija igual, para
+    /// que la jornada quede cerrada entera.
     ///
     /// Por cada pieza no anulada, no liberada y no condenada:
     ///   - material = Tipificacion.MaterialId (R-L1)
@@ -73,7 +74,12 @@ namespace Meat.Application.EvaluacionFaena.Shared
                     TipoEspecieId = p.Tipificacion.TipoEspecieId,
                     YaLiberada = p.Liberado,
                     DecomisoTotal = r.DecomisoTotal,
-                    MotivoDecomisoNombre = r.MotivoDecomiso != null ? r.MotivoDecomiso.Nombre : null
+                    Decomisada = p.Decomisada,
+                    // El motivo de la res condenada esta en el romaneo; el de la media res
+                    // condenada, en la pieza. Se informa el que corresponda.
+                    MotivoDecomisoNombre = r.DecomisoTotal
+                        ? (r.MotivoDecomiso != null ? r.MotivoDecomiso.Nombre : null)
+                        : (p.MotivoDecomiso != null ? p.MotivoDecomiso.Nombre : null)
                 }).ToListAsync(cancellationToken);
 
             plan.PiezasYaLiberadas = piezas.Count(p => p.YaLiberada);
@@ -84,12 +90,13 @@ namespace Meat.Application.EvaluacionFaena.Shared
             if (pendientes.Count == 0)
                 return plan;
 
-            // R-L9: la res condenada entera (R-E23) no genera existencia. Sale del calculo antes
-            // de que le pidan tipificacion o material, que justamente no tiene: si se quedara,
-            // cada media res condenada seria un problema y bloquearia la jornada completa. Igual
-            // se lleva a liberar, para que la jornada quede cerrada de punta a punta.
+            // R-L9: lo condenado no genera existencia, sea la res entera (R-E23) o una media res
+            // suelta (R-E27). Sale del calculo antes de que le pidan tipificacion o material, que
+            // justamente no tiene: si se quedara, cada pieza condenada seria un problema y
+            // bloquearia la jornada completa. Igual se lleva a liberar, para que la jornada quede
+            // cerrada de punta a punta.
             plan.Decomisadas = pendientes
-                .Where(p => p.DecomisoTotal)
+                .Where(p => p.DecomisoTotal || p.Decomisada)
                 .Select(p => new PiezaDecomisada
                 {
                     PiezaId = p.PiezaId,
@@ -102,7 +109,7 @@ namespace Meat.Application.EvaluacionFaena.Shared
                 })
                 .ToList();
 
-            pendientes = pendientes.Where(p => !p.DecomisoTotal).ToList();
+            pendientes = pendientes.Where(p => !p.DecomisoTotal && !p.Decomisada).ToList();
             if (pendientes.Count == 0)
                 return plan;
 

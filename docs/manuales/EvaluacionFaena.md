@@ -164,8 +164,8 @@ LM FINALIZADA (jornada cerrada)  ──►  abrir Evaluación de Faena
     │
     ▼
 [4] Liberar  ──►  por cada RomaneoPieza no anulada de la jornada:
-      • apartar las piezas de reses condenadas enteras (R-L9): se fijan, pero no generan
-        existencia ni se les busca material
+      • apartar lo condenado (R-L9): las piezas de una res condenada y las medias reses
+        condenadas por separado se fijan, pero no generan existencia ni se les busca material
       • resolver Material por Tipificacion.MaterialId (R-L1)
       • buscar Despiece activo del material (R-L4):
           - sin despiece  → 1 movimiento INGRESO (material, cámara destino, cantidad 1, peso)
@@ -301,13 +301,14 @@ o un estado. Una pieza liberada no admite edición (R-L3) y ya generó su existe
   las piezas liberadas se saltean).
 - **R-L8 (piezas sin cuartear que igual cambian de material).** El despiece admite `MaterialDestino`
   distinto sin ser "cuarto" (ej. reclasificación); el mecanismo es el mismo (transformación 1→1).
-- **R-L9 (la res condenada se libera sin entrar a cámara).** Las piezas de un romaneo con
-  `DecomisoTotal` (R-E23 en `EjecucionFaena.md`) **se apartan antes** de resolverles material, y
-  **no generan ningún movimiento**: esa carne no llega a la cámara.
+- **R-L9 (lo condenado se libera sin entrar a cámara).** Las piezas de un romaneo con
+  `DecomisoTotal` (R-E23 en `EjecucionFaena.md`) y las medias reses con `Decomisada` (R-E27)
+  **se apartan antes** de resolverles material, y **no generan ningún movimiento**: esa carne no
+  llega a la cámara. Las demás piezas del mismo animal se liberan normalmente.
 
-  Apartarlas es lo que evita que bloqueen la jornada. La res condenada no tiene tipificación a
-  propósito, así que si llegara al cálculo sería un problema por cada media res, y como la
-  liberación es **todo o nada**, una sola res condenada dejaría la jornada entera sin liberar.
+  Apartarlas es lo que evita que bloqueen la jornada. Lo condenado no tiene tipificación a
+  propósito, así que si llegara al cálculo sería un problema por cada pieza, y como la liberación
+  es **todo o nada**, un solo decomiso dejaría la jornada entera sin liberar.
 
   Aun así **se marcan como liberadas**, con su romaneo: la jornada se cierra completa y el romaneo
   condenado queda tan definitivo como el resto, sin quedar editable ni anulable después. La

@@ -42,10 +42,22 @@ namespace Meat.Domain.Romaneos
 
         public bool PesoFueraRango { get; set; }               // el peso quedo fuera del rango de la Tipificacion y el operario forzo el registro
 
-        // Decomiso parcial (R-E24): la inspeccion retira kilos de esta media res y la pieza sigue
-        // su curso a camara. Van juntos: si hay motivo hay kilos, y viceversa.
-        // PesoDecomisado NO ajusta Peso: Peso es lo que dio la balanza y lo que entra a camara;
-        // los kilos decomisados se informan aparte como merma sanitaria (AnalisisFaena.md).
+        // Media res condenada entera (R-E27): la inspeccion condena ESTA pieza y la otra del
+        // animal sigue su curso normal. Es el nivel intermedio entre la res condenada
+        // (Romaneo.DecomisoTotal) y el recorte de kilos (PesoDecomisado). Como la res condenada,
+        // se pesa pero no se tipifica ni entra a camara, y sus kilos van enteros a la merma.
+        public bool Decomisada { get; set; }
+
+        // Motivo del decomiso de esta media res, sea la condena entera (R-E27) o el recorte
+        // parcial (R-E24): la causa es la misma cosa, lo que cambia es el alcance.
+        //
+        // Decomiso parcial: la inspeccion retira kilos y la pieza sigue su curso a camara. Motivo
+        // y kilos van juntos: si hay uno hay el otro. PesoDecomisado NO ajusta Peso, que es lo que
+        // dio la balanza y lo que entra a camara; los kilos retirados se informan aparte como
+        // merma sanitaria (AnalisisFaena.md).
+        //
+        // En la media res condenada PesoDecomisado queda en cero y la merma la aporta el Peso
+        // entero: guardar el mismo numero dos veces solo abre la puerta a que difieran.
         public string MotivoDecomisoId { get; set; }
         public virtual MotivoDecomiso MotivoDecomiso { get; set; }
 

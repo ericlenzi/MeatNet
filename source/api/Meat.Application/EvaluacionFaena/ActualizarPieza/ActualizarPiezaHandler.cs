@@ -53,10 +53,10 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
             if (request.Peso <= 0)
                 throw new ValidationException("El peso debe ser mayor a cero.");
 
-            // La res condenada entera (R-E23) no se tipifica ni entra a camara: lo unico
-            // corregible de su pieza es el peso, que son los kilos que la inspeccion condeno.
+            // Lo condenado no se tipifica ni entra a camara, sea la res entera (R-E23) o esta
+            // media res (R-E27): lo unico corregible es el peso, que son los kilos condenados.
             // Sin esta salida, la correccion le exigiria una tipificacion que no debe tener.
-            if (pieza.Romaneo.DecomisoTotal)
+            if (pieza.Romaneo.DecomisoTotal || pieza.Decomisada)
             {
                 pieza.Peso = request.Peso;
                 pieza.PesoFueraRango = false;

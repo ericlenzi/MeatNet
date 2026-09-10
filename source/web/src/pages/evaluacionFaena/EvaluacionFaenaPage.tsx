@@ -131,7 +131,7 @@ export default function EvaluacionFaenaPage() {
         'success',
         `Jornada liberada: ${res.piezasLiberadas - res.piezasDecomisadas} piezas a cámara en ${res.movimientosGenerados} movimientos (${kg(res.kilosIngresados)} kg).` +
           (res.piezasDecomisadas > 0
-            ? ` ${res.piezasDecomisadas} pieza(s) de reses condenadas (${kg(res.kilosDecomisados)} kg) quedaron fijadas sin generar existencia.`
+            ? ` ${res.piezasDecomisadas} pieza(s) condenada(s) (${kg(res.kilosDecomisados)} kg) quedaron fijadas sin generar existencia.`
             : ''),
       )
       setConfirmarLiberar(false)
@@ -192,6 +192,9 @@ export default function EvaluacionFaenaPage() {
               {jornada.totalDecomisosTotales > 0
                 ? `${jornada.totalDecomisosTotales} res(es) condenada(s) · `
                 : ''}
+              {jornada.totalPiezasDecomisadas > 0
+                ? `${jornada.totalPiezasDecomisadas} media(s) res(es) condenada(s) · `
+                : ''}
               {kg(jornada.totalKgDecomisados)} kg decomisados
             </Badge>
           )}
@@ -226,7 +229,7 @@ export default function EvaluacionFaenaPage() {
               Listo para liberar: {previa.piezasAProcesar - previa.piezasDecomisadas} pieza(s) a
               cámara, {kg(previa.kilosAIngresar)} kg.
               {previa.piezasDecomisadas > 0 &&
-                ` Otras ${previa.piezasDecomisadas} pieza(s) son de reses condenadas (${kg(previa.kilosDecomisados)} kg) y se fijan sin entrar a cámara.`}
+                ` Otras ${previa.piezasDecomisadas} pieza(s) están condenadas (${kg(previa.kilosDecomisados)} kg) y se fijan sin entrar a cámara.`}
             </p>
           )}
 
@@ -305,9 +308,14 @@ export default function EvaluacionFaenaPage() {
                     {kg(pieza.peso)}
                   </td>
                   <td className="px-3 py-2">
-                    {romaneo.decomisoTotal ? (
+                    {romaneo.decomisoTotal || pieza.decomisada ? (
                       <span className="text-danger">
-                        Decomiso{romaneo.motivoDecomisoNombre ? `: ${romaneo.motivoDecomisoNombre}` : ''}
+                        {romaneo.decomisoTotal ? 'Res condenada' : 'Media res condenada'}
+                        {(romaneo.decomisoTotal
+                          ? romaneo.motivoDecomisoNombre
+                          : pieza.motivoDecomisoNombre)
+                          ? `: ${romaneo.decomisoTotal ? romaneo.motivoDecomisoNombre : pieza.motivoDecomisoNombre}`
+                          : ''}
                       </span>
                     ) : (
                       <>
@@ -321,7 +329,7 @@ export default function EvaluacionFaenaPage() {
                     )}
                   </td>
                   <td className="px-3 py-2">
-                    {romaneo.decomisoTotal ? (
+                    {romaneo.decomisoTotal || pieza.decomisada ? (
                       <span className="text-text-light">no entra a cámara</span>
                     ) : (
                       pieza.materialNombre ?? <span className="text-danger">sin material</span>
@@ -392,11 +400,13 @@ export default function EvaluacionFaenaPage() {
               value={form.peso}
               onChange={(e) => setForm({ ...form, peso: e.target.value })}
             />
-            {editando?.romaneo.decomisoTotal ? (
+            {editando?.romaneo.decomisoTotal || editando?.pieza.decomisada ? (
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-danger">
-                Res condenada
-                {editando.romaneo.motivoDecomisoNombre
-                  ? `: ${editando.romaneo.motivoDecomisoNombre}`
+                {editando.romaneo.decomisoTotal ? 'Res condenada' : 'Media res condenada'}
+                {(editando.romaneo.decomisoTotal
+                  ? editando.romaneo.motivoDecomisoNombre
+                  : editando.pieza.motivoDecomisoNombre)
+                  ? `: ${editando.romaneo.decomisoTotal ? editando.romaneo.motivoDecomisoNombre : editando.pieza.motivoDecomisoNombre}`
                   : ''}
                 . No se tipifica ni va a cámara, así que lo único corregible es el peso.
               </p>
@@ -435,7 +445,7 @@ export default function EvaluacionFaenaPage() {
           previa
             ? `Se van a generar ${previa.piezasAProcesar - previa.piezasDecomisadas} pieza(s) de existencia en cámara (${kg(previa.kilosAIngresar)} kg).` +
               (previa.piezasDecomisadas > 0
-                ? ` Las ${previa.piezasDecomisadas} pieza(s) de reses condenadas quedan fijadas sin entrar a cámara.`
+                ? ` Las ${previa.piezasDecomisadas} pieza(s) condenada(s) quedan fijadas sin entrar a cámara.`
                 : '') +
               ' Los romaneos quedan definitivos y no se van a poder editar. Esta acción no se puede deshacer.'
             : ''

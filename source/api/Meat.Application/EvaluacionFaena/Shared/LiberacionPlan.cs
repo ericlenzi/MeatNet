@@ -109,6 +109,10 @@ namespace Meat.Application.EvaluacionFaena.Shared
 
         /// <summary>La res fue condenada entera (R-E23): esta pieza no genera existencia.</summary>
         public bool DecomisoTotal { get; set; }
+
+        /// <summary>Esta media res fue condenada entera (R-E27). Tampoco genera existencia.</summary>
+        public bool Decomisada { get; set; }
+
         public string MotivoDecomisoNombre { get; set; }
     }
 

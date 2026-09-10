@@ -59,7 +59,9 @@ export interface RomaneoPiezaItem {
   tipificacionId: string
   tipificacionDescripcion: string | null
   pesoFueraRango: boolean
-  /** Decomiso parcial de esta media res: la inspeccion retiro kilos y la pieza sigue a camara. */
+  /** Media res condenada entera: se peso, pero no va a camara. */
+  decomisada?: boolean
+  /** Motivo del decomiso de la pieza, sea la condena entera o el recorte de kilos. */
   motivoDecomisoNombre?: string | null
   pesoDecomisado?: number
 }
@@ -107,6 +109,8 @@ export interface MonitorFaena {
   kgTotales: number
   /** Reses condenadas enteras: faenadas, pero fuera de kgTotales. */
   animalesDecomisados: number
+  /** Medias reses condenadas por separado, tambien fuera de kgTotales. */
+  piezasDecomisadas: number
   kgDecomisados: number
   ritmoPorHora: number
   porRenglon: RenglonMonitorItem[]
@@ -121,7 +125,10 @@ export interface PiezaRomaneoInput {
   TipoContusionId?: string
   Peso: number
   ForzarFueraRango: boolean
-  /** Decomiso parcial: motivo y kilos van juntos, y no descuentan el peso de la pieza. */
+  /** Media res condenada entera: exige motivo y deja sin pedir tipificacion ni contusion. */
+  Decomisada?: boolean
+  /** Motivo del decomiso de la pieza. En el recorte parcial va junto con los kilos, que no
+   *  descuentan el peso de la pieza. */
   MotivoDecomisoId?: string
   PesoDecomisado?: number
 }

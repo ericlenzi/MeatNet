@@ -54,6 +54,7 @@ namespace Meat.Application.Romaneos.GetRomaneosJornada
                             TipificacionDescripcion = p.Tipificacion != null ? p.Tipificacion.Descripcion : null,
                             TipoContusionNombre = p.TipoContusion != null ? p.TipoContusion.Nombre : null,
                             PesoFueraRango = p.PesoFueraRango,
+                            Decomisada = p.Decomisada,
                             MotivoDecomisoNombre = p.MotivoDecomiso != null ? p.MotivoDecomiso.Nombre : null,
                             PesoDecomisado = p.PesoDecomisado
                         }).ToList()

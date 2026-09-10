@@ -29,6 +29,9 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         /// <summary>Reses condenadas enteras de la jornada (R-E23), sin contar anuladas.</summary>
         public int TotalDecomisosTotales { get; set; }
 
+        /// <summary>Medias reses condenadas por separado (R-E27), sin contar anuladas.</summary>
+        public int TotalPiezasDecomisadas { get; set; }
+
         /// <summary>Kilos condenados: los de las reses condenadas mas los recortes parciales.</summary>
         public double TotalKgDecomisados { get; set; }
 
@@ -83,7 +86,8 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public string MaterialCodigo { get; set; }
         public string MaterialNombre { get; set; }
 
-        // Decomiso parcial de esta media res (R-E24): kilos retirados por la inspeccion.
+        // Decomiso de esta media res: condenada entera (R-E27) o recorte de kilos (R-E24).
+        public bool Decomisada { get; set; }
         public string MotivoDecomisoNombre { get; set; }
         public double PesoDecomisado { get; set; }
     }

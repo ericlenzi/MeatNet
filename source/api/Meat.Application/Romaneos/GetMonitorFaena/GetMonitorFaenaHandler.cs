@@ -52,16 +52,28 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
             // Romaneos no anulados de la jornada: conteo, KG y ventana temporal (para el ritmo).
             var romaneos = await this.context.Romaneos
                 .Where(r => r.ListaMatanzaId == lm.Id && !r.Anulado)
-                .Select(r => new { r.Fecha, r.ListaMatanzaDetalleId, r.NumeroRomaneo, r.DecomisoTotal, Peso = r.Piezas.Sum(p => p.Peso) })
+                .Select(r => new
+                {
+                    r.Fecha,
+                    r.ListaMatanzaDetalleId,
+                    r.NumeroRomaneo,
+                    r.DecomisoTotal,
+                    Peso = r.Piezas.Sum(p => p.Peso),
+                    PesoCondenado = r.DecomisoTotal
+                        ? r.Piezas.Sum(p => p.Peso)
+                        : r.Piezas.Where(p => p.Decomisada).Sum(p => p.Peso),
+                    PiezasCondenadas = r.DecomisoTotal ? 0 : r.Piezas.Count(p => p.Decomisada)
+                })
                 .ToListAsync(cancellationToken);
 
             var animales = romaneos.Count;
 
-            // Los kilos del monitor son los de carne: la res condenada se faeno pero no va a
-            // camara, asi que se cuenta aparte y no infla el total (R-E23).
-            var kg = romaneos.Where(r => !r.DecomisoTotal).Sum(r => r.Peso);
+            // Los kilos del monitor son los de carne: lo condenado se faeno pero no va a camara,
+            // asi que se cuenta aparte y no infla el total (R-E23, R-E27).
+            var kg = romaneos.Sum(r => r.Peso - r.PesoCondenado);
             var decomisados = romaneos.Count(r => r.DecomisoTotal);
-            var kgDecomisados = romaneos.Where(r => r.DecomisoTotal).Sum(r => r.Peso);
+            var piezasCondenadas = romaneos.Sum(r => r.PiezasCondenadas);
+            var kgDecomisados = romaneos.Sum(r => r.PesoCondenado);
 
             // Rango de numeros de romaneo ya registrados en cada renglon.
             var rangos = romaneos
@@ -97,6 +109,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
                 AnimalesRomaneados = animales,
                 KgTotales = kg,
                 AnimalesDecomisados = decomisados,
+                PiezasDecomisadas = piezasCondenadas,
                 KgDecomisados = kgDecomisados,
                 RitmoPorHora = Math.Round(ritmo, 1),
                 PorRenglon = porRenglon

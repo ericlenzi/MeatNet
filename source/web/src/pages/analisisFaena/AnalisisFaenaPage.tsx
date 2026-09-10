@@ -113,9 +113,9 @@ export default function AnalisisFaenaPage() {
           no contra un rinde frío de referencia.
         </p>
         <p className="mt-1">
-          La res condenada entera <strong>no suma kg de faena</strong>, porque esa carne no llega a
-          la cámara, pero el animal sigue contando en los kg vivos: por eso el rinde baja y la
-          merma sanitaria es la que explica cuánto.
+          Lo condenado <strong>no suma kg de faena</strong>, sea la res entera o una media res,
+          porque esa carne no llega a la cámara, pero el animal sigue contando en los kg vivos: por
+          eso el rinde baja y la merma sanitaria es la que explica cuánto.
         </p>
         {data.animalesSinPesoVivo > 0 && (
           <p className="mt-1 font-medium">
@@ -166,6 +166,7 @@ export default function AnalisisFaenaPage() {
               <tr>
                 <th className={th}>Motivo</th>
                 <th className={thr}>Reses condenadas</th>
+                <th className={thr}>Medias reses condenadas</th>
                 <th className={thr}>Medias reses recortadas</th>
                 <th className={thr}>Kg</th>
               </tr>
@@ -175,6 +176,7 @@ export default function AnalisisFaenaPage() {
                 <tr key={d.motivoCodigo} className="border-b border-border/60">
                   <td className={td}>{d.motivoNombre}</td>
                   <td className={tdr}>{d.animales > 0 ? d.animales : '—'}</td>
+                  <td className={tdr}>{d.piezasCondenadas > 0 ? d.piezasCondenadas : '—'}</td>
                   <td className={tdr}>{d.piezas > 0 ? d.piezas : '—'}</td>
                   <td className={`${tdr} font-semibold`}>{kg(d.kg)}</td>
                 </tr>
@@ -182,15 +184,17 @@ export default function AnalisisFaenaPage() {
               <tr className="bg-gray-50 font-semibold">
                 <td className={td}>Total</td>
                 <td className={tdr}>{data.animalesDecomisados}</td>
+                <td className={tdr}>{data.piezasDecomisadas}</td>
                 <td className={tdr}>{data.piezasConDecomisoParcial}</td>
                 <td className={tdr}>{kg(data.kgDecomisados)}</td>
               </tr>
             </tbody>
           </table>
           <p className="px-4 py-3 text-xs text-text-light">
-            La res condenada aporta todos sus kilos ({kg(data.kgDecomisoTotal)} kg) y no llega a la
-            cámara. El recorte parcial aporta solo los kilos retirados ({kg(data.kgDecomisoParcial)} kg)
-            y su media res sigue su curso.
+            Lo condenado aporta su peso entero y no llega a la cámara: {kg(data.kgDecomisoTotal)} kg
+            de reses condenadas y {kg(data.kgDecomisoPieza)} kg de medias reses condenadas. El
+            recorte parcial aporta solo los kilos retirados ({kg(data.kgDecomisoParcial)} kg) y su
+            media res sigue su curso.
           </p>
         </Seccion>
       )}

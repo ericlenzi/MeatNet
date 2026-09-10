@@ -49,7 +49,11 @@ export interface DispersionPesoItem {
 export interface DecomisoMotivoItem {
   motivoCodigo: string
   motivoNombre: string
+  /** Reses condenadas enteras por este motivo. */
   animales: number
+  /** Medias reses condenadas enteras por este motivo. */
+  piezasCondenadas: number
+  /** Medias reses con recorte parcial por este motivo. */
   piezas: number
   kg: number
 }
@@ -78,6 +82,8 @@ export interface AnalisisFaenaResponse {
   // Merma sanitaria: el rinde no se retoca, los decomisos se informan al lado.
   animalesDecomisados: number
   kgDecomisoTotal: number
+  piezasDecomisadas: number
+  kgDecomisoPieza: number
   piezasConDecomisoParcial: number
   kgDecomisoParcial: number
   kgDecomisados: number

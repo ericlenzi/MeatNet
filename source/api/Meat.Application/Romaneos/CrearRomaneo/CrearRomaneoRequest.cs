@@ -38,8 +38,13 @@ namespace Meat.Application.Romaneos.CrearRomaneo
         public double Peso { get; set; }
         public bool ForzarFueraRango { get; set; }          // confirmacion explicita del operario para pesar fuera del rango de la tipificacion
 
-        // Decomiso parcial de esta media res (R-E24): van juntos, motivo y kilos. No descuentan
-        // el Peso: la pieza sigue a camara y los kilos se informan como merma sanitaria.
+        // Media res condenada entera (R-E27): esta pieza no va a camara y la otra del animal
+        // sigue su curso. Exige motivo y deja sin pedir tipificacion ni contusion de la pieza.
+        public bool Decomisada { get; set; }
+
+        // Motivo del decomiso de la pieza, sea la condena entera (R-E27) o el recorte parcial
+        // (R-E24). En el recorte van juntos motivo y kilos, y no descuentan el Peso: la pieza
+        // sigue a camara y los kilos se informan como merma sanitaria.
         public string MotivoDecomisoId { get; set; }
         public double PesoDecomisado { get; set; }
     }

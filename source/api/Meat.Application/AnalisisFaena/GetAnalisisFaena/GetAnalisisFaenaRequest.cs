@@ -51,6 +51,12 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         /// <summary>Kg de las reses condenadas enteras.</summary>
         public double KgDecomisoTotal { get; set; }
 
+        /// <summary>Medias reses condenadas por separado (R-E27).</summary>
+        public int PiezasDecomisadas { get; set; }
+
+        /// <summary>Kg de esas medias reses condenadas.</summary>
+        public double KgDecomisoPieza { get; set; }
+
         /// <summary>Medias reses con recorte sanitario parcial (R-E24).</summary>
         public int PiezasConDecomisoParcial { get; set; }
 
@@ -79,6 +85,9 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
 
         /// <summary>Reses condenadas enteras por este motivo.</summary>
         public int Animales { get; set; }
+
+        /// <summary>Medias reses condenadas enteras por este motivo.</summary>
+        public int PiezasCondenadas { get; set; }
 
         /// <summary>Medias reses con recorte parcial por este motivo.</summary>
         public int Piezas { get; set; }

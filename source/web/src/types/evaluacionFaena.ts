@@ -11,7 +11,9 @@
   materialId: string | null
   materialCodigo: string | null
   materialNombre: string | null
-  /** Decomiso parcial de esta media res: kilos retirados por la inspeccion. */
+  /** Media res condenada entera: se pesa y se libera, pero no entra a camara. */
+  decomisada: boolean
+  /** Motivo del decomiso de la pieza, sea la condena entera o el recorte de kilos. */
   motivoDecomisoNombre: string | null
   pesoDecomisado: number
 }
@@ -53,6 +55,7 @@ export interface RomaneosEvaluacionResponse {
   totalKg: number
   piezasLiberadas: number
   totalDecomisosTotales: number
+  totalPiezasDecomisadas: number
   totalKgDecomisados: number
   data: RomaneoEvaluacionItem[]
   camaras: CamaraOpcion[]
