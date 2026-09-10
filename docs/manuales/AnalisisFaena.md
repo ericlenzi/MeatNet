@@ -87,12 +87,16 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
 ## 3. Secciones del análisis
 
 ### 3.1 Resumen de la jornada
-Animales faenados, piezas, kg vivos, kg de faena, rinde caliente y estado de liberación.
+Animales faenados, piezas, kg vivos, kg de faena, rinde caliente y estado de liberación. Cuando la
+jornada tuvo decomisos, al lado del rinde aparece la **merma sanitaria** (§3.7).
 
 ### 3.2 Por cliente
 La misma foto, abierta por cliente (`IngresoHacienda.ClienteId`, alcanzado desde el romaneo por
 `Romaneo.TropaId` → `Tropa.IngresoHaciendaId`). Es el corte de facturación del servicio de faena:
-animales, kg vivos, kg de faena, rinde y participación en la jornada.
+animales, kg vivos, kg de faena, rinde, **kilos condenados** y participación en la jornada.
+
+El cliente cuyos animales se condenaron enteros aparece igual, con sus kilos vivos y su merma: si
+se agrupara solo por la carne, desaparecería de la lista justo la jornada en que peor le fue.
 
 ### 3.3 Plan vs. real
 Por renglón: tropa, corral, categoría, planificado (`Cantidad`), faenado (`CantidadFaenada`),
@@ -117,6 +121,16 @@ operar con alguna. Vale el mismo criterio que en la disponibilidad de faena
 ### 3.6 Destino a cámaras
 Qué quedó en cada cámara, por material, en piezas y kilos. Cierra el circuito con la existencia que
 generó la Liberación. Antes de liberar, la sección está vacía.
+
+### 3.7 Merma sanitaria
+Los decomisos de la jornada, **abiertos por motivo**, que es el informe que mira la inspección. Las
+dos formas se cuentan distinto y por eso van en columnas separadas: la **res condenada entera** se
+cuenta en animales y aporta todos sus kilos, y el **recorte parcial** se cuenta en medias reses y
+aporta solo los kilos retirados. La sección no aparece si la jornada no tuvo decomisos.
+
+La res condenada no figura en la tipificación consolidada (§3.4) ni en la dispersión de pesos
+(§3.5): no se tipificó, así que no hay rango contra el cual compararla. Ver R-A6 y, para cómo se
+capturan, R-E23 y R-E24 en `EjecucionFaena.md`.
 
 ## 4. Fuentes de datos
 

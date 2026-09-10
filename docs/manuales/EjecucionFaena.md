@@ -14,6 +14,9 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 - Especies **V (VACUNO)** y **P (PORCINO)** únicamente.
 - Captura de romaneo: **garrón + peso (medición) + tipificación**.
 - Los **cuatro datos del palco**: conformación, engrasamiento, dentición y contusión (ver R-E20).
+- **Decomisos**: condena total de la res (R-E23) y recorte parcial de una media res (R-E24), con
+  su motivo sanitario. Los kilos condenados se informan como **merma sanitaria** en el Análisis de
+  Faena, sin cambiar la definición del rinde.
 - Consumo real de stock, trazabilidad de la tropa (`FAENA`) e incremento de `Tipificacion.Puntos`.
 - **Tipificador** (pantalla de captura por res) y **Monitor de Faena** (tablero de supervisión en
   vivo, solo lectura).
@@ -39,6 +42,8 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 | **Tipificación oficial** | La clasificación de la **res** según el organismo, sobre tres ejes: **categoría** (que aporta la Tipificación), **conformación** (desarrollo muscular) y **engrasamiento** (cobertura de grasa). No confundir con `TipoEspecie`, que clasifica al **animal vivo** al ingresar. Ver R-E20. |
 | **Dentición** | Recuento de incisivos permanentes con el que se estima la edad del animal (de diente de leche a boca llena). Catálogo global `Denticiones`, escala ordinal. Se mira la boca, así que es del **animal**. |
 | **Contusión** | Golpe visible en la media res. Catálogo global `TiposContusiones`, escala ordinal que arranca en "sin contusión". Es el único de los cuatro datos del palco que va **por pieza**. |
+| **Decomiso** | Retiro sanitario dispuesto por la inspección. **Total** cuando condena la res entera (marca del `Romaneo`, R-E23) y **parcial** cuando retira kilos de una media res que igual sigue a cámara (columnas de la `RomaneoPieza`, R-E24). La causa sale del catálogo global `MotivosDecomisos`. |
+| **Merma sanitaria** | Los kilos condenados de la jornada: los de las reses condenadas enteras más los retirados en los recortes. Se informa aparte del rinde, que conserva su definición (R-A6 en `AnalisisFaena.md`). |
 | **Medición** | Valor capturado de un `TipoMedicion` del catálogo. En MVP la única medición es **`PESO`**. |
 | **Tipificador** | Puesto/pantalla donde se captura el romaneo res por res. |
 | **Monitor de Faena** | Tablero **read-only** con el avance de la jornada en vivo. No captura. |
@@ -444,9 +449,9 @@ PK: Guid Id
 - Valor (double)
 ```
 
-### 9.4 Cómo se cargan los cuatro datos del palco
+### 9.4 Cómo se cargan los datos del palco y los motivos de decomiso
 
-Los cuatro son **catálogos globales por especie**: PK `Codigo`, más `Nombre`, `EspecieId`, `Orden`
+Los cinco son **catálogos globales por especie**: PK `Codigo`, más `Nombre`, `EspecieId`, `Orden`
 y `Activo`. No llevan `EmpresaId`, así que **una fila la comparten todas las empresas** y la
 mantiene el **SUPERADMIN** parado en la empresa `ADM`. La **lectura queda abierta** a cualquier
 usuario autenticado, porque el Tipificador necesita llenar sus combos al romanear.
@@ -498,6 +503,10 @@ desde estas pantallas, y la regla que lo hace posible es R-E22.
 - **Ojo con el `Orden`.** Es la posición en la escala y **el primer valor es el que el Tipificador
   propone por defecto en contusión**. Si cargás contusiones para otra especie, la fila de "sin
   contusión" tiene que quedar en `Orden = 0`.
+- **Los motivos de decomiso se habilitan igual, pero no se vuelven obligatorios.** Cargar filas
+  hace que el Tipificador ofrezca el decomiso para esa especie; desactivarlas todas hace que ni
+  siquiera aparezca el check. Nunca se exige completarlo: el decomiso es la excepción de la
+  jornada, no un dato de cada res (R-E25).
 
 **Por qué porcino no tiene ninguna.** Conformación, engrasamiento y dentición no le aplican por una
 razón del rubro (ver R-E21): la res porcina se clasifica por **porcentaje de carne magra**, no con
