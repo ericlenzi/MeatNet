@@ -336,6 +336,29 @@ o un estado. Una pieza liberada no admite edición (R-L3) y ya generó su existe
 > el endpoint y elegir librería: **`iTextSharp` fue eliminado del proyecto** por AGPL y estar
 > discontinuado, así que la decisión queda abierta.
 
+### Pantallas (frontend)
+
+| Página | Ruta | Descripción |
+|---|---|---|
+| `EvaluacionFaenaPage` | `/operaciones/evaluacion-faena/:listaMatanzaId` | Revisión de la jornada y **Liberación**. Encabeza con establecimiento, **puesto** y fecha, y ese mismo encabezado es el de la planilla impresa. |
+| `EvaluacionFaenaHubPage` | `/operaciones/evaluacion-faena`, `/operaciones/analisis-faena` | Listado de jornadas, compartido con el Análisis de Faena vía la prop `target`. |
+
+**El listado de jornadas.** Cada fila muestra número de lista y especie, y debajo establecimiento,
+puesto y fecha en `dd/MM/yyyy`. Ordena por **fecha descendente** y, a igual fecha, por número de
+lista: la jornada que se está evaluando es la que está arriba.
+
+Tiene dos filtros, los dos opcionales:
+
+- **Fecha de faena**, con un check **Todas las fechas** al lado. Son las dos caras del mismo
+  filtro: tildar el check limpia la fecha y elegir una fecha lo destilda.
+- **Estado**, que abre en *Seleccionar…* y ofrece Confirmada, En Ejecucion, Finalizada y Anulada.
+  **Borrador no está**, ni en el filtro ni en el listado: una lista en borrador no tiene romaneos,
+  así que no hay nada que evaluar ni analizar.
+
+Muestra a lo sumo **20 filas**, las más recientes, y una leyenda al pie a la derecha dice cuántas
+jornadas cumplen los filtros. Es un punto de entrada, no un listado para recorrer: para llegar a
+una jornada vieja están los filtros.
+
 ## 11. Análisis de Faena (diferido a su propio manual)
 
 Parte del Paso 4, desarrollado en su propio manual **`AnalisisFaena.md`** (Paso 4b) e

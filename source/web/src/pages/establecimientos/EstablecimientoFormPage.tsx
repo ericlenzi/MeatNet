@@ -384,6 +384,12 @@ export default function EstablecimientoFormPage() {
               </table>
             </div>
           )}
+
+          <p className="mt-3 text-xs text-text-light">
+            La <strong>merma de oreo</strong> toma por defecto el valor de referencia estándar del
+            mercado por especie. Si esta planta midió el suyo ingreselo, ya que el Análisis de
+            Faena calculará el rinde frío estimado con este valor.
+          </p>
         </div>
       </div>
     </>

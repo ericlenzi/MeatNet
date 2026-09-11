@@ -49,6 +49,12 @@ source/web/src/
 - Instancia Axios en `services/axios-instance.ts` con interceptores para JWT y manejo de 401
 - Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:5822`)
 - Los endpoints de lista usan params `Filter`, `PageIndex`, `PageSize` y devuelven `{Data, TotalRows}`
+- **Un dato que el rol no puede leer no puede tumbar la pantalla.** Si un formulario carga datos de
+  referencia que la API restringe a otro rol (el caso tipico es `/Empresas`, que es del SUPERADMIN),
+  ese pedido va **fuera del `Promise.all`, con su propio try/catch** y su alternativa. Si comparte
+  el `await` con el resto, el 403 corta la carga entera y el formulario queda vacio: es lo que
+  pasaba en Establecimientos y Sucursales, donde un ADMIN no podia editar nada por un combo
+  informativo y deshabilitado.
 
 ## Autenticacion
 - JWT Bearer almacenado en localStorage

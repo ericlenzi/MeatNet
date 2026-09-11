@@ -91,6 +91,45 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
 > Estos supuestos se muestran **en la pantalla**, junto al número. Un rinde sin su definición al
 > lado invita a comparar peras con manzanas entre jornadas o contra el rinde de otra planta.
 
+### 2.1 Por qué el caliente se mide y el frío se estima
+
+La diferencia entre los dos rindes no es de fórmula, es de **cuándo se pesa la media res**:
+
+| | Cuándo | Quién lo captura hoy |
+|---|---|---|
+| **Caliente** | Al salir de la playa de faena, con la res todavía caliente | El Tipificador, res por res (paso 3) |
+| **Frío** | Después del oreo, cuando la res perdió agua en la cámara | **Nadie**: esa pesada no existe en la planta |
+
+El sistema **no inventa pesadas**. Si el rinde caliente es el único medido, es porque es el único
+cuyo dato se captura: el peso de cada pieza entra en el romaneo porque hace falta para elegir la
+tipificación por rango y para dar de alta el stock. Nada pide, hoy, volver a pesar la media res
+después del oreo, así que ese número no existe en ninguna tabla.
+
+**Entonces por qué el frío se estima y el peso vivo que falta no.** Parece la misma licencia, y no
+lo es:
+
+- El **peso vivo de una tropa** es un hecho de esa tropa. Si nadie lo cargó, cualquier número que
+  se ponga es una invención sobre un caso concreto, y el peso de un animal varía tanto que el
+  promedio de otra tropa no dice nada. Por eso R-A3 lo deja en **no disponible** y cuenta aparte
+  los animales afectados.
+- La **merma de oreo** es un parámetro del proceso, no un hecho de una res: es el agua que se
+  evapora en la cámara, ronda el 2% y se mueve poco dentro de una misma planta. Aplicarlo es una
+  **proyección declarada**, con el porcentaje y su origen a la vista (R-A8), y no reemplaza ningún
+  dato faltante de una jornada puntual.
+
+La regla de fondo es la misma en los dos casos: **lo que no se midió no se disfraza de medición.**
+El frío se muestra rotulado como estimación y el caliente se muestra sin adjetivos.
+
+**Los dos sesgos que quedan, y por qué no se compensan a propósito.** El peso vivo es el de ingreso
+y no descuenta el desbaste, así que el denominador está inflado y el rinde sale **más bajo** que el
+real. El peso de faena es caliente, así que el numerador está inflado y el rinde sale **más alto**
+que un frío de referencia. Los dos errores apuntan en sentidos opuestos y en la práctica se comen
+entre sí, que es la razón por la que el número cae en una banda creíble. **Eso es una casualidad
+aritmética, no un diseño:** si mañana se agrega la pesada de playa sin la de cámara, el rinde va a
+subir de golpe sin que la planta haya cambiado nada. De ahí que la pantalla muestre los supuestos
+al lado del valor (R-A5) y que la banda de la especie compare siempre **caliente contra caliente**
+(R-A7).
+
 ## 3. Secciones del análisis
 
 ### 3.1 Resumen de la jornada
@@ -141,6 +180,10 @@ Lo condenado no figura en la tipificación consolidada (§3.4) ni en la dispersi
 no se tipificó, así que no hay rango contra el cual compararlo. Ver R-A6 y, para cómo se capturan,
 R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 
+> **Por dónde se entra.** El listado de jornadas es el mismo que usa la Evaluación de Faena (la
+> pantalla se comparte con una prop), así que su orden, sus filtros y su tope de filas están
+> documentados una sola vez, en `EvaluacionFaena.md` §10.
+
 ## 4. Fuentes de datos
 
 | Dato | Origen |
@@ -153,6 +196,7 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 | Tipificación | `RomaneoPieza.TipificacionId` |
 | Fuera de rango | `RomaneoPieza.PesoFueraRango` |
 | Existencia en cámara | `MovimientoCamara` (saldo derivado) |
+| Puesto de la jornada | `ListaMatanza.PuestoId` (ver R-E28 en `EjecucionFaena.md`) |
 | Banda de rinde esperable | `Especie.RindeMinimo` / `Especie.RindeMaximo` |
 | Merma de oreo de la planta | `EstablecimientoEspecie.MermaOreo` |
 | Merma de oreo de referencia | `Especie.MermaOreoReferencia` |
@@ -200,8 +244,8 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
   | Nivel | Dónde | Por qué ahí |
   |---|---|---|
   | 1 | Peso frío **medido** de la pieza | Cuando exista balanza en cámara, lo medido manda. Hoy no existe (O-A2). |
-  | 2 | `EstablecimientoEspecie.MermaOreo` | La merma depende de la cámara, del tiempo de oreo y de la cobertura de grasa: es de la **planta**, no de la empresa. Dos plantas de la misma empresa pueden tener números distintos. |
-  | 3 | `Especie.MermaOreoReferencia` | El valor del rubro, que el SUPERADMIN mantiene en el catálogo. Es el que se propone mientras la planta no mida el suyo. |
+  | 2 | `EstablecimientoEspecie.MermaOreo` (migración 78) | La merma depende de la cámara, del tiempo de oreo y de la cobertura de grasa: es de la **planta**, no de la empresa. Dos plantas de la misma empresa pueden tener números distintos. |
+  | 3 | `Especie.MermaOreoReferencia` (migración 78, sembrada en 2% para V y P) | El valor del rubro, que el SUPERADMIN mantiene en el catálogo. Es el que se propone mientras la planta no mida el suyo. |
   | 4 | Nada configurado | **No se muestra rinde frío.** Misma regla que la banda de rinde: sin parámetro, la pantalla no inventa nada. |
 
   **Lo que la pantalla dice junto al número:** que es una estimación, el porcentaje aplicado, si
@@ -251,10 +295,43 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 
   Falta todavía el decomiso de **vísceras y subproductos**, que depende de abrir ese dominio
   (O-3 en `EvaluacionFaena.md`).
-- **O-A2 (rinde frío medido).** La **estimación** ya está (R-A8). Lo que falta es la medición: una
-  segunda pesada tras el oreo, con un `TipoMagnitud` nuevo (hoy `TiposMagnitudes` solo tiene
-  `PESO`) y la pantalla para capturarla en cámara. Cuando exista, el análisis la prefiere sobre el
-  coeficiente sin rehacer nada, porque la pregunta que ya se hace es si hay peso frío medido.
+- **O-A2 (rinde frío medido): qué hacer si una empresa decide pesar en frío.** La **estimación** ya
+  está (R-A8); lo que falta es la medición. El modelo se dejó preparado para que sea un agregado y
+  no una reescritura: el peso de una pieza **ya** es una medición tipada, así que el frío es otra
+  magnitud de la misma tabla.
+
+  **Lo que hay que construir, en orden:**
+
+  1. **La magnitud.** Sembrar `PESO_FRIO` en `TiposMagnitudes`, al lado de `PESO`. Es una fila, no
+     una tabla: `RomaneoPiezaMedicion` ya guarda (pieza, magnitud, valor).
+  2. **La caché en la pieza.** `RomaneoPieza.PesoFrio` (nullable) más la fecha y el usuario de esa
+     pesada, con el mismo criterio que `Peso`: la medición es el registro canónico y la columna es
+     lo que leen las consultas.
+  3. **El punto de captura.** Una pantalla de pesada en frío por jornada, que liste las piezas con
+     su peso caliente y un campo para el frío. **Tiene que funcionar después de la Liberación**,
+     porque el oreo termina cuando la jornada ya está liberada y las piezas son inmutables
+     (R-L3): la excepción es que el peso frío no toca nada de lo liberado, solo agrega su propia
+     medición.
+  4. **El análisis.** Preferir el medido sobre el coeficiente. La pregunta que el handler ya se
+     hace es "¿hay peso frío?", así que el cambio es responderla con datos en vez de con el
+     parámetro, e informar la **merma de oreo real** (caliente menos frío) como indicador propio
+     en lugar de la proyectada. Conviene exponer la **cobertura**: sobre cuántas piezas de la
+     jornada se midió, porque un frío calculado sobre la mitad de las piezas no es el de la
+     jornada.
+  5. **La banda de la especie.** Hoy `RindeMinimo` / `RindeMaximo` son de rinde **caliente**. Con
+     el frío medido hacen falta dos bandas, o la aclaración explícita de a cuál aplica cada una.
+
+  **Las decisiones que hay que tomar con el usuario antes de escribir código:**
+
+  | Pregunta | Por qué importa |
+  |---|---|
+  | ¿Se pesa **cada pieza** o el total de una tanda? | Por pieza da merma individual y cuesta tiempo de operación; por tanda alcanza para el rinde de la jornada pero no permite mirar una media res. |
+  | ¿La pesada en frío **ajusta el stock** de cámara? | Es O-A6. Con pesada real el ajuste es legítimo y va como movimiento de cámara, no como cálculo de pantalla. Hay que decidir tipo de movimiento y si se hace automático al cargar el peso. |
+  | ¿El peso frío puede **re-tipificar** la pieza? | La tipificación se eligió por rango de peso caliente. Si el frío la saca de rango, la respuesta razonable es no mover la tipificación histórica y solo informarlo. |
+  | ¿Qué pasa con las piezas ya cuarteadas? | Si la Liberación las despiezó, el frío se mide sobre los cuartos y no sobre la media res: hay que definir contra qué material se registra. |
+
+  Mientras nada de eso exista, el coeficiente cubre la necesidad de dimensionar la merma, y la
+  pantalla deja claro que es una estimación.
 - **O-A6 (la merma de oreo y el stock de cámara).** La existencia queda registrada con el peso
   caliente de la Liberación, y el rinde frío estimado no la toca. Reconocer la merma en el
   depósito pide un movimiento de cámara propio, y para eso hace falta la pesada real: un ajuste
