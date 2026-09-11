@@ -27,6 +27,7 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento)
                 .Include(x => x.Especie)
+                .Include(x => x.Puesto)
                 .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
@@ -69,6 +70,28 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                 select new CamaraOption { Id = a.Id, Nombre = a.Nombre })
                 .ToListAsync(cancellationToken);
 
+            // Cabecera del puesto: los tipificadores habilitados para esta planta y especie, y
+            // los metodos de medicion del catalogo. El Tipificador propone el tipificador marcado
+            // por defecto y el metodo que tiene configurado el puesto, y el operario los cambia
+            // si ese dia el palco trabaja de otra forma.
+            var tipificadores = await this.context.Tipificadores
+                .Where(t => t.Activo && t.EstablecimientoId == lm.EstablecimientoId && t.EspecieId == lm.EspecieId)
+                .OrderByDescending(t => t.PorDefecto).ThenBy(t => t.Nombre)
+                .Select(t => new TipificadorOption
+                {
+                    Id = t.Id,
+                    Nombre = t.Nombre,
+                    Matricula = t.Matricula,
+                    PorDefecto = t.PorDefecto
+                })
+                .ToListAsync(cancellationToken);
+
+            var tiposMediciones = await this.context.TiposMediciones
+                .Where(t => t.Activo)
+                .OrderBy(t => t.Codigo)
+                .Select(t => new TipoMedicionOption { Codigo = t.Codigo, Nombre = t.Nombre })
+                .ToListAsync(cancellationToken);
+
             var ultimoGarron = await this.context.Romaneos
                 .Where(r => r.ListaMatanzaId == lm.Id && !r.Anulado)
                 .Select(r => (int?)r.NumeroGarron)
@@ -85,8 +108,16 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
                 EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                 ProximoGarron = ultimoGarron + 1,
                 RenglonSugeridoId = sugerido?.RenglonId,
+                PuestoId = lm.PuestoId,
+                PuestoCodigo = lm.Puesto?.CodigoPuesto,
+                PuestoNombre = lm.Puesto?.Nombre,
+                TipificadorSugeridoId = tipificadores.FirstOrDefault(t => t.PorDefecto)?.Id
+                    ?? tipificadores.FirstOrDefault()?.Id,
+                TipoMedicionSugeridoId = lm.Puesto?.TipoMedicionId ?? tiposMediciones.FirstOrDefault()?.Codigo,
                 Renglones = renglones,
-                Camaras = camaras
+                Camaras = camaras,
+                Tipificadores = tipificadores,
+                TiposMediciones = tiposMediciones
             };
         }
     }

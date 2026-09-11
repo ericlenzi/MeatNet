@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Meat.Application.Shared;
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,8 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
         public string EspecieId { get; set; }
         public string EstadoListaMatanzaId { get; set; }
         public DateTime? Fecha { get; set; }
+        /// <summary>Puesto asignado: asi el Tipificador ve solo las listas de su palco.</summary>
+        public Guid? PuestoId { get; set; }
     }
 
     public class GetListasMatanzasResponse : ResponseListBase<IEnumerable<ListaMatanzaListItem>>
@@ -28,6 +30,7 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
         public string EspecieNombre { get; set; }
         public Guid? PuestoId { get; set; }
         public string PuestoCodigo { get; set; }
+        public string PuestoNombre { get; set; }
         public string EstadoListaMatanzaId { get; set; }
         public string EstadoListaMatanzaNombre { get; set; }
         public int Version { get; set; }

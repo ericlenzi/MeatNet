@@ -145,7 +145,7 @@ namespace Meat.Application.EvaluacionFaena.ActualizarPieza
         private static void ActualizarMedicionPeso(Meat.Domain.Romaneos.RomaneoPieza pieza, double peso)
         {
             var medicionPeso = pieza.Mediciones
-                .FirstOrDefault(m => m.TipoMedicionId == RomaneoConstantes.MedicionPeso);
+                .FirstOrDefault(m => m.TipoMagnitudId == RomaneoConstantes.MagnitudPeso);
             if (medicionPeso != null)
                 medicionPeso.Valor = peso;
         }

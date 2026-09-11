@@ -83,6 +83,11 @@ export default function TipificadorPage() {
   const [destinos, setDestinos] = useState<CatalogoFaenaOption[]>([])
   const [jornada, setJornada] = useState<RomaneoJornadaItem[]>([])
 
+  // Cabecera del puesto: quien tipifica y con que se mide. Se eligen una vez por jornada
+  // (o cuando cambia el turno) y viajan en cada romaneo.
+  const [tipificadorId, setTipificadorId] = useState('')
+  const [tipoMedicionId, setTipoMedicionId] = useState('')
+
   const [renglonId, setRenglonId] = useState('')
   const [unidadFaenaId, setUnidadFaenaId] = useState('')
   const [destinoId, setDestinoId] = useState('')
@@ -163,6 +168,17 @@ export default function TipificadorPage() {
       setDestinoId((prev) => {
         if (prev && dest.some((d) => d.id === prev)) return prev
         return dest.find((d) => d.favorito)?.id ?? ''
+      })
+
+      // Defaults de la cabecera: el tipificador marcado por defecto y el metodo de medicion
+      // que tiene configurado el puesto. Una eleccion ya hecha se respeta.
+      setTipificadorId((prev) => {
+        if (prev && rengl.tipificadores.some((t) => t.id === prev)) return prev
+        return rengl.tipificadorSugeridoId ?? ''
+      })
+      setTipoMedicionId((prev) => {
+        if (prev && rengl.tiposMediciones.some((t) => t.codigo === prev)) return prev
+        return rengl.tipoMedicionSugeridoId ?? ''
       })
 
       setUnidadFaenaId((prev) => {
@@ -461,6 +477,16 @@ export default function TipificadorPage() {
         }
       }
     }
+    // El tipificador se exige cuando hay tipificadores cargados para el establecimiento y la
+    // especie: es la misma regla derivada del catalogo que aplica el backend.
+    if (data.tipificadores.length > 0 && !tipificadorId) {
+      toast('error', 'Indique el tipificador que esta en el palco.')
+      return
+    }
+    if (data.tiposMediciones.length > 0 && !tipoMedicionId) {
+      toast('error', 'Indique con que metodo se mide.')
+      return
+    }
     if (hayFueraRango && !forzarFueraRango) {
       toast('error', 'Hay un peso fuera del rango de su tipificacion. Confirme para registrarlo igual.')
       return
@@ -472,6 +498,8 @@ export default function TipificadorPage() {
         ListaMatanzaDetalleId: renglonSel.renglonId,
         UnidadFaenaId: unidadFaenaId,
         NumeroGarron: garron,
+        TipificadorId: tipificadorId || undefined,
+        TipoMedicionId: tipoMedicionId || undefined,
         // La res condenada viaja sin clasificacion: el backend descarta lo que llegue igual,
         // pero mandar el formulario vacio deja claro que no se tipifico (R-E23).
         ConformacionId: decomisoTotal ? undefined : conformacionId || undefined,
@@ -535,6 +563,59 @@ export default function TipificadorPage() {
           La lista no esta En Ejecucion: no se pueden registrar romaneos.
         </div>
       )}
+
+      {/* Cabecera del puesto: donde se faena, quien tipifica y con que se mide */}
+      <div className="mb-4 rounded-lg border border-border bg-surface p-6 shadow-sm">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-text">Puesto</label>
+            <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+              {data.puestoNombre
+                ? `${data.puestoCodigo} - ${data.puestoNombre}`
+                : 'Sin puesto asignado'}
+            </div>
+            <p className="mt-1 text-xs text-text-light">Lo define la lista de matanza.</p>
+          </div>
+
+          {data.tipificadores.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-text">Tipificador *</label>
+              <select
+                className={`w-full rounded-lg border px-3 py-2 text-sm ${
+                  tipificadorId ? 'border-border' : 'border-danger bg-red-50'
+                }`}
+                value={tipificadorId}
+                onChange={(e) => setTipificadorId(e.target.value)}
+              >
+                <option value="">Seleccionar...</option>
+                {data.tipificadores.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nombre} ({t.matricula})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {data.tiposMediciones.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-text">Medicion *</label>
+              <select
+                className={`w-full rounded-lg border px-3 py-2 text-sm ${
+                  tipoMedicionId ? 'border-border' : 'border-danger bg-red-50'
+                }`}
+                value={tipoMedicionId}
+                onChange={(e) => setTipoMedicionId(e.target.value)}
+              >
+                <option value="">Seleccionar...</option>
+                {data.tiposMediciones.map((t) => (
+                  <option key={t.codigo} value={t.codigo}>{t.nombre}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Captura */}
       <div className="mb-4 rounded-lg border border-border bg-surface p-6 shadow-sm">

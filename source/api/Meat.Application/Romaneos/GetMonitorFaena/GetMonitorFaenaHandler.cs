@@ -24,6 +24,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento)
                 .Include(x => x.Especie)
+                .Include(x => x.Puesto)
                 .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
@@ -103,6 +104,8 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
                 NumeroLista = lm.NumeroLista,
                 EspecieNombre = lm.Especie != null ? lm.Especie.Nombre : lm.EspecieId,
                 EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
+                PuestoCodigo = lm.Puesto != null ? lm.Puesto.CodigoPuesto : null,
+                PuestoNombre = lm.Puesto != null ? lm.Puesto.Nombre : null,
                 TotalPlanificado = porRenglon.Sum(r => r.Cantidad),
                 TotalFaenado = porRenglon.Sum(r => r.CantidadFaenada),
                 TotalPendiente = porRenglon.Sum(r => r.Pendiente),

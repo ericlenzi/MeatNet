@@ -4,7 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Meat.Domain.TiposMediciones
 {
     /// <summary>
-    /// Catalogo: tipos de mediciones que se registran en la tipificacion.
+    /// Catalogo: como se toma la medicion en el puesto (M manual, B balanza, A automatica).
+    /// Es el metodo de captura, no la magnitud: que se mide lo dice TipoMagnitud (PESO).
+    ///
+    /// Cada Puesto declara con cual mide por defecto, y el Tipificador lo propone en la cabecera
+    /// del romaneo; el operario puede cambiarlo si ese dia pesa de otra forma.
     /// </summary>
     public class TipoMedicion
     {

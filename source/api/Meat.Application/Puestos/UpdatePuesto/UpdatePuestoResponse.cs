@@ -1,4 +1,4 @@
-﻿namespace Meat.Application.Puestos.UpdatePuesto
+namespace Meat.Application.Puestos.UpdatePuesto
 {
     public class UpdatePuestoResponse
     {

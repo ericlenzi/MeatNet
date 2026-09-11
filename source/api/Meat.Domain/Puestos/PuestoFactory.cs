@@ -8,17 +8,8 @@ namespace Meat.Domain.Puestos
         {
             return new Puesto()
             {
-                Id = Guid.NewGuid()
-            };
-        }
-
-        public static Puesto Create(Guid establecimientoId, string erp_Codigo)
-        {
-            return new Puesto()
-            {
                 Id = Guid.NewGuid(),
-                EstablecimientoId = establecimientoId,
-                Erp_Codigo = erp_Codigo,
+                Activo = true,
                 FechaActualizacion = DateTime.Now
             };
         }

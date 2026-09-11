@@ -97,7 +97,7 @@ export interface RenglonInput {
 export interface CreateListaMatanzaRequest {
   EstablecimientoId: string
   EspecieId: string
-  PuestoId?: string | null
+  PuestoId?: string | null  // obligatorio: la Ejecucion de Faena entra por el puesto
   Fecha: string
   Renglones: RenglonInput[]
 }

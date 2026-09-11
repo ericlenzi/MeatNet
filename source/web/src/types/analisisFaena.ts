@@ -72,6 +72,8 @@ export interface AnalisisFaenaResponse {
   especieId: string
   estadoListaMatanzaId: string
   establecimientoNombre: string
+  puestoCodigo: string | null
+  puestoNombre: string | null
   animalesFaenados: number
   piezas: number
   kgFaena: number

@@ -24,6 +24,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.UsuariosEstablecimientos.UsuarioEstablecimiento> UsuariosEstablecimientos { get; set; }
         public virtual DbSet<Domain.Provincias.Provincia> Provincias { get; set; }
         public virtual DbSet<Domain.Puestos.Puesto> Puestos { get; set; }
+        public virtual DbSet<Domain.Tipificadores.Tipificador> Tipificadores { get; set; }
         public virtual DbSet<Domain.Almacenes.Almacen> Almacenes { get; set; }
         public virtual DbSet<Domain.Materiales.Material> Materiales { get; set; }
         public virtual DbSet<Domain.Especies.Especie> Especies { get; set; }
@@ -53,6 +54,7 @@ namespace Meat.Repositories
 
         // Ejecucion de Faena - master data
         public virtual DbSet<Domain.TiposPuestos.TipoPuesto> TiposPuestos { get; set; }
+        public virtual DbSet<Domain.TiposMagnitudes.TipoMagnitud> TiposMagnitudes { get; set; }
         public virtual DbSet<Domain.TiposMediciones.TipoMedicion> TiposMediciones { get; set; }
         public virtual DbSet<Domain.DestinosComerciales.DestinoComercial> DestinosComerciales { get; set; }
         public virtual DbSet<Domain.TipificacionesOficiales.TipificacionOficial> TipificacionesOficiales { get; set; }
@@ -244,6 +246,24 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Codigo de puesto unico por empresa
+            modelBuilder.Entity<Domain.Puestos.Puesto>()
+                .HasIndex(p => new { p.EmpresaId, p.CodigoPuesto })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Matricula de tipificador unica por empresa
+            modelBuilder.Entity<Domain.Tipificadores.Tipificador>()
+                .HasIndex(t => new { t.EmpresaId, t.Matricula })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
+            // Un solo tipificador por defecto por Establecimiento + Especie
+            modelBuilder.Entity<Domain.Tipificadores.Tipificador>()
+                .HasIndex(t => new { t.EstablecimientoId, t.EspecieId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+
             // Numerador unico por Establecimiento + Especie + Codigo
             modelBuilder.Entity<Domain.Numeradores.Numerador>()
                 .HasIndex(n => new { n.EstablecimientoId, n.EspecieCodigo, n.Codigo })
@@ -409,7 +429,15 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.Puestos.Puesto>(e =>
             {
                 e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.TipoPuesto).WithMany().HasForeignKey(x => x.TipoPuestoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoMedicion).WithMany().HasForeignKey(x => x.TipoMedicionId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.Tipificadores.Tipificador>(e =>
+            {
+                e.HasOne(x => x.Establecimiento).WithMany().HasForeignKey(x => x.EstablecimientoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
             });
 
             #endregion Relaciones - Puestos
@@ -490,6 +518,9 @@ namespace Meat.Repositories
                 e.HasOne(x => x.GradoEngrasamiento).WithMany().HasForeignKey(x => x.GradoEngrasamientoId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Denticion).WithMany().HasForeignKey(x => x.DenticionId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.MotivoDecomiso).WithMany().HasForeignKey(x => x.MotivoDecomisoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Puesto).WithMany().HasForeignKey(x => x.PuestoId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Tipificador).WithMany().HasForeignKey(x => x.TipificadorId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoMedicion).WithMany().HasForeignKey(x => x.TipoMedicionId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Domain.Romaneos.RomaneoPieza>(e =>
@@ -504,7 +535,7 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.Romaneos.RomaneoPiezaMedicion>(e =>
             {
                 e.HasOne(x => x.RomaneoPieza).WithMany(p => p.Mediciones).HasForeignKey(x => x.RomaneoPiezaId).OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.TipoMedicion).WithMany().HasForeignKey(x => x.TipoMedicionId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.TipoMagnitud).WithMany().HasForeignKey(x => x.TipoMagnitudId).OnDelete(DeleteBehavior.Restrict);
             });
 
             #endregion Relaciones - Romaneo (Ejecucion de Faena)

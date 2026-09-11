@@ -26,6 +26,13 @@ import Spinner from '@/components/ui/Spinner'
 
 const kg = (v: number) => v.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+/** dd/MM/yyyy, el mismo formato que el resto de las pantallas. */
+function formatFecha(value: string): string {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+
 /** Una fila por pieza: es el grano en el que se revisa y se corrige. */
 interface FilaPieza {
   romaneo: RomaneoEvaluacionItem
@@ -166,8 +173,14 @@ export default function EvaluacionFaenaPage() {
             <span className="font-medium">{jornada.establecimientoNombre}</span>
           </span>
           <span>
+            <span className="text-text-light">Puesto: </span>
+            <span className="font-medium">
+              {jornada.puestoNombre ? `${jornada.puestoCodigo} - ${jornada.puestoNombre}` : 'Sin asignar'}
+            </span>
+          </span>
+          <span>
             <span className="text-text-light">Fecha: </span>
-            <span className="font-medium">{new Date(jornada.fecha).toLocaleDateString('es-AR')}</span>
+            <span className="font-medium">{formatFecha(jornada.fecha)}</span>
           </span>
           <span>
             <span className="text-text-light">Romaneos: </span>

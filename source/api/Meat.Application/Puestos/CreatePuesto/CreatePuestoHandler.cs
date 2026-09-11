@@ -1,37 +1,50 @@
-﻿using AutoMapper;
 using MediatR;
+using Meat.Application.Puestos.Shared;
+using Meat.Application.Shared;
+using Meat.Domain.Puestos;
 using Meat.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using Meat.Application.Shared;
 
 namespace Meat.Application.Puestos.CreatePuesto
 {
     public class CreatePuestoHandler : IRequestHandler<CreatePuestoRequest, CreatePuestoResponse>
     {
         private readonly MeatContext context;
-        private readonly IMapper mapper;
 
-        public CreatePuestoHandler(MeatContext context, IMapper mapper)
+        public CreatePuestoHandler(MeatContext context)
         {
             this.context = context;
-            this.mapper = mapper;
         }
 
         public async Task<CreatePuestoResponse> Handle(CreatePuestoRequest request, CancellationToken cancellationToken)
         {
-            var puesto = Domain.Puestos.PuestoFactory.Create();
-            this.mapper.Map(request, puesto);
+            var codigo = (request.CodigoPuesto ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(codigo))
+                throw new ValidationException("El codigo del puesto es requerido.");
 
-            this.context.Puestos.Add(puesto);
+            var codigoEnUso = await this.context.Puestos
+                .AnyAsync(p => p.CodigoPuesto == codigo, cancellationToken);
+            if (codigoEnUso)
+                throw new ValidationException("Ya existe un puesto con ese codigo.");
 
-            await this.context.SaveChangesAsync();
+            await PuestoValidacion.ValidarAsync(
+                this.context, request.EstablecimientoId, request.EspecieId, request.Nombre,
+                request.TipoPuestoId, request.TipoMedicionId, cancellationToken);
 
-            return new CreatePuestoResponse()
-            {
-                Id = puesto.Id,
-            };
+            var entity = PuestoFactory.Create();
+            entity.CodigoPuesto = codigo;
+            entity.Nombre = request.Nombre.Trim();
+            entity.EstablecimientoId = request.EstablecimientoId;
+            entity.EspecieId = request.EspecieId;
+            entity.TipoPuestoId = request.TipoPuestoId;
+            entity.TipoMedicionId = request.TipoMedicionId;
+
+            this.context.Puestos.Add(entity);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return new CreatePuestoResponse { Id = entity.Id };
         }
     }
 }

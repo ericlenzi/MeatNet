@@ -41,6 +41,13 @@ export type {
 export { EstadoListaMatanza } from './listaMatanza'
 export type { TrazabilidadTropa, TrazabilidadMovimiento } from './trazabilidadTropa'
 export type { UnidadFaena, CreateUnidadFaenaRequest, UpdateUnidadFaenaRequest } from './unidadFaena'
+export type { Puesto, CreatePuestoRequest, UpdatePuestoRequest } from './puesto'
+export type { Tipificador, CreateTipificadorRequest, UpdateTipificadorRequest } from './tipificador'
+export type {
+  CatalogoSimple,
+  CreateCatalogoSimpleRequest,
+  UpdateCatalogoSimpleRequest,
+} from './catalogoSimple'
 export type { Material, CreateMaterialRequest, UpdateMaterialRequest, TipoMaterial } from './material'
 export type { DespieceMaterial, CreateDespieceMaterialRequest, UpdateDespieceMaterialRequest } from './despieceMaterial'
 export type { Numerador, CreateNumeradorRequest, UpdateNumeradorRequest } from './numerador'
@@ -54,6 +61,8 @@ export type {
 export type {
   RenglonEjecucionItem,
   RenglonesEjecucion,
+  TipificadorOption,
+  TipoMedicionOption,
   TipificacionCandidata,
   SugerenciaTipificacion,
   RomaneoPiezaItem,

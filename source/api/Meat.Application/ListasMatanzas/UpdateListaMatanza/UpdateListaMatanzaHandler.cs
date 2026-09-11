@@ -52,14 +52,8 @@ namespace Meat.Application.ListasMatanzas.UpdateListaMatanza
             if (yaExiste)
                 throw new ValidationException("Ya existe una lista de matanza para ese establecimiento, fecha y especie.");
 
-            if (request.PuestoId.HasValue)
-            {
-                var puestoValido = await this.context.Puestos
-                    .AnyAsync(p => p.Id == request.PuestoId.Value
-                        && p.EstablecimientoId == entity.EstablecimientoId, cancellationToken);
-                if (!puestoValido)
-                    throw new ValidationException("El puesto indicado no pertenece al establecimiento.");
-            }
+            await PuestoListaMatanza.ValidarAsync(
+                this.context, request.PuestoId, entity.EstablecimientoId, request.EspecieId, cancellationToken);
 
             await ListaMatanzaValidacion.ValidateRenglonesAsync(
                 this.context, entity.EstablecimientoId, request.EspecieId, request.Renglones, cancellationToken);

@@ -13,6 +13,12 @@ namespace Meat.Application.Romaneos.CrearRomaneo
         public Guid? UnidadFaenaId { get; set; }
         public int NumeroGarron { get; set; }
 
+        // Cabecera del puesto. El tipificador es obligatorio cuando el establecimiento tiene
+        // tipificadores cargados para la especie (misma regla derivada del catalogo que los
+        // datos del palco). El metodo de medicion, si no viene, sale del puesto de la lista.
+        public Guid? TipificadorId { get; set; }
+        public string TipoMedicionId { get; set; }
+
         // Datos del palco que se determinan mirando la res, no el animal en pie. Van sin
         // [Required]: si son obligatorios o no lo decide la especie de la jornada, y eso solo se
         // sabe consultando el catalogo (R-E20).

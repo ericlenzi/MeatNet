@@ -214,8 +214,8 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 
   Falta todavía el decomiso de **vísceras y subproductos**, que depende de abrir ese dominio
   (O-3 en `EvaluacionFaena.md`).
-- **O-A2 (rinde frío).** Requiere una segunda pesada tras el oreo: un `TipoMedicion` nuevo (hoy
-  `TiposMediciones` solo tiene `PESO`) y la pantalla para capturarlo en cámara. Habilitaría además
+- **O-A2 (rinde frío).** Requiere una segunda pesada tras el oreo: un `TipoMagnitud` nuevo (hoy
+  `TiposMagnitudes` solo tiene `PESO`) y la pantalla para capturarlo en cámara. Habilitaría además
   la **merma de oreo** como indicador propio.
 - **O-A3 (desbaste).** Requiere balanza en playa previa al sacrificio. Con ese dato el rinde pasaría
   a calcularse sobre el peso real de faena y dejaría de estar subestimado.

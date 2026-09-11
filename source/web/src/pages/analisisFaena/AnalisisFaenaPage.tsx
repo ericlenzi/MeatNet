@@ -9,6 +9,13 @@ import Badge from '@/components/ui/Badge'
 
 const kg = (v: number) => v.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const pct = (v: number) => `${v.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+
+/** dd/MM/yyyy, el mismo formato que el resto de las pantallas. */
+function formatFecha(value: string): string {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 /** Las descripciones cargadas a mano a veces traen saltos de linea. */
 const limpio = (s: string | null) => (s ?? '').replace(/\s+/g, ' ').trim()
 
@@ -65,8 +72,14 @@ export default function AnalisisFaenaPage() {
             <span className="font-medium">{data.establecimientoNombre}</span>
           </span>
           <span>
+            <span className="text-text-light">Puesto: </span>
+            <span className="font-medium">
+              {data.puestoNombre ? `${data.puestoCodigo} - ${data.puestoNombre}` : 'Sin asignar'}
+            </span>
+          </span>
+          <span>
             <span className="text-text-light">Fecha: </span>
-            <span className="font-medium">{new Date(data.fecha).toLocaleDateString('es-AR')}</span>
+            <span className="font-medium">{formatFecha(data.fecha)}</span>
           </span>
           <Badge variant={data.estadoListaMatanzaId === 'FINALIZADA' ? 'success' : 'info'}>
             {data.estadoListaMatanzaId}

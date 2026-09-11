@@ -36,6 +36,7 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         {
             var lm = await this.context.ListasMatanzas
                 .Include(x => x.Establecimiento)
+                .Include(x => x.Puesto)
                 .FirstOrDefaultAsync(x => x.Id == request.ListaMatanzaId, cancellationToken);
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
@@ -148,6 +149,8 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 EspecieId = lm.EspecieId,
                 EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                 EstablecimientoNombre = lm.Establecimiento.Nombre,
+                PuestoCodigo = lm.Puesto != null ? lm.Puesto.CodigoPuesto : null,
+                PuestoNombre = lm.Puesto != null ? lm.Puesto.Nombre : null,
                 AnimalesFaenados = animalesFaenados,
                 Piezas = piezasCarne.Count,
                 KgFaena = kgFaena,

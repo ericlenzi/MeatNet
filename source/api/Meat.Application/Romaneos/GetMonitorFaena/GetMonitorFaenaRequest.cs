@@ -17,6 +17,9 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
         public long NumeroLista { get; set; }
         public string EspecieNombre { get; set; }
         public string EstadoListaMatanzaId { get; set; }
+        /// <summary>Puesto (palco) donde se faena la jornada. Lo declara la lista de matanza.</summary>
+        public string PuestoCodigo { get; set; }
+        public string PuestoNombre { get; set; }
 
         public int TotalPlanificado { get; set; }
         public int TotalFaenado { get; set; }

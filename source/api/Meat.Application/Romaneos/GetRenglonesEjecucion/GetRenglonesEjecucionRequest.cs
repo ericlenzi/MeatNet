@@ -22,8 +22,31 @@ namespace Meat.Application.Romaneos.GetRenglonesEjecucion
         public int ProximoGarron { get; set; }              // ultimo garron de la jornada + 1
         public Guid? RenglonSugeridoId { get; set; }         // menor secuencia con pendiente > 0
 
+        // Cabecera del puesto: donde se faena esta jornada, quien tipifica y con que se mide.
+        public Guid? PuestoId { get; set; }
+        public string PuestoCodigo { get; set; }
+        public string PuestoNombre { get; set; }
+        public Guid? TipificadorSugeridoId { get; set; }     // el marcado PorDefecto del establecimiento + especie
+        public string TipoMedicionSugeridoId { get; set; }   // el configurado en el puesto
+
         public IEnumerable<RenglonEjecucionItem> Renglones { get; set; } = new List<RenglonEjecucionItem>();
         public IEnumerable<CamaraOption> Camaras { get; set; } = new List<CamaraOption>();  // camaras activas del establecimiento (selector de destino)
+        public IEnumerable<TipificadorOption> Tipificadores { get; set; } = new List<TipificadorOption>();  // habilitados para el establecimiento + especie
+        public IEnumerable<TipoMedicionOption> TiposMediciones { get; set; } = new List<TipoMedicionOption>();  // metodos de medicion activos
+    }
+
+    public class TipificadorOption
+    {
+        public Guid Id { get; set; }
+        public string Nombre { get; set; }
+        public string Matricula { get; set; }
+        public bool PorDefecto { get; set; }
+    }
+
+    public class TipoMedicionOption
+    {
+        public string Codigo { get; set; }
+        public string Nombre { get; set; }
     }
 
     public class CamaraOption

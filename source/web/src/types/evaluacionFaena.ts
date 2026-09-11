@@ -50,6 +50,8 @@ export interface RomaneosEvaluacionResponse {
   especieId: string
   estadoListaMatanzaId: string
   establecimientoNombre: string
+  puestoCodigo: string | null
+  puestoNombre: string | null
   totalRomaneos: number
   totalPiezas: number
   totalKg: number

@@ -6,6 +6,9 @@ using Meat.Domain.Conformaciones;
 using Meat.Domain.Denticiones;
 using Meat.Domain.GradosEngrasamiento;
 using Meat.Domain.MotivosDecomisos;
+using Meat.Domain.Puestos;
+using Meat.Domain.Tipificadores;
+using Meat.Domain.TiposMediciones;
 using Meat.Domain.UnidadesFaenas;
 using System;
 using System.Collections.Generic;
@@ -42,6 +45,20 @@ namespace Meat.Domain.Romaneos
 
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
+
+        // Cabecera del puesto: donde se tipifico, quien tipifico y con que metodo se midio.
+        // Los tres se proponen solos (el puesto lo trae la LM, el tipificador y el metodo salen
+        // de la configuracion) y quedan en el romaneo porque son un hecho de la jornada: si
+        // manana cambia la configuracion, lo que ya se faeno se sigue leyendo igual.
+        // Nullables: los romaneos anteriores a la configuracion de puestos no los traen.
+        public Guid? PuestoId { get; set; }
+        public virtual Puesto Puesto { get; set; }
+
+        public Guid? TipificadorId { get; set; }
+        public virtual Tipificador Tipificador { get; set; }
+
+        public string TipoMedicionId { get; set; }
+        public virtual TipoMedicion TipoMedicion { get; set; }
 
         public Guid UnidadFaenaId { get; set; }              // RES / MEDIA RES; define nro de piezas
 

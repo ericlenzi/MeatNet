@@ -10,7 +10,7 @@ import {
 } from '@/services/listasMatanzas.service'
 import { getEspecies } from '@/services/especies.service'
 import { getAlmacenes, FamiliaAlmacen } from '@/services/almacenes.service'
-import { getPuestos } from '@/services/puestos.service'
+import { getPuestosOptions } from '@/services/puestos.service'
 import { useApp } from '@/contexts/AppContext'
 import { useToast } from '@/components/ui/Toast'
 import { EstadoListaMatanza } from '@/types'
@@ -67,6 +67,33 @@ export default function ListaMatanzaFormPage() {
 
   const editable = !isEdit || estado === EstadoListaMatanza.Borrador
 
+  // Puestos (palcos) del establecimiento para la especie elegida: la especie es parte de la
+  // identidad del puesto, asi que el combo se recarga al cambiarla. Si hay uno solo, se elige
+  // solo; y una eleccion que dejo de ser valida (cambio de especie) se limpia.
+  useEffect(() => {
+    if (!currentEstablecimiento?.id || !especieId) {
+      setPuestoOptions([])
+      return
+    }
+    let cancel = false
+    void (async () => {
+      try {
+        const puestos = await getPuestosOptions(currentEstablecimiento.id, especieId)
+        if (cancel) return
+        setPuestoOptions(puestos.map((p) => ({ value: p.id, label: p.nombre || p.codigoPuesto })))
+        setPuestoId((prev) => {
+          if (prev && puestos.some((p) => p.id === prev)) return prev
+          return puestos.length === 1 ? (puestos[0]?.id ?? '') : ''
+        })
+      } catch {
+        if (!cancel) setPuestoOptions([])
+      }
+    })()
+    return () => {
+      cancel = true
+    }
+  }, [currentEstablecimiento?.id, especieId])
+
   // Carga inicial: especies + (si edita) la lista
   useEffect(() => {
     const load = async () => {
@@ -83,10 +110,6 @@ export default function ListaMatanzaFormPage() {
             Familia: FamiliaAlmacen.Camara,
           })
           setCamaraOptions(camaras.map((c) => ({ value: c.id, label: c.nombre })))
-
-          // Puestos (palcos de faena) del establecimiento
-          const puestos = await getPuestos(currentEstablecimiento.id)
-          setPuestoOptions(puestos.map((p) => ({ value: p.id, label: p.nombre || p.codigoPuesto })))
         }
 
         if (isEdit && id) {
@@ -257,6 +280,10 @@ export default function ListaMatanzaFormPage() {
 
   const validar = (): string | null => {
     if (!especieId) return 'Debe seleccionar la especie.'
+    if (!puestoId)
+      return puestoOptions.length === 0
+        ? 'No hay puestos (palcos) configurados para este establecimiento y especie. Cargue uno en Datos Maestros > Puestos.'
+        : 'Debe seleccionar el puesto (palco) donde se va a faenar.'
     if (!fecha) return 'Debe indicar la fecha.'
     if (duplicada)
       return `Ya existe la lista N° ${duplicada.numeroLista} (${duplicada.estadoListaMatanzaNombre}) para esa fecha y especie.`
@@ -368,10 +395,10 @@ export default function ListaMatanzaFormPage() {
             <Select
               label="Puesto de faena"
               options={puestoOptions}
-              placeholder="(Sin asignar)"
+              placeholder={especieId ? 'Seleccione puesto' : 'Elija la especie'}
               value={puestoId}
               onChange={(e) => setPuestoId(e.target.value)}
-              disabled={!editable}
+              disabled={!editable || !especieId}
             />
             <Input label="Fecha de faena" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} disabled={isEdit} />
           </div>

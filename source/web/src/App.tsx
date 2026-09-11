@@ -30,6 +30,12 @@ import CategoriaHaciendaFormPage from '@/pages/categoriasHacienda/CategoriaHacie
 import EjeTipificacionListPage from '@/pages/ejesTipificacion/EjeTipificacionListPage'
 import EjeTipificacionFormPage from '@/pages/ejesTipificacion/EjeTipificacionFormPage'
 import UnidadesFaenasListPage from '@/pages/unidadesFaenas/UnidadesFaenasListPage'
+import PuestosListPage from '@/pages/puestos/PuestosListPage'
+import PuestoFormPage from '@/pages/puestos/PuestoFormPage'
+import TipificadoresListPage from '@/pages/tipificadores/TipificadoresListPage'
+import TipificadorFormPage from '@/pages/tipificadores/TipificadorFormPage'
+import CatalogoSimpleListPage from '@/pages/catalogosSimples/CatalogoSimpleListPage'
+import CatalogoSimpleFormPage from '@/pages/catalogosSimples/CatalogoSimpleFormPage'
 import UnidadFaenaFormPage from '@/pages/unidadesFaenas/UnidadFaenaFormPage'
 import TipificacionesListPage from '@/pages/tipificaciones/TipificacionesListPage'
 import TipificacionFormPage from '@/pages/tipificaciones/TipificacionFormPage'
@@ -141,6 +147,18 @@ function AppRoutes() {
                   <Route path="motivos-decomisos" element={<EjeTipificacionListPage eje="motivos-decomisos" />} />
                   <Route path="motivos-decomisos/create" element={<EjeTipificacionFormPage eje="motivos-decomisos" />} />
                   <Route path="motivos-decomisos/:codigo/edit" element={<EjeTipificacionFormPage eje="motivos-decomisos" />} />
+                  <Route path="tipos-puestos" element={<CatalogoSimpleListPage catalogo="tipos-puestos" />} />
+                  <Route path="tipos-puestos/create" element={<CatalogoSimpleFormPage catalogo="tipos-puestos" />} />
+                  <Route path="tipos-puestos/:codigo/edit" element={<CatalogoSimpleFormPage catalogo="tipos-puestos" />} />
+                  <Route path="tipos-mediciones" element={<CatalogoSimpleListPage catalogo="tipos-mediciones" />} />
+                  <Route path="tipos-mediciones/create" element={<CatalogoSimpleFormPage catalogo="tipos-mediciones" />} />
+                  <Route path="tipos-mediciones/:codigo/edit" element={<CatalogoSimpleFormPage catalogo="tipos-mediciones" />} />
+                  <Route path="puestos" element={<PuestosListPage />} />
+                  <Route path="puestos/create" element={<PuestoFormPage />} />
+                  <Route path="puestos/:id/edit" element={<PuestoFormPage />} />
+                  <Route path="tipificadores" element={<TipificadoresListPage />} />
+                  <Route path="tipificadores/create" element={<TipificadorFormPage />} />
+                  <Route path="tipificadores/:id/edit" element={<TipificadorFormPage />} />
                   <Route path="unidades-faenas" element={<UnidadesFaenasListPage />} />
                   <Route path="unidades-faenas/create" element={<UnidadFaenaFormPage />} />
                   <Route path="unidades-faenas/:id/edit" element={<UnidadFaenaFormPage />} />

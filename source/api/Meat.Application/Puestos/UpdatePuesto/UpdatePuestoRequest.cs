@@ -1,17 +1,19 @@
-﻿using MediatR;
+using MediatR;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Meat.Application.Puestos.UpdatePuesto
 {
-
     public class UpdatePuestoRequest : IRequest<UpdatePuestoResponse>
     {
+        [JsonIgnore]
         public Guid Id { get; set; }
 
-        public string NumeroPuesto { get; set; }
-
+        public string Nombre { get; set; }
         public Guid EstablecimientoId { get; set; }
-
-        public string Erp_Codigo { get; set; }
+        public string EspecieId { get; set; }
+        public string TipoPuestoId { get; set; }
+        public string TipoMedicionId { get; set; }
+        public bool Activo { get; set; }
     }
 }

@@ -14,6 +14,8 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 - Especies **V (VACUNO)** y **P (PORCINO)** únicamente.
 - Captura de romaneo: **garrón + peso (medición) + tipificación**.
 - Los **cuatro datos del palco**: conformación, engrasamiento, dentición y contusión (ver R-E20).
+- La **cabecera del puesto**: en qué palco se faena, quién tipifica y con qué método se mide
+  (ver R-E28).
 - **Decomisos** en tres niveles, con su motivo sanitario: condena de la res entera (R-E23),
   condena de **una media res** dejando la otra en pie (R-E27) y recorte parcial de kilos (R-E24).
   Los kilos condenados se informan como **merma sanitaria** en el Análisis de Faena, sin cambiar
@@ -45,7 +47,10 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 | **Contusión** | Golpe visible en la media res. Catálogo global `TiposContusiones`, escala ordinal que arranca en "sin contusión". Es el único de los cuatro datos del palco que va **por pieza**. |
 | **Decomiso** | Retiro sanitario dispuesto por la inspección, en tres niveles: **res condenada** (marca del `Romaneo`, R-E23), **media res condenada**, que retira una pieza y deja la otra en pie (marca de la `RomaneoPieza`, R-E27), y **recorte parcial**, que retira kilos de una media res que igual sigue a cámara (R-E24). La causa sale del catálogo global `MotivosDecomisos`. |
 | **Merma sanitaria** | Los kilos condenados de la jornada: los de las reses condenadas enteras más los retirados en los recortes. Se informa aparte del rinde, que conserva su definición (R-A6 en `AnalisisFaena.md`). |
-| **Medición** | Valor capturado de un `TipoMedicion` del catálogo. En MVP la única medición es **`PESO`**. |
+| **Medición** | Valor capturado de una **magnitud** (`TipoMagnitud`) de una pieza. En MVP la única magnitud es **`PESO`**. |
+| **Tipo de medición** | **Cómo** se toma el valor: `M` manual, `B` balanza, `A` automática. Catálogo global `TiposMediciones`, no confundir con la magnitud (qué se mide). Cada `Puesto` declara el suyo por defecto. |
+| **Puesto** | El palco de faena, configurado por **Empresa + Establecimiento + Especie** (`Puestos`). La Lista de Matanza declara en qué puesto se faena y el Tipificador entra por ahí. Ver R-E28. |
+| **Tipificador (persona)** | Quien tipifica en el palco: nombre y matrícula, habilitado por Establecimiento + Especie (`Tipificadores`). Uno marcado **por defecto** por establecimiento y especie. |
 | **Tipificador** | Puesto/pantalla donde se captura el romaneo res por res. |
 | **Monitor de Faena** | Tablero **read-only** con el avance de la jornada en vivo. No captura. |
 | **Jornada** | La faena de una LM `EN_EJECUCION`. La LM es la cabecera; no hay entidad "Faena" aparte. |
@@ -61,7 +66,11 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
   hace este paso.
 - Master data cargado (Fase 1): `UnidadesFaenas` (con su aritmética y su tipo de material
   validados, R-E16 y R-E17), `Tipificaciones` (con rango de peso), `Numeradores` (con un `ROMANEO`
-  por Establecimiento+Especie), catálogo `TiposMediciones` con el código **`PESO`**.
+  por Establecimiento+Especie), catálogo `TiposMagnitudes` con el código **`PESO`**, catálogo
+  `TiposMediciones` con los métodos de captura (`M`, `B`, `A`), `TiposPuestos` con la clase `PAL`,
+  y los **`Puestos`** y **`Tipificadores`** del establecimiento y la especie.
+- La LM trae su **puesto** asignado (R-E28): el Tipificador entra por el palco y solo ve las
+  listas que lo tienen.
 
 > **La categoría no se elige en este paso.** Sale del renglón de la LM que el tipificador
 > selecciona, y el renglón la trae del stock que dejó el Ingreso. El Tipificador no tiene combo de
@@ -73,8 +82,8 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
    elegida: **PORCINO → RES (1 pieza)**, **VACUNO → MEDIA RES (2 piezas, A/B)**.
 2. **Selección de renglón híbrida.** El Tipificador **sugiere** el renglón por `Secuencia` (el
    primero con pendiente), pero el operador puede **overridear** y elegir otro renglón de la LM.
-3. **Peso como Medición.** El peso se modela como un `TipoMedicion` (`PESO`) del catálogo, no como
-   un concepto ad-hoc. `RomaneoPieza.Peso` es una **caché desnormalizada** de esa medición
+3. **Peso como Medición.** El peso se modela como una magnitud del catálogo (`TipoMagnitud` =
+   `PESO`), no como un concepto ad-hoc. `RomaneoPieza.Peso` es una **caché desnormalizada** de esa medición
    (canónica para elegir tipificación por rango y para KG de stock). Deja la puerta abierta a más
    mediciones en Fase 2b sin cambiar el esquema.
 4. **La LM `EN_EJECUCION` es la cabecera de la jornada.** Los romaneos cuelgan de la LM y del
@@ -87,7 +96,12 @@ al **cerrar** la LM (R-17, ya implementado en Planificación).
 ## 5. Flujo del proceso (Tipificador)
 
 ```
-LM EN_EJECUCION  ──►  abrir Tipificador
+Puesto (palco)  ──►  LM EN_EJECUCION asignada a ese puesto  ──►  abrir Tipificador
+    │
+    ▼
+[0] Cabecera del puesto: el puesto lo trae la LM (no se elige acá), y el sistema PROPONE el
+    tipificador marcado por defecto y el método de medición configurado en el puesto. El
+    operario los cambia si ese día el palco trabaja de otra forma; valen para toda la jornada.
     │
     ▼
 [1] El sistema sugiere el renglón activo (menor Secuencia con pendiente > 0).
@@ -132,7 +146,8 @@ LM EN_EJECUCION  ──►  abrir Tipificador
     ▼
 [5] Confirmar romaneo  ──►  CrearRomaneo:
       • asigna NumeroRomaneo (Numerador ROMANEO del Estab+Especie)
-      • persiste Romaneo + Piezas + Mediciones (PESO)
+      • persiste Romaneo + Piezas + Mediciones (PESO), con la cabecera del puesto
+        (puesto, tipificador, método de medición)
       • CantidadFaenada += 1 en el renglón
       • baja el En Pie (derivado) / actualiza Existencia
       • TropaMovimiento(FAENA) según grano (§8)
@@ -243,7 +258,7 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   son otra cosa y ya viven en `TiposEspecies` — mezclarlas ahí duplicaría el eje de categoría.
 
   Si en el futuro se quiere capturar el magro, el lugar natural es `RomaneoPiezaMedicion`, que ya
-  existe con un `Valor` numérico y hoy solo guarda `PESO`: alcanza con sumar un `TipoMedicion`,
+  existe con un `Valor` numérico y hoy solo guarda `PESO`: alcanza con sumar un `TipoMagnitud`,
   sin tocar el esquema.
 - **R-E23 (decomiso total: la res se faenó, pero no es carne).** Cuando la inspección condena la
   res entera, el romaneo se registra igual **con la marca `DecomisoTotal` y su motivo obligatorio**.
@@ -326,6 +341,37 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   **Si se condenan todas las medias reses, el alta pide registrarlo como decomiso total de la
   res.** El hecho es el mismo y el dato tiene que ser uno solo: si no, la misma jornada contaría
   a veces un animal condenado y a veces dos medias reses, y el informe sanitario dejaría de cerrar.
+- **R-E28 (la cabecera del puesto: dónde, quién y con qué).** El romaneo registra tres datos que
+  no son de la res sino de **cómo se está trabajando** esa jornada:
+
+  | Dato | De dónde sale | Por qué |
+  |---|---|---|
+  | `Romaneo.PuestoId` | De la **LM**, que lo declara al planificarse | El palco no se elige res por res: es donde se está faenando la lista. |
+  | `Romaneo.TipificadorId` | Del combo, con el **`PorDefecto`** del establecimiento + especie propuesto | Quién tipificó es responsabilidad, y en un cambio de turno cambia en el medio de la jornada. |
+  | `Romaneo.TipoMedicionId` | Del combo, con el **método del puesto** propuesto | El palco con balanza mide distinto que el que anota a mano, y el dato explica el peso. |
+
+  **Los tres quedan copiados en el romaneo**, no leídos de la configuración. Son un hecho de la
+  jornada: si mañana el palco cambia de método o el tipificador se da de baja, lo que ya se faenó
+  se sigue leyendo igual.
+
+  **El tipificador se exige con la misma regla derivada del catálogo que los datos del palco
+  (R-E22):** si el establecimiento tiene tipificadores activos para la especie, hay que decir
+  quién tipificó; si no tiene ninguno, el combo no se muestra y el campo viaja vacío. Así una
+  empresa que todavía no cargó su padrón de tipificadores puede faenar, y la que lo cargó no
+  puede registrar un romaneo sin dueño.
+
+  **El puesto encabeza las pantallas de la jornada.** Lo muestran el Monitor de Faena, la
+  Evaluación de Faena (y con ella su planilla impresa) y el Análisis de Faena: en una planta con
+  dos palcos, los totales de la jornada no se leen sin saber de qué palco son.
+
+  **El método de medición no puede faltar**: si el puesto no lo manda, vale el que tiene
+  configurado el puesto de la lista. Por eso `Puesto.TipoMedicionId` es requerido en su alta.
+
+  El **puesto se configura por Empresa + Establecimiento + Especie**, y ahí está el cambio de
+  fondo: el palco vacuno y el palco porcino son **dos puestos**, no dos clases de puesto. Antes la
+  especie estaba metida en `TiposPuestos` (`PALCO-V`, `PALCO-P`), que es una clasificación común a
+  todas las empresas: la especie con la que opera un palco es información del palco. Hoy
+  `TiposPuestos` tiene una sola fila, `PAL` (palco), y la especie es columna de `Puesto`.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
@@ -457,6 +503,9 @@ PK: Guid Id
 - ConformacionId (string?, FK)         [dato del palco: desarrollo muscular (R-E20)]
 - GradoEngrasamientoId (string?, FK)   [dato del palco: cobertura de grasa (R-E20)]
 - DenticionId (string?, FK)            [dato del palco: incisivos permanentes, estima la edad (R-E20)]
+- PuestoId (Guid?, FK)                 [palco donde se faenó; lo copia de la LM (R-E28)]
+- TipificadorId (Guid?, FK)            [quién tipificó; propuesto por el PorDefecto (R-E28)]
+- TipoMedicionId (string?, FK)         [cómo se midió: M/B/A; propuesto por el puesto (R-E28)]
 - DecomisoTotal (bool, default false)  [la inspección condenó la res entera (R-E23)]
 - MotivoDecomisoId (string?, FK)       [causa sanitaria; obligatorio si DecomisoTotal (R-E23)]
 - NumeroGarron (int)                   [físico; único por LM]
@@ -491,9 +540,14 @@ Navegación: Mediciones (ICollection<RomaneoPiezaMedicion>)
 ```
 PK: Guid Id
 - RomaneoPiezaId (Guid, FK, cascade delete)
-- TipoMedicionId (string, FK a TiposMediciones)   [MVP: "PESO"]
+- TipoMagnitudId (string, FK a TiposMagnitudes)   [QUÉ se mide. MVP: "PESO"]
 - Valor (double)
 ```
+
+> **Magnitud y método son dos cosas.** `TipoMagnitud` es qué se mide (PESO) y va por pieza;
+> `TipoMedicion` es con qué se mide (manual, balanza, automático) y va en la cabecera del romaneo
+> (R-E28), porque es del puesto y no de cada media res. La tabla `TiposMediciones` guardaba antes
+> lo primero; la migración 77 mudó esas filas a `TiposMagnitudes`.
 
 ### 9.4 Cómo se cargan los datos del palco y los motivos de decomiso
 
@@ -652,8 +706,10 @@ El detalle de la LM muestra además el avance `CantidadFaenada / Cantidad` por r
 - **Numerador `ROMANEO`:** debe existir un `Numerador` (`TipoNumerador = "ROMANEO"`) por
   (Establecimiento, Especie). Si falta, `Correlativos.ReservarAsync` lo crea arrancando en 0, con un
   `INSERT` condicional que es seguro ante concurrencia.
-- **Medición `PESO`:** debe existir el `TipoMedicion` con código `PESO` (Fase 1 lo siembra por
-  script; validar su presencia).
+- **Magnitud `PESO`:** debe existir el `TipoMagnitud` con código `PESO` (lo siembra la migración).
+- **Puesto y tipificadores:** cada establecimiento y especie necesita al menos un `Puesto` activo
+  (la LM lo exige, R-E28) y, para exigir quién tipifica, sus `Tipificadores` con uno marcado por
+  defecto. Ambos se cargan en Datos Maestros.
 - **Tipificaciones cargadas:** tiene que haber al menos una `Tipificacion` activa por combinación
   `Especie + TipoEspecie + UF + Destino` (el ABM de `Tipificaciones` ofrece en ese combo las
   categorías **configuradas por la empresa**, no el catálogo entero); si no hay ninguna, el

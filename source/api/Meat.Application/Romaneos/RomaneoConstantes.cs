@@ -13,8 +13,9 @@ namespace Meat.Application.Romaneos
     /// <summary>Codigos usados por el romaneo.</summary>
     public static class RomaneoConstantes
     {
-        // Codigo del TipoMedicion que representa el peso (catalogo TiposMediciones).
-        public const string MedicionPeso = "PESO";
+        // Codigo de la magnitud que representa el peso (catalogo TiposMagnitudes): que se mide.
+        // Con que se mide (manual, balanza, automatico) es el TipoMedicion de la cabecera.
+        public const string MagnitudPeso = "PESO";
 
         // Letras de las piezas (medias reses) para vacunos.
         public static readonly string[] Letras = { "A", "B", "C", "D" };

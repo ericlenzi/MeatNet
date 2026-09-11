@@ -62,6 +62,17 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
         </Button>
       </PageHeader>
 
+      <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <span>
+            <span className="text-text-light">Puesto: </span>
+            <span className="font-medium">
+              {m.puestoNombre ? `${m.puestoCodigo} - ${m.puestoNombre}` : 'Sin asignar'}
+            </span>
+          </span>
+        </div>
+      </div>
+
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Stat label="Planificado" value={m.totalPlanificado} />
         <Stat label="Faenado" value={m.totalFaenado} hint={`${avance}%`} />

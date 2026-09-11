@@ -14,6 +14,8 @@ interface GetListasMatanzasParams extends PaginatedRequest {
   EspecieId?: string
   EstadoListaMatanzaId?: string
   Fecha?: string
+  /** Puesto asignado: asi el palco ve solo sus listas. */
+  PuestoId?: string
 }
 
 export async function getListasMatanzas(

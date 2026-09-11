@@ -20,6 +20,18 @@ export interface CamaraOption {
   nombre: string
 }
 
+export interface TipificadorOption {
+  id: string
+  nombre: string
+  matricula: string
+  porDefecto: boolean
+}
+
+export interface TipoMedicionOption {
+  codigo: string
+  nombre: string
+}
+
 export interface RenglonesEjecucion {
   listaMatanzaId: string
   numeroLista: number
@@ -28,8 +40,17 @@ export interface RenglonesEjecucion {
   estadoListaMatanzaId: string
   proximoGarron: number
   renglonSugeridoId: string | null
+  /** Cabecera del puesto: donde se faena la jornada. Lo trae la lista de matanza. */
+  puestoId: string | null
+  puestoCodigo: string | null
+  puestoNombre: string | null
+  /** Defaults de la cabecera: el tipificador marcado por defecto y la medicion del puesto. */
+  tipificadorSugeridoId: string | null
+  tipoMedicionSugeridoId: string | null
   renglones: RenglonEjecucionItem[]
   camaras: CamaraOption[]
+  tipificadores: TipificadorOption[]
+  tiposMediciones: TipoMedicionOption[]
 }
 
 // --- Sugerencia de tipificacion ---
@@ -102,6 +123,9 @@ export interface MonitorFaena {
   numeroLista: number
   especieNombre: string
   estadoListaMatanzaId: string
+  /** Puesto (palco) de la jornada: lo declara la lista de matanza. */
+  puestoCodigo: string | null
+  puestoNombre: string | null
   totalPlanificado: number
   totalFaenado: number
   totalPendiente: number
@@ -138,6 +162,10 @@ export interface CrearRomaneoRequest {
   ListaMatanzaDetalleId: string
   UnidadFaenaId: string
   NumeroGarron: number
+  /** Quien tipifica y con que se mide. El tipificador es obligatorio cuando el establecimiento
+   *  tiene tipificadores cargados para la especie. */
+  TipificadorId?: string
+  TipoMedicionId?: string
   /** Datos del palco, que se determinan mirando la res. Son obligatorios cuando la especie de
    *  la jornada tiene valores cargados en el catalogo; vacuno los exige, porcino no. */
   ConformacionId?: string

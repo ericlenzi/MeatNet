@@ -64,6 +64,47 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             if (uf.EspecieId != lm.EspecieId)
                 throw new ValidationException("La unidad de faena no corresponde a la especie de la lista.");
 
+            // 5b) Cabecera del puesto (R-E28): donde se tipifica, quien tipifica y con que se mide.
+            //     El puesto lo trae la lista (es donde se planifico faenarla) y queda copiado en
+            //     el romaneo: es un hecho de la jornada, no una referencia a la configuracion
+            //     de hoy. El tipificador se exige con la misma regla derivada del catalogo que
+            //     los datos del palco: si el establecimiento tiene tipificadores cargados para
+            //     la especie, hay que decir quien tipifico; si no tiene, el dato viene vacio.
+            var tipificadoresDeLaEspecie = await this.context.Tipificadores
+                .Where(t => t.Activo && t.EstablecimientoId == lm.EstablecimientoId && t.EspecieId == lm.EspecieId)
+                .Select(t => t.Id)
+                .ToListAsync(cancellationToken);
+
+            if (tipificadoresDeLaEspecie.Count == 0)
+            {
+                if (request.TipificadorId.HasValue)
+                    throw new ValidationException("El establecimiento no tiene tipificadores habilitados para la especie de la jornada.");
+            }
+            else
+            {
+                if (!request.TipificadorId.HasValue)
+                    throw new ValidationException("Debe indicar el tipificador que esta en el palco.");
+                if (!tipificadoresDeLaEspecie.Contains(request.TipificadorId.Value))
+                    throw new ValidationException("El tipificador indicado no existe, no esta activo o no esta habilitado para este establecimiento y especie.");
+            }
+
+            // Metodo de medicion: si el puesto no lo manda, vale el que tiene configurado el
+            // puesto de la lista. Asi la linea no se frena por un dato que ya esta parametrizado.
+            var puesto = lm.PuestoId.HasValue
+                ? await this.context.Puestos.FirstOrDefaultAsync(p => p.Id == lm.PuestoId.Value, cancellationToken)
+                : null;
+
+            var tipoMedicionId = Normalizar(request.TipoMedicionId) ?? puesto?.TipoMedicionId;
+
+            if (tipoMedicionId == null)
+                throw new ValidationException(
+                    "Debe indicar con que metodo se mide. Si la lista no tiene puesto asignado, configurelo antes de romanear.");
+
+            var tipoMedicionValido = await this.context.TiposMediciones
+                .AnyAsync(t => t.Codigo == tipoMedicionId && t.Activo, cancellationToken);
+            if (!tipoMedicionValido)
+                throw new ValidationException("El tipo de medicion indicado no existe o no esta activo.");
+
             // 5c) Los cuatro datos del palco (R-E20). La obligatoriedad no esta escrita por
             //     especie: sale del propio catalogo. Si la especie de la jornada tiene valores
             //     activos, el dato es obligatorio; si no los tiene, el Tipificador ni siquiera
@@ -253,6 +294,9 @@ namespace Meat.Application.Romaneos.CrearRomaneo
             romaneo.TropaId = renglon.TropaId;
             romaneo.EspecieId = lm.EspecieId;
             romaneo.UnidadFaenaId = uf.Id;
+            romaneo.PuestoId = lm.PuestoId;
+            romaneo.TipificadorId = request.TipificadorId;
+            romaneo.TipoMedicionId = tipoMedicionId;
             romaneo.ConformacionId = string.IsNullOrWhiteSpace(request.ConformacionId) ? null : request.ConformacionId;
             romaneo.GradoEngrasamientoId = string.IsNullOrWhiteSpace(request.GradoEngrasamientoId) ? null : request.GradoEngrasamientoId;
             romaneo.DenticionId = string.IsNullOrWhiteSpace(request.DenticionId) ? null : request.DenticionId;
@@ -291,7 +335,7 @@ namespace Meat.Application.Romaneos.CrearRomaneo
 
                 var medicion = RomaneoFactory.CreateMedicion();
                 medicion.RomaneoPiezaId = pieza.Id;
-                medicion.TipoMedicionId = RomaneoConstantes.MedicionPeso;
+                medicion.TipoMagnitudId = RomaneoConstantes.MagnitudPeso;
                 medicion.Valor = p.Peso;
                 pieza.Mediciones = new List<Domain.Romaneos.RomaneoPiezaMedicion> { medicion };
 

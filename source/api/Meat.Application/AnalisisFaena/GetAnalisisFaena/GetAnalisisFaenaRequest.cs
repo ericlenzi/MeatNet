@@ -20,6 +20,9 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         public string EspecieId { get; set; }
         public string EstadoListaMatanzaId { get; set; }
         public string EstablecimientoNombre { get; set; }
+        /// <summary>Puesto (palco) donde se faena la jornada. Lo declara la lista de matanza.</summary>
+        public string PuestoCodigo { get; set; }
+        public string PuestoNombre { get; set; }
 
         // Resumen de la jornada
         public int AnimalesFaenados { get; set; }

@@ -37,15 +37,9 @@ namespace Meat.Application.ListasMatanzas.CreateListaMatanza
             if (!especieHabilitada)
                 throw new ValidationException("La especie no esta habilitada para el establecimiento.");
 
-            // Puesto (palco de faena) opcional, debe pertenecer al establecimiento
-            if (request.PuestoId.HasValue)
-            {
-                var puestoValido = await this.context.Puestos
-                    .AnyAsync(p => p.Id == request.PuestoId.Value
-                        && p.EstablecimientoId == establecimiento.Id, cancellationToken);
-                if (!puestoValido)
-                    throw new ValidationException("El puesto indicado no pertenece al establecimiento.");
-            }
+            // Puesto (palco de faena): obligatorio, de esta planta y de esta especie
+            await PuestoListaMatanza.ValidarAsync(
+                this.context, request.PuestoId, establecimiento.Id, request.EspecieId, cancellationToken);
 
             // R-01: una LM activa (no cancelada) por Establecimiento + Fecha + Especie
             var fecha = request.Fecha.Date;

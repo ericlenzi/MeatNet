@@ -32,6 +32,10 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
             if (!string.IsNullOrEmpty(request.EspecieId))
                 queryable = queryable.Where(lm => lm.EspecieId == request.EspecieId);
 
+            // El Tipificador entra por el puesto: con este filtro ve solo sus listas.
+            if (request.PuestoId.HasValue)
+                queryable = queryable.Where(lm => lm.PuestoId == request.PuestoId.Value);
+
             if (!string.IsNullOrEmpty(request.EstadoListaMatanzaId))
                 queryable = queryable.Where(lm => lm.EstadoListaMatanzaId == request.EstadoListaMatanzaId);
 
@@ -58,6 +62,7 @@ namespace Meat.Application.ListasMatanzas.GetListasMatanzas
                     EspecieNombre = lm.Especie.Nombre,
                     PuestoId = lm.PuestoId,
                     PuestoCodigo = lm.Puesto != null ? lm.Puesto.CodigoPuesto : null,
+                    PuestoNombre = lm.Puesto != null ? lm.Puesto.Nombre : null,
                     EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                     EstadoListaMatanzaNombre = lm.EstadoListaMatanza.Nombre,
                     Version = lm.Version,

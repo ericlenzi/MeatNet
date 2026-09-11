@@ -148,6 +148,7 @@ PK: Guid Id
 Contexto:
 - EstablecimientoId (Guid, FK)      [da el filtro por empresa]
 - EspecieId (string, FK a Especie)
+- PuestoId (Guid, FK a Puesto)      [palco donde se faena; obligatorio (R-19)]
 - Fecha (date)                      [dia de faena]
 - NumeroLista (long)                [correlativo por (Establecimiento, Especie); Numerador LISTAMATANZA (R-02)]
 
@@ -250,6 +251,7 @@ modelBuilder.Entity<ListaMatanza>()
 | # | Regla |
 |---|---|
 | R-01 | Una LM por **(Establecimiento, Fecha, Especie)**, ignorando las `ANULADA`. Validado en handler + índice único filtrado. |
+| R-19 | La LM declara el **puesto (palco)** donde se va a faenar, y es **obligatorio**: la Ejecucion de Faena entra por el puesto y solo muestra las listas asignadas a el, asi que una lista sin puesto no la ve nadie en el palco. El puesto tiene que ser del mismo **establecimiento** y de la misma **especie** que la lista (el palco vacuno no faena porcinos) y estar activo. Ver R-E28 en `EjecucionFaena.md`. |
 | R-02 | `NumeroLista` es correlativo **por (Establecimiento, Especie)**: cada especie lleva su propia serie. Lo genera el `Numerador` con `TipoNumerador = "LISTAMATANZA"` mediante **reserva atómica** (`Correlativos.ReservarAsync`), en la **misma transacción** que el alta. **No se reutiliza** (tampoco el de una lista anulada). Índice único `(EstablecimientoId, EspecieId, NumeroLista)`. Mismo mecanismo que el nº de romaneo (ver R-E4 en `EjecucionFaena.md`). |
 | R-03 | Solo se pueden seleccionar **Tropas `RECEPCIONADA`** con hacienda **`EN_PIE`** de la **Especie** de la LM, en corrales del **Establecimiento** de contexto. |
 | R-04 | `Cantidad` de un renglón siempre `> 0`. |

@@ -20,6 +20,9 @@ namespace Meat.Application.EvaluacionFaena.GetRomaneosEvaluacion
         public string EspecieId { get; set; }
         public string EstadoListaMatanzaId { get; set; }
         public string EstablecimientoNombre { get; set; }
+        /// <summary>Puesto (palco) donde se faena la jornada. Lo declara la lista de matanza.</summary>
+        public string PuestoCodigo { get; set; }
+        public string PuestoNombre { get; set; }
 
         public int TotalRomaneos { get; set; }
         public int TotalPiezas { get; set; }

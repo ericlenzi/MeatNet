@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 
 namespace Meat.Application.Puestos.DeletePuesto
