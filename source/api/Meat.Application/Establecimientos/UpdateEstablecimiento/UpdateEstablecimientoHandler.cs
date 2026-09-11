@@ -25,7 +25,13 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
 
         public async Task<UpdateEstablecimientoResponse> Handle(UpdateEstablecimientoRequest request, CancellationToken cancellationToken)
         {
-            if (request.EspecieIds == null || !request.EspecieIds.Any(e => !string.IsNullOrEmpty(e)))
+            var especies = (request.Especies ?? Enumerable.Empty<EstablecimientoEspecieInput>())
+                .Where(e => !string.IsNullOrEmpty(e?.EspecieId))
+                .GroupBy(e => e.EspecieId)
+                .Select(g => g.First())
+                .ToList();
+
+            if (especies.Count == 0)
                 throw new ValidationException("El establecimiento debe tener al menos una especie asignada.");
 
             var entity = await this.context.Establecimientos
@@ -38,22 +44,33 @@ namespace Meat.Application.Establecimientos.UpdateEstablecimiento
             this.mapper.Map(request, entity);
             entity.FechaActualizacion = DateTime.Now;
 
-            // Reemplazar especies: eliminar las existentes y agregar las nuevas
-            if (entity.Especies != null && entity.Especies.Any())
-                this.context.EstablecimientosEspecies.RemoveRange(entity.Especies);
+            // Las especies se actualizan por diferencia, no reemplazando la lista entera: la fila
+            // lleva la merma de oreo de la planta, y borrarla y recrearla en cada guardado
+            // perderia ese valor.
+            var actuales = entity.Especies?.ToList() ?? new List<EstablecimientoEspecie>();
 
-            if (request.EspecieIds != null)
+            foreach (var quitada in actuales.Where(a => especies.All(e => e.EspecieId != a.EspecieId)))
+                this.context.EstablecimientosEspecies.Remove(quitada);
+
+            foreach (var especie in especies)
             {
-                foreach (var especieId in request.EspecieIds.Where(e => !string.IsNullOrEmpty(e)).Distinct())
+                var fila = actuales.FirstOrDefault(a => a.EspecieId == especie.EspecieId);
+
+                if (fila == null)
                 {
                     this.context.EstablecimientosEspecies.Add(new EstablecimientoEspecie
                     {
                         Id = Guid.NewGuid(),
                         EstablecimientoId = entity.Id,
-                        EspecieId = especieId,
+                        EspecieId = especie.EspecieId,
+                        MermaOreo = especie.MermaOreo,
                         FechaActualizacion = DateTime.Now
                     });
+                    continue;
                 }
+
+                fila.MermaOreo = especie.MermaOreo;
+                fila.FechaActualizacion = DateTime.Now;
             }
 
             await this.context.SaveChangesAsync(cancellationToken);

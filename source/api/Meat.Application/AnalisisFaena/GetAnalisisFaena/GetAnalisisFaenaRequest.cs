@@ -50,6 +50,25 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         /// <summary>El rinde quedó fuera de la banda de la especie: casi siempre es el peso vivo.</summary>
         public bool RindeFueraDeRango { get; set; }
 
+        // --- Rinde frio ESTIMADO (R-A8) ---
+        // No hay segunda pesada: el frio se proyecta con la merma de oreo configurada. Todo este
+        // bloque viene en null cuando no hay coeficiente, y ahi la pantalla no muestra nada.
+
+        /// <summary>Merma de oreo aplicada (%). Null si no hay coeficiente configurado.</summary>
+        public double? MermaOreo { get; set; }
+
+        /// <summary>De donde salio el coeficiente: ESTABLECIMIENTO o ESPECIE.</summary>
+        public string MermaOreoOrigen { get; set; }
+
+        /// <summary>Kg de faena que quedarian tras el oreo.</summary>
+        public double? KgFaenaFrio { get; set; }
+
+        /// <summary>Kg que se perderian en el oreo.</summary>
+        public double? KgMermaOreo { get; set; }
+
+        /// <summary>Rinde frio estimado (%). Null sin peso vivo o sin coeficiente.</summary>
+        public double? RindeFrio { get; set; }
+
         public int PiezasLiberadas { get; set; }
 
         // --- Merma sanitaria (R-A6) ---

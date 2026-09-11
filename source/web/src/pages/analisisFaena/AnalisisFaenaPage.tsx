@@ -106,6 +106,16 @@ export default function AnalisisFaenaPage() {
             {data.rindeCaliente != null ? pct(data.rindeCaliente) : 's/d'}
           </p>
         </div>
+        {data.rindeFrio != null && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 shadow-sm">
+            <p className="text-xs text-blue-700">Rinde frío (estimado)</p>
+            <p className="font-mono text-lg font-semibold text-blue-800">{pct(data.rindeFrio)}</p>
+            <p className="mt-0.5 text-xs text-text-light">
+              merma {data.mermaOreo != null ? pct(data.mermaOreo) : ''}
+              {data.mermaOreoOrigen === 'ESTABLECIMIENTO' ? ' de la planta' : ' de referencia'}
+            </p>
+          </div>
+        )}
         {data.kgDecomisados > 0 && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 shadow-sm">
             <p className="text-xs text-danger">Merma sanitaria</p>
@@ -147,9 +157,21 @@ export default function AnalisisFaenaPage() {
         <p>
           Kg de romaneo sobre kg vivos <strong>de ingreso</strong>, prorrateados por el peso promedio
           de cada tropa. No descuenta el desbaste previo al sacrificio (no hay balanza en playa) y es
-          peso <strong>caliente</strong> (sin merma de oreo). Sirve para comparar jornadas entre sí,
-          no contra un rinde frío de referencia.
+          peso <strong>caliente</strong>: el rinde caliente es el único que se mide.
         </p>
+        {data.rindeFrio != null && (
+          <p className="mt-1">
+            El rinde frío es una <strong>estimación</strong>, no una medición: no hay segunda pesada
+            tras el oreo, así que se proyecta restándole a los kg de faena una merma de{' '}
+            <strong>{data.mermaOreo != null ? pct(data.mermaOreo) : ''}</strong>
+            {data.mermaOreoOrigen === 'ESTABLECIMIENTO'
+              ? ' cargada en este establecimiento'
+              : ' de referencia de la especie'}
+            , que son {data.kgMermaOreo != null ? kg(data.kgMermaOreo) : ''} kg. Un coeficiente único
+            no distingue tiempo de oreo ni tipo de cámara: sirve para dimensionar, no para discutir
+            una jornada puntual.
+          </p>
+        )}
         <p className="mt-1">
           Lo condenado <strong>no suma kg de faena</strong>, sea la res entera o una media res,
           porque esa carne no llega a la cámara, pero el animal sigue contando en los kg vivos: por

@@ -25,7 +25,13 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
 
         public async Task<CreateEstablecimientoResponse> Handle(CreateEstablecimientoRequest request, CancellationToken cancellationToken)
         {
-            if (request.EspecieIds == null || !request.EspecieIds.Any(e => !string.IsNullOrEmpty(e)))
+            var especies = (request.Especies ?? Enumerable.Empty<EstablecimientoEspecieInput>())
+                .Where(e => !string.IsNullOrEmpty(e?.EspecieId))
+                .GroupBy(e => e.EspecieId)
+                .Select(g => g.First())
+                .ToList();
+
+            if (especies.Count == 0)
                 throw new ValidationException("El establecimiento debe tener al menos una especie asignada.");
 
             var existe = await this.context.Establecimientos
@@ -49,18 +55,16 @@ namespace Meat.Application.Establecimientos.CreateEstablecimiento
 
             this.context.Establecimientos.Add(entity);
 
-            if (request.EspecieIds != null)
+            foreach (var especie in especies)
             {
-                foreach (var especieId in request.EspecieIds.Where(e => !string.IsNullOrEmpty(e)).Distinct())
+                this.context.EstablecimientosEspecies.Add(new EstablecimientoEspecie
                 {
-                    this.context.EstablecimientosEspecies.Add(new EstablecimientoEspecie
-                    {
-                        Id = Guid.NewGuid(),
-                        EstablecimientoId = entity.Id,
-                        EspecieId = especieId,
-                        FechaActualizacion = DateTime.Now
-                    });
-                }
+                    Id = Guid.NewGuid(),
+                    EstablecimientoId = entity.Id,
+                    EspecieId = especie.EspecieId,
+                    MermaOreo = especie.MermaOreo,
+                    FechaActualizacion = DateTime.Now
+                });
             }
 
             await this.context.SaveChangesAsync(cancellationToken);

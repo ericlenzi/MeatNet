@@ -11,7 +11,13 @@ namespace Meat.Application.Establecimientos.GetEstablecimiento
             this.CreateMap<Establecimiento, GetEstablecimientoResponse>()
                 .ForMember(d => d.Especies, c => c.MapFrom(s =>
                     s.Especies != null
-                        ? s.Especies.Select(ee => new EspecieItem { Id = ee.EspecieId, Nombre = ee.Especie != null ? ee.Especie.Nombre : "" })
+                        ? s.Especies.Select(ee => new EspecieItem
+                        {
+                            Id = ee.EspecieId,
+                            Nombre = ee.Especie != null ? ee.Especie.Nombre : "",
+                            MermaOreo = ee.MermaOreo,
+                            MermaOreoReferencia = ee.Especie != null ? ee.Especie.MermaOreoReferencia : null,
+                        })
                         : Enumerable.Empty<EspecieItem>()));
         }
     }

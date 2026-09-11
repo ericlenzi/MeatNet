@@ -40,15 +40,23 @@ export default function SucursalFormPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const empResponse = await getEmpresas({ PageSize: 1000 })
-        const empList = empResponse.data || []
+        // El padron de empresas es del SUPERADMIN, asi que a un ADMIN la API le responde 403.
+        // Ese combo es informativo (la empresa de la sesion es la unica y va deshabilitado), asi
+        // que su falla no puede tumbar la carga del formulario: sin esto, el ADMIN abria la
+        // pantalla vacia y no podia editar ninguna sucursal.
+        let empList: Empresa[] = []
+        try {
+          const empResponse = await getEmpresas({ PageSize: 1000 })
+          empList = empResponse.data || []
+        } catch {
+          empList = []
+        }
         setEmpresas(empList)
 
+        // Si el padron no vino, alcanza el codigo de empresa del usuario: es lo unico que ese
+        // combo muestra.
         if (!isEdit && user?.empresaId) {
-          const empresaActiva = empList.find((e) => e.id === user.empresaId)
-          if (empresaActiva) {
-            setForm((prev) => ({ ...prev, EmpresaId: empresaActiva.id }))
-          }
+          setForm((prev) => ({ ...prev, EmpresaId: user.empresaId }))
         }
 
         if (isEdit && id) {
@@ -164,10 +172,13 @@ export default function SucursalFormPage() {
               label="Empresa"
               value={form.EmpresaId}
               onChange={(e) => updateField('EmpresaId', e.target.value)}
-              options={empresas.map((emp) => ({
-                value: emp.id,
-                label: `${emp.id} - ${emp.nombre}`,
-              }))}
+              options={
+                empresas.length > 0
+                  ? empresas.map((emp) => ({ value: emp.id, label: `${emp.id} - ${emp.nombre}` }))
+                  : form.EmpresaId
+                    ? [{ value: form.EmpresaId, label: form.EmpresaId }]
+                    : []
+              }
               placeholder="Seleccionar..."
               disabled
             />

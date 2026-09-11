@@ -56,6 +56,7 @@ namespace Meat.Controllers
                 Nombre = body.Nombre,
                 RindeMinimo = body.RindeMinimo,
                 RindeMaximo = body.RindeMaximo,
+                MermaOreoReferencia = body.MermaOreoReferencia,
                 Activo = body.Activo
             }
         );

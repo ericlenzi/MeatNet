@@ -52,7 +52,7 @@ namespace Meat.Controllers
                 EmpresaId = base.CurrentUser.EmpresaId,
                 Nombre = body.Nombre,
                 SucursalId = body.SucursalId,
-                EspecieIds = body.EspecieIds,
+                Especies = body.Especies,
                 NumeroSenasa = body.NumeroSenasa,
                 NumeroRuca = body.NumeroRuca,
                 Activo = body.Activo

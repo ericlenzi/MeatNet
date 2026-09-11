@@ -79,6 +79,13 @@ export interface AnalisisFaenaResponse {
   kgFaena: number
   kgVivos: number | null
   rindeCaliente: number | null
+  /** Rinde frio ESTIMADO con la merma de oreo configurada (R-A8). No hay segunda pesada. */
+  rindeFrio: number | null
+  mermaOreo: number | null
+  /** ESTABLECIMIENTO o ESPECIE: de donde salio el coeficiente. */
+  mermaOreoOrigen: string | null
+  kgFaenaFrio: number | null
+  kgMermaOreo: number | null
   animalesSinPesoVivo: number
   /** Banda de rinde esperable de la especie (%); null si no está configurada (R-A7). */
   rindeMinimo: number | null

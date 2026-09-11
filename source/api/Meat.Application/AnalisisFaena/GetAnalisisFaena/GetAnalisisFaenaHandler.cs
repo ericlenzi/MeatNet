@@ -44,8 +44,27 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
             // Banda de rinde esperable de la especie (R-A7). Si no esta configurada, no se avisa.
             var especie = await this.context.Especies
                 .Where(e => e.Codigo == lm.EspecieId)
-                .Select(e => new { e.RindeMinimo, e.RindeMaximo })
+                .Select(e => new { e.RindeMinimo, e.RindeMaximo, e.MermaOreoReferencia })
                 .FirstOrDefaultAsync(cancellationToken);
+
+            // Merma de oreo para el rinde frio estimado (R-A8). Manda la de la planta, que es la
+            // que la observa en sus camaras; si no declaro ninguna, vale la referencia del rubro.
+            var mermaPlanta = await this.context.EstablecimientosEspecies
+                .Where(ee => ee.EstablecimientoId == lm.EstablecimientoId && ee.EspecieId == lm.EspecieId)
+                .Select(ee => ee.MermaOreo)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var merma = mermaPlanta ?? especie?.MermaOreoReferencia;
+            var mermaOrigen = mermaPlanta.HasValue
+                ? OrigenMermaOreo.Establecimiento
+                : (especie?.MermaOreoReferencia != null ? OrigenMermaOreo.Especie : null);
+
+            // Un coeficiente que no deja kilos no es un dato de oreo, es un error de carga.
+            if (merma.HasValue && (merma.Value <= 0 || merma.Value >= 100))
+            {
+                merma = null;
+                mermaOrigen = null;
+            }
 
             // R-A2: los romaneos anulados no son carne y quedan fuera de todo.
             var piezas = await (
@@ -167,8 +186,20 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 PiezasConDecomisoParcial = parciales.Count,
                 KgDecomisoParcial = kgDecomisoParcial,
                 KgDecomisados = kgDecomisados,
-                MermaSanitaria = kgVivos > 0 ? Math.Round(kgDecomisados / kgVivos * 100, 2) : (double?)null
+                MermaSanitaria = kgVivos > 0 ? Math.Round(kgDecomisados / kgVivos * 100, 2) : (double?)null,
+                MermaOreo = merma,
+                MermaOreoOrigen = mermaOrigen
             };
+
+            // R-A8: el frio se proyecta sobre los kilos de faena, que son los que van a la camara.
+            // No se toca el rinde caliente ni la banda, que se sigue comparando contra el medido.
+            if (merma.HasValue)
+            {
+                var kgFrio = kgFaena * (1 - merma.Value / 100);
+                response.KgFaenaFrio = Math.Round(kgFrio, 2);
+                response.KgMermaOreo = Math.Round(kgFaena - kgFrio, 2);
+                response.RindeFrio = kgVivos > 0 ? Math.Round(kgFrio / kgVivos * 100, 2) : (double?)null;
+            }
 
             // R-A7: el rinde no se corrige ni se acota, solo se avisa. Un rinde fuera de la banda
             // de la especie casi siempre significa que el peso vivo de ingreso esta mal cargado,

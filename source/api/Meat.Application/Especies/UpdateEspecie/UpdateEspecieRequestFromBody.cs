@@ -11,6 +11,9 @@ namespace Meat.Application.Especies.UpdateEspecie
         public double? RindeMinimo { get; set; }
         public double? RindeMaximo { get; set; }
 
+        /// <summary>Merma de oreo de referencia (%), para el rinde frio estimado (R-A8).</summary>
+        public double? MermaOreoReferencia { get; set; }
+
         public bool Activo { get; set; }
     }
 }

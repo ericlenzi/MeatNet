@@ -15,6 +15,18 @@ import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
 import Spinner from '@/components/ui/Spinner'
 
+/**
+ * Especie habilitada en la planta, como se edita en el formulario. La merma de oreo viaja como
+ * texto porque es un campo vacio o un numero, y vacio significa "vale la referencia de la
+ * especie" (R-A8).
+ */
+interface EspecieFila {
+  id: string
+  nombre: string
+  mermaOreo: string
+  mermaOreoReferencia: number | null
+}
+
 export default function EstablecimientoFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -36,7 +48,7 @@ export default function EstablecimientoFormPage() {
     NumeroRuca: '',
     Activo: true,
   })
-  const [selectedEspecies, setSelectedEspecies] = useState<EspecieItem[]>([])
+  const [selectedEspecies, setSelectedEspecies] = useState<EspecieFila[]>([])
   const [selectedEspecieId, setSelectedEspecieId] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [removingEspecieId, setRemovingEspecieId] = useState<string | null>(null)
@@ -44,18 +56,30 @@ export default function EstablecimientoFormPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [sucRes, espRes, empRes] = await Promise.all([
+        const [sucRes, espRes] = await Promise.all([
           getSucursales({ PageSize: 1000 }),
           getEspecies({ PageSize: 1000, Estado: true }),
-          getEmpresas({ PageSize: 1000 }),
         ])
         setSucursales((sucRes.data || []).filter((s) => s.activo))
         setAllEspecies(espRes.data || [])
-        const empList = empRes.data || []
+
+        // El padron de empresas es del SUPERADMIN, asi que a un ADMIN la API le responde 403.
+        // Ese combo es informativo (la empresa de la sesion es la unica y va deshabilitado), asi
+        // que su falla no puede tumbar la carga del formulario: sin el, el ADMIN no podia abrir
+        // la pantalla y quedaba sin especies ni sucursal.
+        let empList: Empresa[] = []
+        try {
+          const empRes = await getEmpresas({ PageSize: 1000 })
+          empList = empRes.data || []
+        } catch {
+          empList = []
+        }
         setEmpresas(empList)
 
+        // Si el padron no vino, alcanza el codigo de empresa del usuario: es lo unico que ese
+        // combo muestra.
         const empresaActiva = user?.empresaId
-          ? empList.find((e) => e.id === user.empresaId)
+          ? empList.find((e) => e.id === user.empresaId) ?? { id: user.empresaId, nombre: '' }
           : undefined
 
         if (empresaActiva) {
@@ -73,7 +97,14 @@ export default function EstablecimientoFormPage() {
             NumeroRuca: entity.numeroRuca || '',
             Activo: entity.activo,
           })
-          setSelectedEspecies(entity.especies || [])
+          setSelectedEspecies(
+            (entity.especies || []).map((e: EspecieItem) => ({
+              id: e.id,
+              nombre: e.nombre,
+              mermaOreo: e.mermaOreo != null ? String(e.mermaOreo) : '',
+              mermaOreoReferencia: e.mermaOreoReferencia,
+            })),
+          )
         }
       } catch {
         toast('error', 'Error al cargar datos')
@@ -92,10 +123,25 @@ export default function EstablecimientoFormPage() {
     if (!selectedEspecieId) return
     const especie = allEspecies.find((e) => e.codigo === selectedEspecieId)
     if (especie) {
-      setSelectedEspecies((prev) => [...prev, { id: especie.codigo, nombre: especie.nombre }])
+      setSelectedEspecies((prev) => [
+        ...prev,
+        {
+          id: especie.codigo,
+          nombre: especie.nombre,
+          mermaOreo: '',
+          mermaOreoReferencia: especie.mermaOreoReferencia,
+        },
+      ])
       setSelectedEspecieId('')
       if (errors['Especies']) setErrors((prev) => ({ ...prev, Especies: '' }))
     }
+  }
+
+  // Vacio significa que vale la referencia de la especie, que es lo que muestra el placeholder.
+  const handleMermaChange = (especieId: string, valor: string) => {
+    setSelectedEspecies((prev) =>
+      prev.map((e) => (e.id === especieId ? { ...e, mermaOreo: valor } : e)),
+    )
   }
 
   const handleRemoveEspecie = (especieId: string) => {
@@ -122,7 +168,10 @@ export default function EstablecimientoFormPage() {
     e.preventDefault()
     if (!validate()) return
 
-    const especieIds = selectedEspecies.map((e) => e.id)
+    const especies = selectedEspecies.map((e) => ({
+      EspecieId: e.id,
+      MermaOreo: e.mermaOreo === '' ? null : Number(e.mermaOreo),
+    }))
 
     setLoading(true)
     try {
@@ -130,7 +179,7 @@ export default function EstablecimientoFormPage() {
         await updateEstablecimiento(id, {
           Nombre: form.Nombre,
           SucursalId: form.SucursalId,
-          EspecieIds: especieIds,
+          Especies: especies,
           NumeroSenasa: form.NumeroSenasa,
           NumeroRuca: form.NumeroRuca,
           Activo: form.Activo,
@@ -141,7 +190,7 @@ export default function EstablecimientoFormPage() {
           CodigoEstablecimiento: form.CodigoEstablecimiento,
           Nombre: form.Nombre,
           SucursalId: form.SucursalId,
-          EspecieIds: especieIds,
+          Especies: especies,
           NumeroSenasa: form.NumeroSenasa,
           NumeroRuca: form.NumeroRuca,
         })
@@ -192,10 +241,13 @@ export default function EstablecimientoFormPage() {
               label="Empresa"
               value={form.EmpresaId}
               onChange={(e) => updateField('EmpresaId', e.target.value)}
-              options={empresas.map((emp) => ({
-                value: emp.id,
-                label: `${emp.id} - ${emp.nombre}`,
-              }))}
+              options={
+                empresas.length > 0
+                  ? empresas.map((emp) => ({ value: emp.id, label: `${emp.id} - ${emp.nombre}` }))
+                  : form.EmpresaId
+                    ? [{ value: form.EmpresaId, label: form.EmpresaId }]
+                    : []
+              }
               placeholder="Seleccionar..."
               disabled
             />
@@ -290,6 +342,7 @@ export default function EstablecimientoFormPage() {
                   <tr className="border-b border-border bg-gray-50">
                     <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Codigo</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Nombre</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-light">Merma de oreo (%)</th>
                     <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wider text-text-light">Accion</th>
                   </tr>
                 </thead>
@@ -298,6 +351,20 @@ export default function EstablecimientoFormPage() {
                     <tr key={e.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-text-light">{e.id}</td>
                       <td className="px-4 py-2 text-text">{e.nombre}</td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={e.mermaOreo}
+                          onChange={(ev) => handleMermaChange(e.id, ev.target.value)}
+                          placeholder={
+                            e.mermaOreoReferencia != null
+                              ? String(e.mermaOreoReferencia)
+                              : 'sin referencia'
+                          }
+                          className="w-28 rounded-lg border border-border px-2 py-1 text-sm"
+                        />
+                      </td>
                       <td className="px-4 py-2 text-right">
                         <button
                           type="button"

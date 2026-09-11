@@ -12,6 +12,7 @@ Liberación (Paso 4).
 
 **Dentro de alcance:**
 - **Rinde caliente** por jornada, por cliente y por tropa.
+- **Rinde frío estimado** de la jornada, proyectado con la merma de oreo configurada (R-A8).
 - **Plan vs. real** por renglón de la Lista de Matanza.
 - **Tipificación consolidada**: participación de cada tipificación en piezas y kilos.
 - **Pesos y dispersión**: promedio, mínimo, máximo y piezas fuera del rango de su tipificación.
@@ -21,8 +22,10 @@ Liberación (Paso 4).
 - **Desglose por cliente** en todo lo anterior: el cliente es quien paga la faena, así que es el
   corte por el que se discute el resultado.
 
-**Fuera de alcance (ver §6):** rinde frío y desbaste. Los dos dependen de pesadas que hoy **no se
-hacen**; no se estiman ni se inventan.
+**Fuera de alcance (ver §6):** el rinde frío **medido** y el desbaste. Los dos dependen de pesadas
+que hoy no se hacen, y ninguna se inventa: el peso vivo que falta no se estima nunca (R-A3), y del
+frío se muestra una proyección solo cuando alguien cargó el coeficiente, siempre rotulada como
+estimación (R-A8).
 
 ## 2. El rinde: definición exacta y sus supuestos
 
@@ -63,7 +66,8 @@ La ubicación se identifica por la misma clave que el renglón de la Lista de Ma
    cantidad faenada. A nivel de tropa el promedio es representativo; a nivel de un animal puntual
    no significa nada.
 3. **El peso de faena es caliente.** Comparado contra un rinde frío de referencia, este da más
-   alto (la merma de oreo ronda el 2%, pero eso se mide, no se supone).
+   alto. La pantalla puede mostrar al lado un **rinde frío estimado**, que no es una medición sino
+   el caliente menos la merma de oreo configurada (R-A8). El único rinde medido es el caliente.
 4. **El decomiso hace bajar el rinde, y la merma sanitaria dice cuánto.** Lo condenado sale del
    numerador (esa carne no llega a la cámara), sea la res entera o una media res, pero el animal
    sigue en el denominador, porque se faenó. Eso hace caer el rinde a propósito, y la **merma
@@ -150,6 +154,8 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 | Fuera de rango | `RomaneoPieza.PesoFueraRango` |
 | Existencia en cámara | `MovimientoCamara` (saldo derivado) |
 | Banda de rinde esperable | `Especie.RindeMinimo` / `Especie.RindeMaximo` |
+| Merma de oreo de la planta | `EstablecimientoEspecie.MermaOreo` |
+| Merma de oreo de referencia | `Especie.MermaOreoReferencia` |
 | Res condenada | `Romaneo.DecomisoTotal` + `Romaneo.MotivoDecomisoId` |
 | Media res condenada | `RomaneoPieza.Decomisada` + `RomaneoPieza.MotivoDecomisoId` |
 | Recorte parcial | `RomaneoPieza.PesoDecomisado` + `RomaneoPieza.MotivoDecomisoId` |
@@ -181,6 +187,37 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
   los kilos retirados. Nada de lo condenado entra en la tipificación consolidada ni en la
   dispersión de pesos: no se tipificó, y no hay rango contra el cual compararlo.
 
+- **R-A8 (rinde frío: se estima, y se dice que es estimado).** No hay segunda pesada tras el oreo,
+  así que el frío no se mide: se proyecta.
+
+  ```
+  Kg frío estimados      = kg de faena × (1 − merma de oreo / 100)
+  Rinde frío estimado (%) = (kg frío estimados / kg vivos) × 100
+  ```
+
+  **De dónde sale la merma, en orden de precedencia:**
+
+  | Nivel | Dónde | Por qué ahí |
+  |---|---|---|
+  | 1 | Peso frío **medido** de la pieza | Cuando exista balanza en cámara, lo medido manda. Hoy no existe (O-A2). |
+  | 2 | `EstablecimientoEspecie.MermaOreo` | La merma depende de la cámara, del tiempo de oreo y de la cobertura de grasa: es de la **planta**, no de la empresa. Dos plantas de la misma empresa pueden tener números distintos. |
+  | 3 | `Especie.MermaOreoReferencia` | El valor del rubro, que el SUPERADMIN mantiene en el catálogo. Es el que se propone mientras la planta no mida el suyo. |
+  | 4 | Nada configurado | **No se muestra rinde frío.** Misma regla que la banda de rinde: sin parámetro, la pantalla no inventa nada. |
+
+  **Lo que la pantalla dice junto al número:** que es una estimación, el porcentaje aplicado, si
+  salió de la planta o de la referencia de la especie, y los kilos que implica. Un coeficiente
+  único por planta y especie no distingue tiempo de oreo ni tipo de cámara, que es de donde viene
+  la mayor parte de la variación: sirve para dimensionar la merma, no para discutir una jornada
+  puntual.
+
+  **Lo que el rinde frío estimado NO hace:** no reemplaza al caliente, no entra en la comparación
+  contra la banda de la especie (que es de rinde caliente, R-A7), y **no ajusta la existencia de
+  cámara**, que sigue registrada con el peso caliente que le dio la Liberación. Ajustar el stock
+  con una merma supuesta sería inventar kilos en el depósito; el día que haya pesada real, ese
+  ajuste es un movimiento de cámara y no un cálculo de pantalla (O-A6).
+
+  Un coeficiente fuera de (0, 100) se ignora como si no estuviera: no es un dato de oreo, es un
+  error de carga.
 - **R-A7 (rinde fuera de rango: se avisa, no se corrige).** Cada especie puede declarar la banda
   de rinde caliente que le es esperable, en `Especie.RindeMinimo` / `RindeMaximo`. Si el rinde de
   la jornada queda afuera, la pantalla lo dice arriba de todo.
@@ -214,9 +251,14 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 
   Falta todavía el decomiso de **vísceras y subproductos**, que depende de abrir ese dominio
   (O-3 en `EvaluacionFaena.md`).
-- **O-A2 (rinde frío).** Requiere una segunda pesada tras el oreo: un `TipoMagnitud` nuevo (hoy
-  `TiposMagnitudes` solo tiene `PESO`) y la pantalla para capturarlo en cámara. Habilitaría además
-  la **merma de oreo** como indicador propio.
+- **O-A2 (rinde frío medido).** La **estimación** ya está (R-A8). Lo que falta es la medición: una
+  segunda pesada tras el oreo, con un `TipoMagnitud` nuevo (hoy `TiposMagnitudes` solo tiene
+  `PESO`) y la pantalla para capturarla en cámara. Cuando exista, el análisis la prefiere sobre el
+  coeficiente sin rehacer nada, porque la pregunta que ya se hace es si hay peso frío medido.
+- **O-A6 (la merma de oreo y el stock de cámara).** La existencia queda registrada con el peso
+  caliente de la Liberación, y el rinde frío estimado no la toca. Reconocer la merma en el
+  depósito pide un movimiento de cámara propio, y para eso hace falta la pesada real: un ajuste
+  contra un coeficiente movería kilos que nadie pesó.
 - **O-A3 (desbaste).** Requiere balanza en playa previa al sacrificio. Con ese dato el rinde pasaría
   a calcularse sobre el peso real de faena y dejaría de estar subestimado.
 - **O-A5 (decomiso de vísceras).** Hoy la merma sanitaria cubre la carne. El hígado decomisado, que

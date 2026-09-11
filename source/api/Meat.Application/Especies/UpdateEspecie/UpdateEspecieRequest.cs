@@ -8,6 +8,7 @@ namespace Meat.Application.Especies.UpdateEspecie
         public string Nombre { get; set; }
         public double? RindeMinimo { get; set; }
         public double? RindeMaximo { get; set; }
+        public double? MermaOreoReferencia { get; set; }
         public bool Activo { get; set; }
     }
 }

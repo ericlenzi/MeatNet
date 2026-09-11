@@ -17,6 +17,18 @@ namespace Meat.Domain.EstablecimientosEspecies
         public virtual Establecimiento Establecimiento { get; set; }
         public string EspecieId { get; set; }
         public virtual Especie Especie { get; set; }
+
+        /// <summary>
+        /// Merma de oreo que observa ESTA planta para ESTA especie, en porcentaje. Depende de la
+        /// camara, del tiempo de oreo y de la cobertura de grasa, asi que dos plantas de la misma
+        /// empresa pueden tener numeros distintos.
+        ///
+        /// Nullable: si no esta cargada vale la referencia de la especie, y si esa tampoco esta,
+        /// el Analisis no muestra rinde frio (R-A8). Mismo criterio que el peso teorico de las
+        /// categorias, donde el catalogo propone y cada empresa ajusta.
+        /// </summary>
+        public double? MermaOreo { get; set; }
+
         public DateTime FechaActualizacion { get; set; }
 
         /// <summary>Empresa (tenant) duena del registro. La asigna el MeatContext en el alta.</summary>

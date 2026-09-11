@@ -21,6 +21,7 @@ export default function EspecieFormPage() {
     Nombre: '',
     RindeMinimo: '',
     RindeMaximo: '',
+    MermaOreoReferencia: '',
     Activo: true,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -35,6 +36,8 @@ export default function EspecieFormPage() {
             Nombre: entity.nombre || '',
             RindeMinimo: entity.rindeMinimo != null ? String(entity.rindeMinimo) : '',
             RindeMaximo: entity.rindeMaximo != null ? String(entity.rindeMaximo) : '',
+            MermaOreoReferencia:
+              entity.mermaOreoReferencia != null ? String(entity.mermaOreoReferencia) : '',
             Activo: entity.activo,
           })
         }
@@ -66,6 +69,8 @@ export default function EspecieFormPage() {
           Nombre: form.Nombre,
           RindeMinimo: form.RindeMinimo === '' ? null : Number(form.RindeMinimo),
           RindeMaximo: form.RindeMaximo === '' ? null : Number(form.RindeMaximo),
+          MermaOreoReferencia:
+            form.MermaOreoReferencia === '' ? null : Number(form.MermaOreoReferencia),
           Activo: form.Activo,
         })
         toast('success', 'Especie actualizada')
@@ -75,6 +80,8 @@ export default function EspecieFormPage() {
           Nombre: form.Nombre,
           RindeMinimo: form.RindeMinimo === '' ? null : Number(form.RindeMinimo),
           RindeMaximo: form.RindeMaximo === '' ? null : Number(form.RindeMaximo),
+          MermaOreoReferencia:
+            form.MermaOreoReferencia === '' ? null : Number(form.MermaOreoReferencia),
         })
         toast('success', 'Especie creada')
       }
@@ -133,6 +140,13 @@ export default function EspecieFormPage() {
               value={form.RindeMaximo}
               onChange={(e) => updateField('RindeMaximo', e.target.value)}
             />
+            <Input
+              label="Merma de oreo de referencia (%)"
+              type="number"
+              step="0.01"
+              value={form.MermaOreoReferencia}
+              onChange={(e) => updateField('MermaOreoReferencia', e.target.value)}
+            />
           </div>
 
           <p className="mt-4 text-sm text-text-light">
@@ -140,6 +154,13 @@ export default function EspecieFormPage() {
             avise cuando el número se va de rango, que casi siempre significa un peso de ingreso
             mal cargado. La especie que la deje vacía no dispara ningún aviso. De referencia, el
             rinde caliente ronda el 55% en bovino y el 78% en porcino.
+          </p>
+
+          <p className="mt-2 text-sm text-text-light">
+            La merma de oreo es lo que la media res pierde en la cámara entre la pesada caliente y
+            la fría, y ronda el 2%. Acá va la referencia del rubro: con ella el Análisis muestra un
+            rinde frío <strong>estimado</strong>, y cada planta la reemplaza por la suya en
+            Establecimientos cuando mide su propia merma. Sin valor, no se muestra rinde frío.
           </p>
 
           {isEdit && (

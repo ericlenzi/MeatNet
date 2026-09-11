@@ -342,11 +342,15 @@ Parte del Paso 4, desarrollado en su propio manual **`AnalisisFaena.md`** (Paso 
 **implementado**: rinde caliente, plan vs. real, tipificación consolidada, dispersión de pesos y
 destino a cámaras, todo abierto por cliente. Es **read-only** y va después de la Liberación.
 
-**Reglas del rinde — RESUELTAS (2026-09-07).** Se calcula **solo rinde caliente**, sobre el peso
-vivo **de ingreso** prorrateado por tropa. No se descuenta desbaste (no hay balanza en playa) ni
-merma de oreo (no hay segunda pesada). La definición completa y sus
-supuestos están en `AnalisisFaena.md` §2; el rinde frío y el desbaste quedan como
-temas abiertos O-A2, O-A3 y O-A1 de ese manual.
+**Reglas del rinde — RESUELTAS (2026-09-07).** El único rinde **medido** es el **caliente**, sobre
+el peso vivo **de ingreso** prorrateado por tropa, sin descontar desbaste (no hay balanza en
+playa). Del **frío** se muestra una **estimación**, proyectada con la merma de oreo que configura
+cada planta o, si no la cargó, con la referencia de la especie (R-A8); la pesada real sigue siendo
+tema abierto. La definición completa y sus supuestos están en `AnalisisFaena.md` §2; el rinde frío
+medido y el desbaste son los temas O-A2 y O-A3 de ese manual.
+
+La merma de oreo **no ajusta la existencia de cámara**: la Liberación registra el peso caliente y
+ahí queda. Reconocerla en el depósito depende de la pesada real (O-A6 en `AnalisisFaena.md`).
 
 ## 12. Temas abiertos
 
