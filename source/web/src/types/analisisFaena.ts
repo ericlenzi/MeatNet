@@ -65,6 +65,15 @@ export interface DestinoCamaraItem {
   peso: number
 }
 
+/** Subproducto estimado de la jornada (R-A9). No es existencia: es produccion informada. */
+export interface SubproductoEstimadoItem {
+  materialId: string
+  materialCodigo: string
+  materialNombre: string
+  porcentaje: number
+  kg: number
+}
+
 export interface AnalisisFaenaResponse {
   listaMatanzaId: string
   numeroLista: number
@@ -86,6 +95,10 @@ export interface AnalisisFaenaResponse {
   mermaOreoOrigen: string | null
   kgFaenaFrio: number | null
   kgMermaOreo: number | null
+  /** Base de la estimacion de subproductos: los kg que fueron a camara, sin lo condenado (R-A9). */
+  kgBaseSubproductos: number
+  subproductosEstimados: SubproductoEstimadoItem[]
+  kgSubproductosEstimados: number
   animalesSinPesoVivo: number
   /** Banda de rinde esperable de la especie (%); null si no está configurada (R-A7). */
   rindeMinimo: number | null

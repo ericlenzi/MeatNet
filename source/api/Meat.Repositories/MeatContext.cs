@@ -67,6 +67,7 @@ namespace Meat.Repositories
         public virtual DbSet<Domain.UnidadesFaenas.UnidadFaena> UnidadesFaenas { get; set; }
         public virtual DbSet<Domain.Tipificaciones.Tipificacion> Tipificaciones { get; set; }
         public virtual DbSet<Domain.DespiecesMateriales.DespieceMaterial> DespiecesMateriales { get; set; }
+        public virtual DbSet<Domain.RendimientosSubproductos.RendimientoSubproducto> RendimientosSubproductos { get; set; }
 
         // Ejecucion de Faena - romaneo (paso 3)
         public virtual DbSet<Domain.Romaneos.Romaneo> Romaneos { get; set; }
@@ -288,6 +289,12 @@ namespace Meat.Repositories
                 .IsUnique()
                 .HasFilter("[FechaBaja] IS NULL");
 
+            // Un rendimiento por (especie, subproducto) dentro de la empresa
+            modelBuilder.Entity<Domain.RendimientosSubproductos.RendimientoSubproducto>()
+                .HasIndex(r => new { r.EmpresaId, r.EspecieId, r.MaterialId })
+                .IsUnique()
+                .HasFilter("[FechaBaja] IS NULL");
+
             // Un solo despiece por par (origen, destino)
             modelBuilder.Entity<Domain.DespiecesMateriales.DespieceMaterial>()
                 .HasIndex(d => new { d.MaterialOrigenId, d.MaterialDestinoId })
@@ -487,6 +494,12 @@ namespace Meat.Repositories
                 e.HasOne(x => x.DestinoComercial).WithMany().HasForeignKey(x => x.DestinoComercialId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.TipificacionOficial).WithMany().HasForeignKey(x => x.TipificacionOficialId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.UnidadMedida).WithMany().HasForeignKey(x => x.UnidadMedidaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Domain.RendimientosSubproductos.RendimientoSubproducto>(e =>
+            {
+                e.HasOne(x => x.Especie).WithMany().HasForeignKey(x => x.EspecieId).OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
             });
 

@@ -69,6 +69,25 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
         /// <summary>Rinde frio estimado (%). Null sin peso vivo o sin coeficiente.</summary>
         public double? RindeFrio { get; set; }
 
+        // --- Produccion ESTIMADA de subproductos (R-A9) ---
+        // Cuero, sebo y menudencias no se pesan: se estiman con el rendimiento configurado sobre
+        // el peso de la res faenada. No son existencia; son produccion informada.
+
+        /// <summary>
+        /// Base de la estimacion: los kg que fueron a camara, sin lo condenado. La res que la
+        /// inspeccion condeno se va entera al digestor, visceras incluidas, asi que estimar su
+        /// menudencia seria informar produccion que no existe. El cuero de esa res en la practica
+        /// se recupera, pero distinguirlo pide marcar subproducto por subproducto y eso recien
+        /// vale la pena cuando se pesen de verdad (O-3 en EvaluacionFaena.md).
+        /// </summary>
+        public double KgBaseSubproductos { get; set; }
+
+        public IEnumerable<SubproductoEstimadoItem> SubproductosEstimados { get; set; }
+            = new List<SubproductoEstimadoItem>();
+
+        /// <summary>Total de kg estimados de subproducto.</summary>
+        public double KgSubproductosEstimados { get; set; }
+
         public int PiezasLiberadas { get; set; }
 
         // --- Merma sanitaria (R-A6) ---
@@ -127,6 +146,18 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
     }
 
     /// <summary>El corte de facturacion del servicio de faena.</summary>
+    public class SubproductoEstimadoItem
+    {
+        public Guid MaterialId { get; set; }
+        public string MaterialCodigo { get; set; }
+        public string MaterialNombre { get; set; }
+
+        /// <summary>Porcentaje del peso de la res con el que se estimo.</summary>
+        public double Porcentaje { get; set; }
+
+        public double Kg { get; set; }
+    }
+
     public class AnalisisClienteItem
     {
         public Guid ClienteId { get; set; }

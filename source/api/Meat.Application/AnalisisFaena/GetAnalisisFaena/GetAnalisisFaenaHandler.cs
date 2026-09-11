@@ -160,6 +160,27 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 .Where(r => !r.PesoPromedioVivo.HasValue || r.PesoPromedioVivo.Value <= 0)
                 .Sum(r => r.CantidadFaenada);
 
+            // Produccion estimada de subproductos (R-A9). La base son los kilos que fueron a
+            // camara: lo condenado no produce subproducto, porque la res se va entera al digestor.
+            // Si la empresa no cargo rendimientos para la especie, la seccion no aparece.
+            var kgBaseSubproductos = kgFaena;
+
+            var rendimientos = await (
+                from r in this.context.RendimientosSubproductos
+                join m in this.context.Materiales on r.MaterialId equals m.Id
+                where r.Activo && m.Activo && r.EspecieId == lm.EspecieId
+                orderby m.Nombre
+                select new SubproductoEstimadoItem
+                {
+                    MaterialId = m.Id,
+                    MaterialCodigo = m.CodigoMaterial,
+                    MaterialNombre = m.Nombre,
+                    Porcentaje = r.Porcentaje
+                }).ToListAsync(cancellationToken);
+
+            foreach (var r in rendimientos)
+                r.Kg = Math.Round(kgBaseSubproductos * r.Porcentaje / 100, 2);
+
             var response = new GetAnalisisFaenaResponse
             {
                 ListaMatanzaId = lm.Id,
@@ -188,7 +209,10 @@ namespace Meat.Application.AnalisisFaena.GetAnalisisFaena
                 KgDecomisados = kgDecomisados,
                 MermaSanitaria = kgVivos > 0 ? Math.Round(kgDecomisados / kgVivos * 100, 2) : (double?)null,
                 MermaOreo = merma,
-                MermaOreoOrigen = mermaOrigen
+                MermaOreoOrigen = mermaOrigen,
+                KgBaseSubproductos = kgBaseSubproductos,
+                SubproductosEstimados = rendimientos,
+                KgSubproductosEstimados = Math.Round(rendimientos.Sum(r => r.Kg), 2)
             };
 
             // R-A8: el frio se proyecta sobre los kilos de faena, que son los que van a la camara.

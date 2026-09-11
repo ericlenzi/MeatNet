@@ -18,6 +18,7 @@ Liberación (Paso 4).
 - **Pesos y dispersión**: promedio, mínimo, máximo y piezas fuera del rango de su tipificación.
 - **Destino a cámaras**: qué materiales y kilos quedaron en cada cámara.
 - **Merma sanitaria**: reses condenadas y kilos decomisados de la jornada, abiertos por motivo.
+- **Producción estimada de subproductos**: cuero, sebo y menudencias, por rendimiento (R-A9).
 - **Aviso de rinde fuera de rango**, cuando el número se va de la banda esperable de la especie.
 - **Desglose por cliente** en todo lo anterior: el cliente es quien paga la faena, así que es el
   corte por el que se discute el resultado.
@@ -184,6 +185,15 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 > pantalla se comparte con una prop), así que su orden, sus filtros y su tope de filas están
 > documentados una sola vez, en `EvaluacionFaena.md` §10.
 
+### 3.8 Producción estimada de subproductos
+
+Cuánto cuero, sebo y menudencias dejó la jornada, estimado con el rendimiento configurado de cada
+subproducto. Es **producción informada, no existencia**: estos kilos no se pesaron y no entran al
+stock de cámara. La sección no aparece si la empresa no cargó rendimientos para la especie.
+
+Muestra el rendimiento aplicado, los kilos de cada subproducto y el total, sobre la base visible:
+los kilos que fueron a cámara. Ver R-A9.
+
 ## 4. Fuentes de datos
 
 | Dato | Origen |
@@ -198,6 +208,8 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 | Existencia en cámara | `MovimientoCamara` (saldo derivado) |
 | Puesto de la jornada | `ListaMatanza.PuestoId` (ver R-E28 en `EjecucionFaena.md`) |
 | Banda de rinde esperable | `Especie.RindeMinimo` / `Especie.RindeMaximo` |
+| Rendimiento de subproductos | `RendimientoSubproducto.Porcentaje` (por especie y material) |
+| Base de los subproductos | Los mismos kg de faena que van a cámara (sin lo condenado) |
 | Merma de oreo de la planta | `EstablecimientoEspecie.MermaOreo` |
 | Merma de oreo de referencia | `Especie.MermaOreoReferencia` |
 | Res condenada | `Romaneo.DecomisoTotal` + `Romaneo.MotivoDecomisoId` |
@@ -262,6 +274,43 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 
   Un coeficiente fuera de (0, 100) se ignora como si no estuviera: no es un dato de oreo, es un
   error de carga.
+- **R-A9 (los subproductos se estiman, y no son existencia).** El animal no produce solo carne: el
+  cuero, el sebo y las menudencias son el resto del rendimiento. Hoy **ninguno se pesa**, así que
+  la producción se estima con un porcentaje por especie y subproducto
+  (`RendimientoSubproducto.Porcentaje`), que el ADMIN carga en Datos Maestros.
+
+  ```
+  Kg estimados del subproducto = kg que fueron a cámara × rendimiento / 100
+  ```
+
+  **Tres decisiones que sostienen esto, y conviene no revertir sin leerlas:**
+
+  1. **No es un `DespieceMaterial`, y no puede serlo.** El despiece reparte el peso de un material
+     entre sus destinos y la suma por origen cierra en 100%: es lo que hace que el cuarteo controle
+     masa (987,50 kg que entran, 987,50 que salen). El cuero **nunca estuvo** en el peso de la media
+     res, así que agregarlo como un destino más obligaría a inflar o desinflar la carne para hacerle
+     lugar. Por eso el rendimiento vive en su propia tabla.
+  2. **La base es el peso de la res, no el peso vivo, y sin lo condenado.** Lo correcto de manual
+     sería el vivo, pero es justo el dato que a veces falta y que la regla R-A3 prohíbe inventar;
+     el de faena está siempre y es medido. De esa base se **excluye lo condenado**: la res que la
+     inspección condenó se va entera al digestor, vísceras incluidas, así que estimar su menudencia
+     sería informar producción que no existe. El cuero de esa res en la práctica sí se recupera,
+     pero distinguirlo pide marcar subproducto por subproducto si se recupera o no, y eso recién
+     vale la pena cuando los subproductos se pesen (O-3 en `EvaluacionFaena.md`). Mientras tanto se
+     subestima, que es el lado seguro. La pantalla muestra la base, así que el número es auditable.
+  3. **Lo estimado no entra al stock.** La existencia de cámara es el número contra el que se
+     despacha y se hace inventario; mezclar kilos calculados con kilos pesados en el mismo log
+     llevaría a vender un cuero que nadie pesó. Es la misma disciplina que la merma de oreo (R-A8):
+     se estima donde informa, nunca donde se convierte en existencia.
+
+  El CRUD valida que el material sea de tipo subproducto (`SUB_PROD` o `MENUD`) — la carne se pesa
+  en el romaneo, no se estima —, que el porcentaje esté entre 0 y 100, que no haya dos rendimientos
+  para el mismo par especie/subproducto, y que la suma de la especie no pase de 100% del peso de la
+  res, que sería una carga imposible.
+
+  **El día que se pese**, el subproducto pesado entra al log como existencia real y la estimación
+  pasa a ser el contraste. Eso es el tema O-3 de `EvaluacionFaena.md`, y de él depende el decomiso
+  de vísceras (O-A5): no se puede decomisar lo que todavía no es stock.
 - **R-A7 (rinde fuera de rango: se avisa, no se corrige).** Cada especie puede declarar la banda
   de rinde caliente que le es esperable, en `Especie.RindeMinimo` / `RindeMaximo`. Si el rinde de
   la jornada queda afuera, la pantalla lo dice arriba de todo.
@@ -339,8 +388,9 @@ R-E23, R-E27 y R-E24 en `EjecucionFaena.md`.
 - **O-A3 (desbaste).** Requiere balanza en playa previa al sacrificio. Con ese dato el rinde pasaría
   a calcularse sobre el peso real de faena y dejaría de estar subestimado.
 - **O-A5 (decomiso de vísceras).** Hoy la merma sanitaria cubre la carne. El hígado decomisado, que
-  en la práctica es el decomiso más frecuente, no se registra: depende del dominio de subproductos
-  (O-3 en `EvaluacionFaena.md`).
+  en la práctica es el decomiso más frecuente, no se registra, y la **estimación de subproductos
+  (R-A9) no lo habilita**: no se puede decomisar lo que no es existencia. Depende de que los
+  subproductos se pesen (O-3 en `EvaluacionFaena.md`).
 - **O-A4 (comparativo entre jornadas).** Hoy el análisis es de una jornada. Una vista de evolución
   (rinde por fecha, por cliente, por categoría) es el paso natural siguiente, cuando haya volumen.
 

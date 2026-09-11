@@ -30,6 +30,8 @@ import CategoriaHaciendaFormPage from '@/pages/categoriasHacienda/CategoriaHacie
 import EjeTipificacionListPage from '@/pages/ejesTipificacion/EjeTipificacionListPage'
 import EjeTipificacionFormPage from '@/pages/ejesTipificacion/EjeTipificacionFormPage'
 import UnidadesFaenasListPage from '@/pages/unidadesFaenas/UnidadesFaenasListPage'
+import RendimientosSubproductosListPage from '@/pages/rendimientosSubproductos/RendimientosSubproductosListPage'
+import RendimientoSubproductoFormPage from '@/pages/rendimientosSubproductos/RendimientoSubproductoFormPage'
 import PuestosListPage from '@/pages/puestos/PuestosListPage'
 import PuestoFormPage from '@/pages/puestos/PuestoFormPage'
 import TipificadoresListPage from '@/pages/tipificadores/TipificadoresListPage'
@@ -153,6 +155,9 @@ function AppRoutes() {
                   <Route path="tipos-mediciones" element={<CatalogoSimpleListPage catalogo="tipos-mediciones" />} />
                   <Route path="tipos-mediciones/create" element={<CatalogoSimpleFormPage catalogo="tipos-mediciones" />} />
                   <Route path="tipos-mediciones/:codigo/edit" element={<CatalogoSimpleFormPage catalogo="tipos-mediciones" />} />
+                  <Route path="rendimientos-subproductos" element={<RendimientosSubproductosListPage />} />
+                  <Route path="rendimientos-subproductos/create" element={<RendimientoSubproductoFormPage />} />
+                  <Route path="rendimientos-subproductos/:id/edit" element={<RendimientoSubproductoFormPage />} />
                   <Route path="puestos" element={<PuestosListPage />} />
                   <Route path="puestos/create" element={<PuestoFormPage />} />
                   <Route path="puestos/:id/edit" element={<PuestoFormPage />} />

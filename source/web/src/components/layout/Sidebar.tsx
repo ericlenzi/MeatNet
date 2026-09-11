@@ -180,6 +180,7 @@ const navGroups: NavGroup[] = [
           { label: 'Tipificaciones', path: '/tipificaciones', icon: icons.tag },
           { label: 'Materiales', path: '/materiales', icon: icons.database },
           { label: 'Despieces de Material', path: '/despieces-materiales', icon: icons.adjustments },
+          { label: 'Rendimientos de Subproductos', path: '/rendimientos-subproductos', icon: icons.adjustments },
           { label: 'Numeradores', path: '/numeradores', icon: icons.chartBar },
           { label: 'Clientes', path: '/clientes', icon: icons.users },
           { label: 'Numeradores de Tropas', path: '/numeradores-tropas', icon: icons.chartBar },

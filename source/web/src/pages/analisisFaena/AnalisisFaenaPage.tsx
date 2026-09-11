@@ -378,6 +378,46 @@ export default function AnalisisFaenaPage() {
         )}
       </Seccion>
 
+
+      {data.subproductosEstimados.length > 0 && (
+        <Seccion titulo="Producción estimada de subproductos">
+          <p className="px-4 pt-3 text-xs text-text-light">
+            Es una <strong>estimación</strong>, no una medición: estos kilos no se pesaron. Salen de
+            aplicar el rendimiento configurado de cada subproducto sobre los{' '}
+            <strong>{kg(data.kgBaseSubproductos)} kg que fueron a cámara</strong>. Lo condenado
+            queda afuera de la base: esa res se va entera al digestor, así que no produce
+            subproducto. <strong>No generan existencia en cámara</strong>: el stock es solo lo que
+            se pesó.
+          </p>
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-gray-50 text-text-light">
+              <tr>
+                <th className={th}>Codigo</th>
+                <th className={th}>Subproducto</th>
+                <th className={thr}>Rendimiento</th>
+                <th className={thr}>Kg estimados</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.subproductosEstimados.map((sp) => (
+                <tr key={sp.materialId} className="border-b border-border/60">
+                  <td className={td}>{sp.materialCodigo}</td>
+                  <td className={td}>{sp.materialNombre}</td>
+                  <td className={tdr}>{pct(sp.porcentaje)}</td>
+                  <td className={tdr}>{kg(sp.kg)}</td>
+                </tr>
+              ))}
+              <tr className="border-b border-border/60 font-semibold">
+                <td className={td} colSpan={3}>
+                  Total
+                </td>
+                <td className={tdr}>{kg(data.kgSubproductosEstimados)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </Seccion>
+      )}
+
       <div className="no-print mt-4 flex gap-2">
         <Button variant="secondary" size="sm" onClick={() => navigate('/operaciones/analisis-faena')}>
           Volver

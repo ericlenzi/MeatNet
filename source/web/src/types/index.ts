@@ -50,6 +50,11 @@ export type {
 } from './catalogoSimple'
 export type { Material, CreateMaterialRequest, UpdateMaterialRequest, TipoMaterial } from './material'
 export type { DespieceMaterial, CreateDespieceMaterialRequest, UpdateDespieceMaterialRequest } from './despieceMaterial'
+export type {
+  RendimientoSubproducto,
+  CreateRendimientoSubproductoRequest,
+  UpdateRendimientoSubproductoRequest,
+} from './rendimientoSubproducto'
 export type { Numerador, CreateNumeradorRequest, UpdateNumeradorRequest } from './numerador'
 export type {
   Tipificacion,

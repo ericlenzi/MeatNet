@@ -407,6 +407,13 @@ ahí queda. Reconocerla en el depósito depende de la pesada real (O-A6 en `Anal
   Lo que sí está decidido y no conviene retocar: los subproductos son **`Material`**, entran a un
   **almacén** y su existencia vive en el mismo log de movimientos que la carne (§7). El dominio ya
   los admite; lo que falta es el hecho que los produce.
+
+  **Avance (2026-09-11): la producción ya se informa estimada.** Mientras no haya pesada, el
+  Análisis de Faena estima cuero, sebo y menudencias con un rendimiento por especie sobre el peso
+  de la res (R-A9 en `AnalisisFaena.md`). **Eso no cierra este tema:** lo estimado no entra al log
+  de existencia a propósito, así que la cámara sigue teniendo solo carne y el decomiso de vísceras
+  sigue bloqueado. Lo que falta es el hecho medido, y con él la decisión de arriba: qué subproducto
+  se pesa y qué subproducto se estima.
 - **O-4 (reverso post-liberación).** Contramovimiento para corregir una liberación equivocada
   (hoy: anular antes de liberar). A evaluar cuando aparezca la necesidad operativa.
 
