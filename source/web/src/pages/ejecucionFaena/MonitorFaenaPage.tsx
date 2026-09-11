@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { getMonitorFaena } from '@/services/romaneos.service'
 import { useToast } from '@/components/ui/Toast'
@@ -45,13 +45,24 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
   // Sello de frescura: sin el, un tablero que dejo de refrescar se ve igual que uno al dia.
   const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null)
   const [ahora, setAhora] = useState(() => Date.now())
+  // Una caida es un estado, no un evento: el toast avisa el cambio y el sello en ambar sostiene
+  // la situacion. Sin esto, el refresco caido avisaba una vez por ciclo, cada cinco segundos.
+  const caido = useRef(false)
 
   const fetchData = useCallback(async () => {
     try {
       setM(await getMonitorFaena(listaMatanzaId))
       setUltimaActualizacion(new Date())
+
+      if (caido.current) {
+        caido.current = false
+        toast('success', 'Se restableció la conexión con el servidor')
+      }
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Error al cargar el monitor')
+      if (!caido.current) {
+        caido.current = true
+        toast('error', err instanceof Error ? err.message : 'Error al cargar el monitor')
+      }
     } finally {
       setLoading(false)
     }
