@@ -8,6 +8,19 @@ import Button from '@/components/ui/Button'
 
 const POLL_MS = 5000
 
+/** Tres ciclos sin respuesta: el tablero dejo de ser confiable y hay que decirlo. */
+const ATRASO_MS = POLL_MS * 3
+
+/** dd/MM/yyyy, el mismo formato que el resto de las pantallas. */
+function formatFecha(value: string): string {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function formatHora(value: Date): string {
+  return value.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+}
+
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
@@ -29,10 +42,14 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
   const { toast } = useToast()
   const [m, setM] = useState<MonitorFaena | null>(null)
   const [loading, setLoading] = useState(true)
+  // Sello de frescura: sin el, un tablero que dejo de refrescar se ve igual que uno al dia.
+  const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null)
+  const [ahora, setAhora] = useState(() => Date.now())
 
   const fetchData = useCallback(async () => {
     try {
       setM(await getMonitorFaena(listaMatanzaId))
+      setUltimaActualizacion(new Date())
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Error al cargar el monitor')
     } finally {
@@ -46,10 +63,19 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
     return () => clearInterval(t)
   }, [fetchData])
 
+  // Reloj propio: el atraso tiene que aparecer aunque el refresco no vuelva nunca.
+  useEffect(() => {
+    const t = setInterval(() => setAhora(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [])
+
   if (loading) return <div className="p-6 text-text-light">Cargando...</div>
   if (!m) return <div className="p-6 text-text-light">Monitor no disponible.</div>
 
   const avance = m.totalPlanificado > 0 ? Math.round((m.totalFaenado / m.totalPlanificado) * 100) : 0
+  const atrasado = ultimaActualizacion != null && ahora - ultimaActualizacion.getTime() > ATRASO_MS
+  // La pantalla se recarga en caliente y la API no: hasta que se reinicie, el campo puede no venir.
+  const camaras = m.ocupacionCamaras ?? []
 
   return (
     <>
@@ -70,6 +96,16 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
               {m.puestoNombre ? `${m.puestoCodigo} - ${m.puestoNombre}` : 'Sin asignar'}
             </span>
           </span>
+          <span>
+            <span className="text-text-light">Fecha: </span>
+            <span className="font-medium">{formatFecha(m.fecha)}</span>
+          </span>
+          {ultimaActualizacion && (
+            <span className={`ml-auto text-xs ${atrasado ? 'font-medium text-amber-700' : 'text-text-light'}`}>
+              Actualizado {formatHora(ultimaActualizacion)}
+              {atrasado && ' · sin respuesta del servidor'}
+            </span>
+          )}
         </div>
       </div>
 
@@ -155,6 +191,80 @@ function MonitorBoard({ listaMatanzaId }: { listaMatanzaId: string }) {
           </table>
         </div>
       </div>
+
+      {/* Ocupacion de camaras (R-E29): lo colgado, lo que falta y lo que ya habia */}
+      {camaras.length > 0 && (
+        <div className="mt-4 rounded-lg border border-border bg-surface p-6 shadow-sm">
+          <h3 className="mb-1 text-sm font-semibold text-text">Ocupación de cámaras</h3>
+          <p className="mb-3 text-xs text-text-light">
+            Piezas que van a cada cámara: las ya colgadas de esta jornada, las que faltan según el
+            plan y las que la cámara ya tenía de jornadas anteriores. Lo condenado no cuenta, porque
+            no entra a cámara.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-text-light">
+                  <th className="py-2 pr-3">Camara</th>
+                  <th className="py-2 pr-3 text-right">Colgado</th>
+                  <th className="py-2 pr-3 text-right">Pendiente</th>
+                  <th className="py-2 pr-3 text-right">Previo</th>
+                  <th className="py-2 pr-3 text-right">Proyectado</th>
+                  <th className="py-2 pr-3 text-right">Capacidad</th>
+                  <th className="py-2 pr-3 w-40">Ocupacion</th>
+                  <th className="py-2 pr-3 text-right">Kg en camara</th>
+                </tr>
+              </thead>
+              <tbody>
+                {camaras.map((c) => (
+                  <tr
+                    key={c.almacenId ?? 'sin-camara'}
+                    className={`border-b border-border/60 ${c.excedida ? 'bg-red-50' : ''}`}
+                  >
+                    <td className="py-2 pr-3">{c.almacenNombre}</td>
+                    <td className="py-2 pr-3 text-right font-mono">{c.piezasColgadas}</td>
+                    <td className="py-2 pr-3 text-right font-mono">{c.piezasPendientes}</td>
+                    <td className="py-2 pr-3 text-right font-mono">{c.piezasSaldoPrevio}</td>
+                    <td className="py-2 pr-3 text-right font-mono font-semibold">{c.piezasProyectadas}</td>
+                    <td className="py-2 pr-3 text-right font-mono">
+                      {c.capacidad > 0 ? c.capacidad : <span className="text-text-light">s/d</span>}
+                    </td>
+                    <td className="py-2 pr-3">
+                      {c.porcentajeOcupacion != null ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-background">
+                            <div
+                              className={`h-full rounded-full ${c.excedida ? 'bg-danger' : 'bg-primary-500'}`}
+                              style={{ width: `${Math.min(100, c.porcentajeOcupacion)}%` }}
+                            />
+                          </div>
+                          <span
+                            className={`w-14 text-right font-mono text-xs ${c.excedida ? 'font-semibold text-danger' : ''}`}
+                          >
+                            {c.porcentajeOcupacion}%
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-text-light">sin capacidad declarada</span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-3 text-right font-mono">
+                      {(c.kgColgados + c.kgSaldoPrevio).toFixed(0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {camaras.some((c) => c.excedida) && (
+            <p className="mt-3 text-xs font-medium text-danger">
+              Una cámara se pasa de su capacidad con lo que falta faenar. Revisá el destino de los
+              renglones pendientes en la lista de matanza antes de seguir.
+            </p>
+          )}
+        </div>
+      )}
     </>
   )
 }

@@ -19,7 +19,9 @@ catálogo `TipoAlmacen`, al que se le agrega el eje **`Familia`**.
 - **Destino de faena** (cámara) a nivel de renglón en la Lista de Matanza.
 
 **Fuera de alcance (futuro):**
-- Ocupación/capacidad real de la cámara durante la faena (lo escribirá el **Monitor de Faena**).
+- ~~Ocupación/capacidad real de la cámara durante la faena~~ — **hecho**: lo muestra el **Monitor
+  de Faena**, con lo colgado, lo pendiente del plan y el saldo previo contra `Capacidad`
+  (R-E29 en `EjecucionFaena.md`).
 - Unidad de capacidad diferenciada por familia (cabezas vs. ganchos); por ahora `Capacidad`
   es un entero neutro que cada familia interpreta según su contexto.
 

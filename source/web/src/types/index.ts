@@ -69,6 +69,7 @@ export type {
   RomaneoJornadaItem,
   RenglonMonitorItem,
   MonitorFaena,
+  OcupacionCamaraItem,
   PiezaRomaneoInput,
   CrearRomaneoRequest,
 } from './romaneo'

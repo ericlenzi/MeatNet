@@ -29,6 +29,14 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
             if (lm == null)
                 throw new ValidationException("La lista de matanza no existe.");
 
+            // Piezas por animal con las que se proyecta lo pendiente: la unidad de faena que el
+            // Tipificador propone para la especie (R-E12), porque el renglon no declara unidad.
+            var piezasPorAnimal = await this.context.UnidadesFaenas
+                .Where(u => u.Activo && u.EspecieId == lm.EspecieId)
+                .OrderByDescending(u => u.PorDefecto)
+                .Select(u => (int?)u.PiezasPorAnimal)
+                .FirstOrDefaultAsync(cancellationToken) ?? 1;
+
             var porRenglon = await (
                 from d in this.context.ListasMatanzasDetalles
                 join t in this.context.Tropas on d.TropaId equals t.Id
@@ -90,6 +98,92 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
                 }
             }
 
+            // --- Ocupacion de camaras (R-E29) ---------------------------------------------------
+            // Tres cosas distintas que se suman: lo que ya esta colgado de esta jornada, lo que
+            // va a llegar segun el plan, y lo que la camara ya tenia de jornadas anteriores.
+            var colgadas = await (
+                from p in this.context.RomaneosPiezas
+                join r in this.context.Romaneos on p.RomaneoId equals r.Id
+                where r.ListaMatanzaId == lm.Id && !r.Anulado
+                    // Lo condenado se peso pero no va a camara (R-E23, R-E27): no ocupa gancho.
+                    && !r.DecomisoTotal && !p.Decomisada
+                group p by p.AlmacenDestinoId into g
+                select new { AlmacenId = g.Key, Piezas = g.Count(), Kg = g.Sum(x => x.Peso) })
+                .ToListAsync(cancellationToken);
+
+            // Pendiente por camara: los animales que faltan de cada renglon, por las piezas que
+            // deja cada animal. El renglon sin camara declarada se informa aparte, para que los
+            // numeros cierren en vez de desaparecer.
+            var pendientes = await (
+                from d in this.context.ListasMatanzasDetalles
+                where d.ListaMatanzaId == lm.Id && d.Cantidad > d.CantidadFaenada
+                group d by d.AlmacenDestinoId into g
+                select new { AlmacenId = g.Key, Animales = g.Sum(x => x.Cantidad - x.CantidadFaenada) })
+                .ToListAsync(cancellationToken);
+
+            var camarasDeLaJornada = colgadas.Select(c => (Guid?)c.AlmacenId)
+                .Concat(pendientes.Select(p => p.AlmacenId))
+                .Distinct()
+                .ToList();
+
+            var idsCamaras = camarasDeLaJornada.Where(id => id.HasValue).Select(id => id.Value).ToList();
+
+            var datosCamaras = await this.context.Almacenes
+                .Where(a => idsCamaras.Contains(a.Id))
+                .Select(a => new { a.Id, a.Nombre, a.Capacidad })
+                .ToListAsync(cancellationToken);
+
+            // Saldo previo: el log de camara sin los movimientos que genero ESTA jornada, que ya
+            // estan contados en lo colgado. Si la jornada todavia no se libero no hay ninguno,
+            // pero el Monitor tambien se abre sobre una jornada ya liberada.
+            var saldoPrevio = await (
+                from m in this.context.MovimientosCamaras
+                join p in this.context.RomaneosPiezas on m.RomaneoPiezaOrigenId equals p.Id into pj
+                from p in pj.DefaultIfEmpty()
+                join r in this.context.Romaneos on p.RomaneoId equals r.Id into rj
+                from r in rj.DefaultIfEmpty()
+                where idsCamaras.Contains(m.AlmacenId)
+                    && (r == null || r.ListaMatanzaId != lm.Id)
+                group m by m.AlmacenId into g
+                select new { AlmacenId = g.Key, Piezas = g.Sum(x => x.Cantidad), Kg = g.Sum(x => x.Peso) })
+                .ToListAsync(cancellationToken);
+
+            var ocupacion = camarasDeLaJornada
+                .Select(id =>
+                {
+                    var datos = id.HasValue ? datosCamaras.FirstOrDefault(a => a.Id == id.Value) : null;
+                    var colgada = colgadas.FirstOrDefault(c => c.AlmacenId == id);
+                    var pendiente = pendientes.FirstOrDefault(p => p.AlmacenId == id);
+                    var previo = id.HasValue ? saldoPrevio.FirstOrDefault(s => s.AlmacenId == id.Value) : null;
+
+                    var piezasPendientes = (pendiente?.Animales ?? 0) * piezasPorAnimal;
+                    var piezasPrevias = previo?.Piezas ?? 0;
+                    var proyectadas = (colgada?.Piezas ?? 0) + piezasPendientes + piezasPrevias;
+                    var capacidad = datos?.Capacidad ?? 0;
+
+                    return new OcupacionCamaraItem
+                    {
+                        AlmacenId = id,
+                        AlmacenNombre = datos?.Nombre ?? "Sin camara asignada",
+                        PiezasColgadas = colgada?.Piezas ?? 0,
+                        KgColgados = colgada?.Kg ?? 0,
+                        PiezasPendientes = piezasPendientes,
+                        PiezasSaldoPrevio = piezasPrevias,
+                        KgSaldoPrevio = previo?.Kg ?? 0,
+                        PiezasProyectadas = proyectadas,
+                        Capacidad = capacidad,
+                        PorcentajeOcupacion = capacidad > 0
+                            ? Math.Round((double)proyectadas / capacidad * 100, 1)
+                            : (double?)null,
+                        Excedida = capacidad > 0 && proyectadas > capacidad
+                    };
+                })
+                // Primero la que esta mas comprometida; la fila sin camara, al final.
+                .OrderByDescending(o => o.AlmacenId.HasValue)
+                .ThenByDescending(o => o.PorcentajeOcupacion ?? -1)
+                .ThenBy(o => o.AlmacenNombre)
+                .ToList();
+
             double ritmo = 0;
             if (animales > 1)
             {
@@ -102,6 +196,7 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
             {
                 ListaMatanzaId = lm.Id,
                 NumeroLista = lm.NumeroLista,
+                Fecha = lm.Fecha,
                 EspecieNombre = lm.Especie != null ? lm.Especie.Nombre : lm.EspecieId,
                 EstadoListaMatanzaId = lm.EstadoListaMatanzaId,
                 PuestoCodigo = lm.Puesto != null ? lm.Puesto.CodigoPuesto : null,
@@ -115,7 +210,8 @@ namespace Meat.Application.Romaneos.GetMonitorFaena
                 PiezasDecomisadas = piezasCondenadas,
                 KgDecomisados = kgDecomisados,
                 RitmoPorHora = Math.Round(ritmo, 1),
-                PorRenglon = porRenglon
+                PorRenglon = porRenglon,
+                OcupacionCamaras = ocupacion
             };
         }
     }

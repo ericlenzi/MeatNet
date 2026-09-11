@@ -118,9 +118,28 @@ export interface RenglonMonitorItem {
   romaneoHasta: number | null
 }
 
+/** Como se va llenando una camara mientras la jornada corre (R-E29). No es existencia. */
+export interface OcupacionCamaraItem {
+  /** null en la fila de los renglones que no declararon camara destino. */
+  almacenId: string | null
+  almacenNombre: string
+  piezasColgadas: number
+  kgColgados: number
+  piezasPendientes: number
+  piezasSaldoPrevio: number
+  kgSaldoPrevio: number
+  piezasProyectadas: number
+  /** Almacen.Capacidad; 0 cuando la camara no la declara. */
+  capacidad: number
+  porcentajeOcupacion: number | null
+  excedida: boolean
+}
+
 export interface MonitorFaena {
   listaMatanzaId: string
   numeroLista: number
+  /** Dia de faena de la jornada. */
+  fecha: string
   especieNombre: string
   estadoListaMatanzaId: string
   /** Puesto (palco) de la jornada: lo declara la lista de matanza. */
@@ -138,6 +157,7 @@ export interface MonitorFaena {
   kgDecomisados: number
   ritmoPorHora: number
   porRenglon: RenglonMonitorItem[]
+  ocupacionCamaras: OcupacionCamaraItem[]
 }
 
 // --- Requests (PascalCase: matchean el backend) ---

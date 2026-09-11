@@ -372,6 +372,42 @@ El **Monitor de Faena** muestra en paralelo, read-only, el avance agregado de la
   especie estaba metida en `TiposPuestos` (`PALCO-V`, `PALCO-P`), que es una clasificación común a
   todas las empresas: la especie con la que opera un palco es información del palco. Hoy
   `TiposPuestos` tiene una sola fila, `PAL` (palco), y la especie es columna de `Puesto`.
+- **R-E29 (ocupación de cámaras: lo que hay y lo que viene).** El Monitor muestra, por cámara, cómo
+  se va llenando la playa de enfriado mientras la jornada corre. **No es existencia:** la existencia
+  nace en la Liberación (`EvaluacionFaena.md`), y mientras se faena las medias reses están colgadas
+  sin ser stock todavía.
+
+  Son tres cosas distintas que se suman, y se muestran separadas a propósito:
+
+  | Columna | Qué es | De dónde sale |
+  |---|---|---|
+  | **Colgado** | Piezas de esta jornada que van a esa cámara | `RomaneoPieza.AlmacenDestinoId` de los romaneos no anulados |
+  | **Pendiente** | Proyección de lo que falta faenar | `(Cantidad − CantidadFaenada)` del renglón × piezas por animal |
+  | **Previo** | Producto que la cámara ya tenía | Saldo de `MovimientoCamara`, **sin** los movimientos de esta jornada |
+
+  **El pendiente es el punto de la sección.** Sin él el tablero informa que la cámara ya se llenó;
+  con él avisa **antes**, que es cuando todavía se puede mandar los renglones que faltan a otra
+  cámara. La cámara que se pasa de su capacidad se marca en rojo.
+
+  Cuatro supuestos, que valen la pena porque el número es una proyección:
+
+  1. **Las piezas por animal salen de la unidad de faena por defecto de la especie** (R-E12), porque
+     el renglón de la lista no declara unidad: la elige el Tipificador res por res. Si el operador
+     romanea con otra unidad, el pendiente proyectado queda corrido.
+  2. **Lo condenado no ocupa gancho.** La res condenada entera (R-E23) y la media res condenada
+     (R-E27) se pesaron, pero no entran a la cámara, así que no cuentan en el colgado.
+  3. **El saldo previo excluye los movimientos de la propia jornada.** Si la jornada ya se liberó,
+     sus piezas están en el log de cámara: contarlas ahí y en el colgado sería contar dos veces.
+  4. **La capacidad se compara en piezas**, que es lo que expresa `Almacen.Capacidad` para la
+     familia `CAMARA` (ganchos). Ojo con el cuarteo: una media res liberada que se cuartea pasa a
+     contar como sus cuartos, así que el saldo previo de una cámara con producto cuarteado es más
+     alto que la cantidad de reses que entraron. La columna de kilos no tiene ese problema, porque
+     la masa no cambia al cuartear.
+
+  La cámara sin capacidad declarada se lista igual, con sus piezas y sin porcentaje: es la misma
+  regla que gobierna la banda de rinde y los datos del palco, el parámetro que no está cargado no
+  inventa un aviso. Los renglones que no declararon cámara destino se informan en una fila aparte,
+  para que el total de la jornada cierre en vez de desaparecer.
 - **R-E3 (garrón autopropuesto).** El sistema propone `NumeroGarron = último garrón de la jornada + 1`
   (primer romaneo → 1); el operador puede ajustarlo (garrón físico: puede saltear ganchos o arrancar
   en otro número), y a partir del valor confirmado la propuesta se autoincrementa. **Único por LM**
@@ -696,7 +732,7 @@ porque el Tipificador la necesita; **escritura `[Authorize(Roles = "SUPERADMIN")
 |---|---|---|---|
 | `TipificadorPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/tipificador` | (desde detalle de LM `EN_EJECUCION`) | Arriba, la **cabecera del puesto**: el palco que trae la lista (solo lectura), el **tipificador** y el **tipo de medición**, los dos propuestos y válidos para toda la jornada (R-E28). Abajo, la captura res por res: renglón sugerido con override, garrón, UF, los **datos del palco** del animal (conformación, engrasamiento, dentición) y piezas (1 P / 2 A-B V) con peso, **contusión**, cámara y tipificación autopropuesta editable; grilla de romaneos de la jornada con **Anular**. Los combos del palco solo aparecen si la especie los tiene cargados (R-E22). El check **Decomiso total** condena la res y esconde la clasificación (R-E23); cada pieza elige entre **sin decomiso**, **condenada entera** (R-E27, que esconde su tipificación y su contusión) y **recorte de kilos** (R-E24). |
 | `EjeTipificacionListPage` / `EjeTipificacionFormPage` | `/conformaciones`, `/grados-engrasamiento`, `/denticiones`, `/tipos-contusiones`, `/motivos-decomisos` | Administración *(solo SUPERADMIN)* | Un **único par de pantallas** para los cuatro catálogos del palco y los motivos de decomiso; cuál es lo define una prop. ABM con filtro por especie y estado. Ver §9.4. |
-| `MonitorFaenaPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/monitor` | Ejecución de Faena | Tablero **read-only** de supervisión: totales en vivo (faenado vs planificado, por tropa/categoría, KG, ritmo) y las **reses condenadas**, cuyos kilos quedan fuera del total. Encabeza con el **puesto** de la jornada (R-E28). Refresco por **polling** (intervalo corto). |
+| `MonitorFaenaPage` | `/operaciones/ejecucion-faena/:listaMatanzaId/monitor` | Ejecución de Faena | Tablero **read-only** de supervisión: totales en vivo (faenado vs planificado, por tropa/categoría, KG, ritmo), las **reses condenadas**, cuyos kilos quedan fuera del total, y la **ocupación de cámaras** con lo colgado, lo pendiente y lo previo (R-E29). Encabeza con el **puesto** de la jornada (R-E28). Refresco por **polling** (intervalo corto). |
 | `EjecucionFaenaHubPage` | `/operaciones/ejecucion-faena`, `/operaciones/monitor-faena` | Ejecución de Faena / Monitor | Entrada por **puesto**: el selector recuerda el palco de esa terminal y el listado muestra solo las listas `EN_EJECUCION` asignadas a él (R-E28). Con una sola lista entra derecho a la pantalla que corresponde. |
 | `PuestosListPage` / `PuestoFormPage` | `/puestos` | Administración | ABM de puestos por **Establecimiento + Especie**, con su tipo de puesto y su **medición por defecto** (R-E28). Filtros por establecimiento, especie y estado. |
 | `TipificadoresListPage` / `TipificadorFormPage` | `/tipificadores` | Administración | ABM de tipificadores (nombre y matrícula) por Establecimiento + Especie, con la marca **por defecto**, uno por establecimiento y especie (R-E28). |
