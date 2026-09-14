@@ -34,8 +34,8 @@ namespace Meat.Application.IngresosHaciendas.GetIngresosHaciendas
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(i =>
-                    i.NumeroDte.Contains(request.Filter) ||
-                    i.Cliente.Nombre.Contains(request.Filter));
+                    EF.Functions.ILike(i.NumeroDte, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(i.Cliente.Nombre, Busqueda.Contiene(request.Filter)));
 
             queryable = queryable.OrderByDescending(i => i.FechaHoraIngreso);
 

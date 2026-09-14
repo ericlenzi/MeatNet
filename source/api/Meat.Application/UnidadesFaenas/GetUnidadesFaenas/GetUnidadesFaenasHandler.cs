@@ -28,7 +28,7 @@ namespace Meat.Application.UnidadesFaenas.GetUnidadesFaenas
                 where (request.EspecieId == null || u.EspecieId == request.EspecieId)
                     && (request.Estado == null || u.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || u.Nombre.Contains(request.Filter))
+                        || EF.Functions.ILike(u.Nombre, Busqueda.Contiene(request.Filter)))
                 orderby u.EspecieId, u.Codigo
                 select new UnidadFaenaItem
                 {

@@ -28,9 +28,9 @@ namespace Meat.Application.Materiales.GetMateriales
                 where (request.TipoMaterialId == null || m.TipoMaterialId == request.TipoMaterialId)
                     && (request.Estado == null || m.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || m.Nombre.Contains(request.Filter)
-                        || m.CodigoMaterial.Contains(request.Filter)
-                        || m.ERP_Codigo.Contains(request.Filter))
+                        || EF.Functions.ILike(m.Nombre, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(m.CodigoMaterial, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(m.ERP_Codigo, Busqueda.Contiene(request.Filter)))
                 orderby m.Nombre
                 select new MaterialItem
                 {

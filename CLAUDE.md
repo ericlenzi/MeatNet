@@ -3,7 +3,7 @@
 ## Descripción del Proyecto
 Sistema de gestión para frigoríficos que permite administrar operaciones del negocio cárnico relacionadas al Ciclo I de producción.
 La aplicación de tecnología web funciona en la nube, y debe estar preparada para integrarse con un ERP externo y con aplicaciones de captura de datos en los puestos de producción. 
-La tecnología de desarrollo básicamente se resume para el frontend (React-Vite), backend api (.net 8) y bd propia (SQL Server).
+La tecnología de desarrollo básicamente se resume para el frontend (React-Vite), backend api (.net 8) y bd propia (PostgreSQL).
 
 ## Ambito del Proyecto
 El proceso productivo de la cadena de valor cárnica en Argentina se organiza en tres bloques, cada uno dependiente del anterior: 
@@ -58,7 +58,7 @@ MeatNet/
 ## Stack
 - **API:** C# .NET — ver `source/api/`
 - **Web:** React + Next.js — ver `source/web/`
-- **Base de datos:** SQL Server
+- **Base de datos:** PostgreSQL — local en development, Supabase en production (ver `docs/infraestructure.md`)
 - **ORM:** Entity Framework Core (asumir si no se indica lo contrario)
 
 ## Convenciones Generales
@@ -139,6 +139,7 @@ colgados de una identidad común — así que son del tipo 2 y no se parten.
 
 ## Documentación
 - Arquitectura y decisiones técnicas: `docs/`
+- **Infraestructura (entornos, base de datos, configuración, migraciones, deploy): `docs/infraestructure.md`** — Consultarlo antes de tocar la conexión, los appsettings, las migraciones o cualquier SQL escrito a mano.
 - Reglas específicas de API: `.claude/rules/api.md`
 - Reglas específicas de Web: `.claude/rules/web.md`
 - **Guia para CRUDs nuevos: `docs/BasisCRUD.md`** — Seguir SIEMPRE este documento al crear un CRUD de una entidad nueva **de proceso/negocio (PK `Guid Id`)**. No aplica a las tablas de catálogo (PK `string Codigo`, ver "Patrones de Tablas"). Contiene los patrones de backend (Entity, Handlers, Controller, migraciones) y frontend (Types, Service, Pages, rutas). Las entidades globales no llevan EmpresaId ni filtro por empresa.

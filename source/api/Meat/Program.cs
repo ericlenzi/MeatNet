@@ -6,8 +6,6 @@ using Meat.Application.Shared.Settings;
 using Meat.Infrastructure;
 using Meat.Repositories;
 using Meat.Services;
-using System.Data;
-using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +21,12 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
 
 builder.Services.AddDbContext<MeatContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("Default"),
-        sql => sql.MigrationsAssembly("Meat.Repositories"))
+        // El historial de migraciones tambien va en el schema meat: public lo expone Supabase.
+        npgsql => npgsql
+            .MigrationsAssembly("Meat.Repositories")
+            .MigrationsHistoryTable("__EFMigrationsHistory", "meat"))
     .EnableSensitiveDataLogging());
 
 builder.Services.AddSwagger();
@@ -51,14 +52,6 @@ if (!isApiLocal)
     builder.Services.AddHostedService<MeatService>();
 else
     builder.Services.AddApplicationInsightsTelemetryProcessor<AppInsightsTelemetryProcessor>();
-
-
-builder.Services.AddScoped<IDbConnection>(_ =>
-{
-    var connection = new SqlConnection { ConnectionString = builder.Configuration.GetConnectionString("Default") };
-    connection.Open();
-    return connection;
-});
 
 var app = builder.Build();
 

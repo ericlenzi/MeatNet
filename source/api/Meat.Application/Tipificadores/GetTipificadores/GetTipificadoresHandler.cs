@@ -29,8 +29,8 @@ namespace Meat.Application.Tipificadores.GetTipificadores
                     && (request.EspecieId == null || t.EspecieId == request.EspecieId)
                     && (request.Estado == null || t.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || t.Nombre.Contains(request.Filter)
-                        || t.Matricula.Contains(request.Filter))
+                        || EF.Functions.ILike(t.Nombre, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(t.Matricula, Busqueda.Contiene(request.Filter)))
                 // El de por defecto primero: es el que el palco usa todos los dias.
                 orderby t.PorDefecto descending, t.Nombre
                 select new TipificadorItem

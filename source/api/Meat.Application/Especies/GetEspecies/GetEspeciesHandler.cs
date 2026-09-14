@@ -27,8 +27,8 @@ namespace Meat.Application.Especies.GetEspecies
             if (!string.IsNullOrEmpty(request.Filter))
             {
                 queryable = queryable.Where(x =>
-                    x.Codigo.Contains(request.Filter) ||
-                    x.Nombre.Contains(request.Filter));
+                    EF.Functions.ILike(x.Codigo, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)));
             }
 
             if (request.Estado.HasValue)

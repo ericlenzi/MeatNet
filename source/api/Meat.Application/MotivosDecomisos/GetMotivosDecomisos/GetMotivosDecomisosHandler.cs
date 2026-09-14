@@ -30,8 +30,8 @@ namespace Meat.Application.MotivosDecomisos.GetMotivosDecomisos
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.Codigo.Contains(request.Filter) ||
-                    x.Nombre.Contains(request.Filter));
+                    EF.Functions.ILike(x.Codigo, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)));
 
             // Orden es la posicion en la lista del puesto (los motivos frecuentes primero), no una escala.
             queryable = queryable.OrderBy(x => x.EspecieId).ThenBy(x => x.Orden);

@@ -35,8 +35,8 @@ namespace Meat.Application.Tipificaciones.GetTipificaciones
                     && (request.EspecieId == null || t.EspecieId == request.EspecieId)
                     && (request.TipoEspecieId == null || t.TipoEspecieId == request.TipoEspecieId)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || t.Codigo.Contains(request.Filter)
-                        || t.Descripcion.Contains(request.Filter))
+                        || EF.Functions.ILike(t.Codigo, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(t.Descripcion, Busqueda.Contiene(request.Filter)))
                 orderby t.Puntos descending, t.Codigo
                 select new TipificacionItem
                 {

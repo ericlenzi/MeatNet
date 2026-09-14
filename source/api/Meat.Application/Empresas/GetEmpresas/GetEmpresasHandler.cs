@@ -24,9 +24,9 @@ namespace Meat.Application.Empresas.GetEmpresas
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.Nombre.Contains(request.Filter) ||
-                    x.Id.Contains(request.Filter) ||
-                    x.NumeroCuit.Contains(request.Filter));
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Id, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.NumeroCuit, Busqueda.Contiene(request.Filter)));
 
             if (request.Estado.HasValue)
                 queryable = queryable.Where(x => x.Activo == request.Estado.Value);

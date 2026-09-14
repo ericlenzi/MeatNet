@@ -154,13 +154,29 @@ namespace Meat.Repositories
 
             #endregion Soft Deleting
 
-            #region FechaActualizacion Default Value
+            #region PostgreSQL
 
-            //modelBuilder.Entity<Domain.Empleados.Empleado>().Property(x => x.FechaActualizacion).HasDefaultValueSql("getdate()");
-            modelBuilder.Entity<Domain.Puestos.Puesto>().Property(x => x.FechaActualizacion).HasDefaultValueSql("getdate()");
-            modelBuilder.Entity<Domain.Sucursales.Sucursal>().Property(x => x.FechaActualizacion).HasDefaultValueSql("getdate()");
+            // Schema propio y no public: Supabase publica el schema public por su Data API, y el
+            // aislamiento por empresa vive en este contexto, no en la base.
+            modelBuilder.HasDefaultSchema("meat");
+            modelBuilder.HasPostgresExtension("citext");
 
-            #endregion FechaActualizacion Default Value
+            // Codigos que tipea el usuario: la unicidad y las comparaciones no distinguen
+            // mayusculas, igual que con la collation CI de SQL Server.
+            modelBuilder.Entity<Domain.Usuarios.Usuario>().Property(x => x.UserName).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Sucursales.Sucursal>().Property(x => x.CodigoSucursal).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Establecimientos.Establecimiento>().Property(x => x.CodigoEstablecimiento).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Clientes.Cliente>().Property(x => x.CodigoCliente).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Puestos.Puesto>().Property(x => x.CodigoPuesto).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Tipificadores.Tipificador>().Property(x => x.Matricula).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Numeradores.Numerador>().Property(x => x.Codigo).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Materiales.Material>().Property(x => x.CodigoMaterial).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Parametros.Parametro>().Property(x => x.Codigo).HasColumnType("citext");
+            modelBuilder.Entity<Domain.DestinosComerciales.DestinoComercial>().Property(x => x.Codigo).HasColumnType("citext");
+            modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>().Property(x => x.Codigo).HasColumnType("citext");
+            modelBuilder.Entity<Domain.Tipificaciones.Tipificacion>().Property(x => x.Codigo).HasColumnType("citext");
+
+            #endregion PostgreSQL
 
             #region Indices Unicos
 
@@ -168,188 +184,188 @@ namespace Meat.Repositories
             modelBuilder.Entity<Domain.NumeradoresTropas.NumeradorTropa>()
                 .HasIndex(nt => new { nt.ClienteEstablecimientoId, nt.EspecieCodigo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.ClientesEstablecimientos.ClienteEstablecimiento>()
                 .HasIndex(ce => new { ce.ClienteId, ce.EstablecimientoId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.UsuariosEstablecimientos.UsuarioEstablecimiento>()
                 .HasIndex(ue => new { ue.UsuarioId, ue.EstablecimientoId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.UsuariosSucursales.UsuarioSucursal>()
                 .HasIndex(us => new { us.UsuarioId, us.SucursalId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.EstablecimientosEspecies.EstablecimientoEspecie>()
                 .HasIndex(ee => new { ee.EstablecimientoId, ee.EspecieId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.EmpresasTiposEspecies.EmpresaTipoEspecie>()
                 .HasIndex(ete => new { ete.EmpresaId, ete.TipoEspecieId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Codigos unicos (una columna)
             modelBuilder.Entity<Domain.Sucursales.Sucursal>()
                 .HasIndex(s => new { s.EmpresaId, s.CodigoSucursal })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.Usuarios.Usuario>()
                 .HasIndex(u => u.UserName)
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.Establecimientos.Establecimiento>()
                 .HasIndex(e => new { e.EmpresaId, e.CodigoEstablecimiento })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.Clientes.Cliente>()
                 .HasIndex(c => new { c.EmpresaId, c.CodigoCliente })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Numero de ingreso correlativo por establecimiento
             modelBuilder.Entity<Domain.IngresosHaciendas.IngresoHacienda>()
                 .HasIndex(i => new { i.EstablecimientoId, i.NumeroIngreso })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Numero de tropa unico por Cliente-Establecimiento + Especie
             modelBuilder.Entity<Domain.Tropas.Tropa>()
                 .HasIndex(t => new { t.ClienteEstablecimientoId, t.EspecieCodigo, t.NumeroTropa })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Secuencia unica por tropa en el historial de trazabilidad
             modelBuilder.Entity<Domain.Tropas.TropaMovimiento>()
                 .HasIndex(m => new { m.TropaId, m.Secuencia })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Una LM activa (no cancelada) por Establecimiento + Fecha + Especie
             modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
                 .HasIndex(lm => new { lm.EstablecimientoId, lm.Fecha, lm.EspecieId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL AND [EstadoListaMatanzaId] <> 'ANULADA'");
+                .HasFilter("\"FechaBaja\" IS NULL AND \"EstadoListaMatanzaId\" <> 'ANULADA'");
 
             // Numero de lista correlativo por (Establecimiento, Especie): mismo alcance que el
             // Numerador LISTAMATANZA que lo genera.
             modelBuilder.Entity<Domain.ListasMatanzas.ListaMatanza>()
                 .HasIndex(lm => new { lm.EstablecimientoId, lm.EspecieId, lm.NumeroLista })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Codigo de puesto unico por empresa
             modelBuilder.Entity<Domain.Puestos.Puesto>()
                 .HasIndex(p => new { p.EmpresaId, p.CodigoPuesto })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Matricula de tipificador unica por empresa
             modelBuilder.Entity<Domain.Tipificadores.Tipificador>()
                 .HasIndex(t => new { t.EmpresaId, t.Matricula })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Un solo tipificador por defecto por Establecimiento + Especie
             modelBuilder.Entity<Domain.Tipificadores.Tipificador>()
                 .HasIndex(t => new { t.EstablecimientoId, t.EspecieId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+                .HasFilter("\"FechaBaja\" IS NULL AND \"PorDefecto\" = true");
 
             // Numerador unico por Establecimiento + Especie + Codigo
             modelBuilder.Entity<Domain.Numeradores.Numerador>()
                 .HasIndex(n => new { n.EstablecimientoId, n.EspecieCodigo, n.Codigo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Una sola unidad de faena por defecto por Especie
             modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
                 .HasIndex(u => new { u.EmpresaId, u.EspecieId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL AND [PorDefecto] = 1");
+                .HasFilter("\"FechaBaja\" IS NULL AND \"PorDefecto\" = true");
 
             // Un solo destino comercial favorito (default del Tipificador)
             modelBuilder.Entity<Domain.DestinosComerciales.DestinoComercial>()
                 .HasIndex(d => new { d.EmpresaId, d.Favorito })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL AND [Favorito] = 1");
+                .HasFilter("\"FechaBaja\" IS NULL AND \"Favorito\" = true");
 
             // Codigo de material unico (catalogo de productos terminados)
             modelBuilder.Entity<Domain.Materiales.Material>()
                 .HasIndex(m => new { m.EmpresaId, m.CodigoMaterial })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Un rendimiento por (especie, subproducto) dentro de la empresa
             modelBuilder.Entity<Domain.RendimientosSubproductos.RendimientoSubproducto>()
                 .HasIndex(r => new { r.EmpresaId, r.EspecieId, r.MaterialId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Un solo despiece por par (origen, destino)
             modelBuilder.Entity<Domain.DespiecesMateriales.DespieceMaterial>()
                 .HasIndex(d => new { d.MaterialOrigenId, d.MaterialDestinoId })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Garron unico por jornada (LM), entre romaneos no anulados
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.ListaMatanzaId, r.NumeroGarron })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL AND [Anulado] = 0");
+                .HasFilter("\"FechaBaja\" IS NULL AND \"Anulado\" = false");
 
             // Indice de apoyo para lecturas de la jornada por nro de romaneo
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.ListaMatanzaId, r.NumeroRomaneo })
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Apoyo del saldo de existencia de camara: se agrupa por (Almacen, Material)
             modelBuilder.Entity<Domain.MovimientosCamaras.MovimientoCamara>()
                 .HasIndex(m => new { m.AlmacenId, m.MaterialId })
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Apoyo de la trazabilidad: que materiales salieron de una pieza romaneada
             modelBuilder.Entity<Domain.MovimientosCamaras.MovimientoCamara>()
                 .HasIndex(m => m.RomaneoPiezaOrigenId)
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Correlativo de romaneo unico por (Establecimiento, Especie): es el alcance del
             // Numerador ROMANEO. Incluye los anulados a proposito: el numero no se reutiliza.
             modelBuilder.Entity<Domain.Romaneos.Romaneo>()
                 .HasIndex(r => new { r.EstablecimientoId, r.EspecieId, r.NumeroRomaneo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             // Codigo de negocio unico por empresa en las entidades que pasaron de PK string a Guid Id.
             // El codigo dejo de ser la PK pero sigue siendo el identificador que usa el usuario.
             modelBuilder.Entity<Domain.Parametros.Parametro>()
                 .HasIndex(p => new { p.EmpresaId, p.Codigo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.DestinosComerciales.DestinoComercial>()
                 .HasIndex(d => new { d.EmpresaId, d.Codigo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.UnidadesFaenas.UnidadFaena>()
                 .HasIndex(u => new { u.EmpresaId, u.Codigo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             modelBuilder.Entity<Domain.Tipificaciones.Tipificacion>()
                 .HasIndex(ti => new { ti.EmpresaId, ti.Codigo })
                 .IsUnique()
-                .HasFilter("[FechaBaja] IS NULL");
+                .HasFilter("\"FechaBaja\" IS NULL");
 
             #endregion Indices Unicos
 
@@ -580,7 +596,34 @@ namespace Meat.Repositories
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
             }
 
+            AplicarTiposPostgres(modelBuilder);
+
             ValidarReglaEstructural(modelBuilder);
+        }
+
+        /// <summary>
+        /// Tipos comunes a todas las entidades, aplicados despues de configurarlas (incluye las
+        /// propiedades en sombra como FechaBaja):
+        /// - DateTime como timestamp sin zona: la API es el unico reloj y guarda hora local, igual
+        ///   que datetime2 en SQL Server. La base no genera fechas, asi que su timezone no importa.
+        /// - Texto con collation es-AR: ordena como SQL Server (acentos y ñ en su lugar). Las
+        ///   columnas citext quedan con la suya.
+        /// </summary>
+        private static void AplicarTiposPostgres(ModelBuilder modelBuilder)
+        {
+            foreach (var property in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetProperties()))
+            {
+                var tipo = Nullable.GetUnderlyingType(property.ClrType) ?? property.ClrType;
+
+                if (tipo == typeof(DateTime) && property.GetColumnType() == null)
+                {
+                    property.SetColumnType("timestamp without time zone");
+                }
+                else if (tipo == typeof(string) && property.GetColumnType() != "citext")
+                {
+                    property.SetCollation("es-AR-x-icu");
+                }
+            }
         }
 
         /// <summary>

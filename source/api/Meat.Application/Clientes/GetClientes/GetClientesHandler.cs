@@ -33,9 +33,9 @@ namespace Meat.Application.Clientes.GetClientes
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.CodigoCliente.Contains(request.Filter) ||
-                    x.Nombre.Contains(request.Filter) ||
-                    x.NumeroCuit.Contains(request.Filter));
+                    EF.Functions.ILike(x.CodigoCliente, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.NumeroCuit, Busqueda.Contiene(request.Filter)));
 
             queryable = queryable.OrderBy(x => x.CodigoCliente);
 

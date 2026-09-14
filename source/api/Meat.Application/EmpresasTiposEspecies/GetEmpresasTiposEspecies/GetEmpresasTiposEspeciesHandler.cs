@@ -40,8 +40,8 @@ namespace Meat.Application.EmpresasTiposEspecies.GetEmpresasTiposEspecies
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.TipoEspecieId.Contains(request.Filter) ||
-                    x.TipoEspecie.Nombre.Contains(request.Filter));
+                    EF.Functions.ILike(x.TipoEspecieId, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.TipoEspecie.Nombre, Busqueda.Contiene(request.Filter)));
 
             queryable = queryable
                 .OrderBy(x => x.TipoEspecie.EspecieId)

@@ -689,7 +689,7 @@ con
 modelBuilder.Entity<Romaneo>()
     .HasIndex(x => new { x.ListaMatanzaId, x.NumeroGarron })
     .IsUnique()
-    .HasFilter("[FechaBaja] IS NULL AND [Anulado] = 0");
+    .HasFilter("\"FechaBaja\" IS NULL AND \"Anulado\" = false");
 
 // Nº de romaneo único por (Establecimiento, Especie): índice único propio, más un
 // índice de apoyo por (ListaMatanzaId, NumeroRomaneo) para lecturas de jornada.

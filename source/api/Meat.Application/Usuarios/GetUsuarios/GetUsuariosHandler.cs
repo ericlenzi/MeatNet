@@ -35,11 +35,11 @@ namespace Meat.Application.Usuarios.GetUsuarios
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.Nombre.Contains(request.Filter) ||
-                    x.Apellido.Contains(request.Filter) ||
-                    x.UserName.Contains(request.Filter) ||
-                    x.Email.Contains(request.Filter) ||
-                    x.Legajo.Contains(request.Filter));
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Apellido, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.UserName, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Email, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Legajo, Busqueda.Contiene(request.Filter)));
 
             queryable = queryable.OrderBy(x => x.Apellido).ThenBy(x => x.Nombre);
 

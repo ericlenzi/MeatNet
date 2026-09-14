@@ -33,8 +33,8 @@ namespace Meat.Application.Puestos.GetPuestos
                     && (request.EspecieId == null || p.EspecieId == request.EspecieId)
                     && (request.Estado == null || p.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || p.CodigoPuesto.Contains(request.Filter)
-                        || p.Nombre.Contains(request.Filter))
+                        || EF.Functions.ILike(p.CodigoPuesto, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(p.Nombre, Busqueda.Contiene(request.Filter)))
                 orderby p.CodigoPuesto
                 select new PuestoItem
                 {

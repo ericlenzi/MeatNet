@@ -62,20 +62,22 @@ Meat (Host) → Meat.Application → Meat.Repositories → Meat.Domain
 - Al eliminar, EF intercepta el `Delete` y lo convierte en `Update FechaBaja = DateTime.Now`
 - Para borrar físicamente hay que bypassear el filtro
 
-### Queries de lectura (Meat.Queries)
-- Proyecto separado para consultas complejas/reportes que usan `IDbConnection` (ADO.NET/Dapper)
-- No pasa por EF Core — útil para consultas de solo lectura con SQL directo
+### SQL directo
+- No hay proyecto de consultas aparte ni `IDbConnection` registrado: todo pasa por `MeatContext`.
+- Cuando hace falta SQL a mano (`context.Database.ExecuteSqlRawAsync` / `SqlQueryRaw`, o
+  `migrationBuilder.Sql`) va en dialecto PostgreSQL: ver `docs/infraestructure.md`. Ese SQL **no**
+  aplica los query filters, así que el filtro por empresa y `FechaBaja` se escriben explícitos.
 
 ## Stack Técnico
 
 | Componente         | Tecnología                      | Versión  |
 |--------------------|---------------------------------|----------|
 | Runtime            | .NET 8                          | 8.0      |
-| ORM                | Entity Framework Core           | 8.0.0    |
-| Base de datos      | SQL Server (Microsoft.Data.SqlClient) | 5.2.0 |
+| ORM                | Entity Framework Core           | 8.0.11   |
+| Base de datos      | PostgreSQL (Npgsql.EntityFrameworkCore.PostgreSQL) | 8.0.11 |
 | Mediator           | MediatR                         | 12.4.1   |
 | Mapper             | AutoMapper                      | 16.1.1   |
-| Autenticación      | JWT Bearer                      | 8.0.0    |
+| Autenticación      | JWT Bearer (IdentityModel 8.14.0) | 8.0.31 |
 | Serialización      | Newtonsoft.Json                  | 13.0.3   |
 | Documentación API  | Swashbuckle (Swagger)           | 6.9.0    |
 | Observabilidad     | Application Insights            | 2.22.0   |
@@ -138,7 +140,11 @@ que solo aparecieron mucho despues: manuales desactualizados, comentarios apunta
   catalogo global + configuracion por empresa) esta en `CLAUDE.md` y en `docs/BasisCRUD.md` §4;
   el `MeatContext` la valida al construir el modelo
 - Soft delete: no agregar `FechaBaja` a la entidad — lo maneja `MeatContext` como shadow property
-- `FechaActualizacion` con default SQL `getdate()` donde aplique
+- `FechaActualizacion` la asigna la API (`DateTime.Now`), en la factory o en el handler. La base no
+  genera fechas (sin `now()` ni defaults de fecha): la API es el único reloj
+- Filtros de texto de los listados con `EF.Functions.ILike(columna, Busqueda.Contiene(request.Filter))`,
+  no con `.Contains(...)`: PostgreSQL distingue mayúsculas
+- Códigos que tipea el usuario con índice único: columna `citext` en la región `PostgreSQL` de `MeatContext`
 - Data Annotations para PK (`[Key]`, `[DatabaseGenerated(None)]`)
 
 ## API REST
@@ -147,12 +153,16 @@ que solo aparecieron mucho despues: manuales desactualizados, comentarios apunta
 - Para crear un nuevo endpoint CRUD: crear carpeta en Application, Handler, Request, Response, y agregar acción al Controller
 
 ## Migraciones EF Core
-- Assembly de migraciones: `Meat.Repositories`
+- Assembly de migraciones: `Meat.Repositories`, schema `meat` de PostgreSQL
 - Se aplican automáticamente en `Program.cs` con `context.Database.Migrate()`
 - **Nunca modificar una migración ya aplicada** — crear una nueva
+- Línea base: `01_InitialPostgres` (esquema) y `02_SeedCatalogos` (catálogos globales, empresa
+  administrativa y superadmin). El historial de SQL Server (migraciones 1 a 79) quedó en git.
+- Detalle y reglas del SQL a mano: `docs/infraestructure.md`
 
 ## Ambientes
-- Configuración por ambiente: `appsettings.{Environment}.json` (Development, Integration, Testing, Production)
+- Configuración por ambiente: solo `appsettings.Development.json` y `appsettings.Production.json`.
+  En producción los secretos van por variables de entorno (ver `docs/infraestructure.md`)
 - `IsApiLocal`: flag booleano que controla si corre el BackgroundService y App Insights
 
 ## Middleware

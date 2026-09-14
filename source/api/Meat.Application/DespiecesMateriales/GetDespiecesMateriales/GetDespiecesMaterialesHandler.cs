@@ -24,10 +24,10 @@ namespace Meat.Application.DespiecesMateriales.GetDespiecesMateriales
                 where (request.MaterialOrigenId == null || d.MaterialOrigenId == request.MaterialOrigenId)
                     && (request.Estado == null || d.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || d.MaterialOrigen.Nombre.Contains(request.Filter)
-                        || d.MaterialOrigen.CodigoMaterial.Contains(request.Filter)
-                        || d.MaterialDestino.Nombre.Contains(request.Filter)
-                        || d.MaterialDestino.CodigoMaterial.Contains(request.Filter))
+                        || EF.Functions.ILike(d.MaterialOrigen.Nombre, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(d.MaterialOrigen.CodigoMaterial, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(d.MaterialDestino.Nombre, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(d.MaterialDestino.CodigoMaterial, Busqueda.Contiene(request.Filter)))
                 orderby d.MaterialOrigen.Nombre, d.MaterialDestino.Nombre
                 select new DespieceMaterialItem
                 {

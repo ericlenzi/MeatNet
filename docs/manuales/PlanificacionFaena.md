@@ -233,14 +233,14 @@ Tabla `TiposEstadosListasMatanzas`. Se siembra en la migración.
 modelBuilder.Entity<ListaMatanza>()
     .HasIndex(x => new { x.EstablecimientoId, x.Fecha, x.EspecieId })
     .IsUnique()
-    .HasFilter("[FechaBaja] IS NULL AND [EstadoListaMatanzaId] <> 'ANULADA'");
+    .HasFilter("\"FechaBaja\" IS NULL AND \"EstadoListaMatanzaId\" <> 'ANULADA'");
 
 // Numero de lista unico por (Establecimiento, Especie): mismo alcance que el Numerador
 // LISTAMATANZA que lo genera.
 modelBuilder.Entity<ListaMatanza>()
     .HasIndex(x => new { x.EstablecimientoId, x.EspecieId, x.NumeroLista })
     .IsUnique()
-    .HasFilter("[FechaBaja] IS NULL");
+    .HasFilter("\"FechaBaja\" IS NULL");
 ```
 
 > La validación de unicidad también se hace en el handler (mensaje amigable HTTP 400),

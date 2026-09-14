@@ -27,10 +27,10 @@ namespace Meat.Application.Sucursales.GetSucursales
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.Nombre.Contains(request.Filter) ||
-                    x.CodigoSucursal.Contains(request.Filter) ||
-                    x.Localidad.Contains(request.Filter) ||
-                    x.Direccion.Contains(request.Filter));
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.CodigoSucursal, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Localidad, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.Direccion, Busqueda.Contiene(request.Filter)));
 
             queryable = queryable.OrderBy(x => x.CodigoSucursal);
 

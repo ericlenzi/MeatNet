@@ -37,9 +37,9 @@ namespace Meat.Application.Establecimientos.GetEstablecimientos
 
             if (!string.IsNullOrEmpty(request.Filter))
                 queryable = queryable.Where(x =>
-                    x.Nombre.Contains(request.Filter) ||
-                    x.CodigoEstablecimiento.Contains(request.Filter) ||
-                    x.NumeroSenasa.Contains(request.Filter));
+                    EF.Functions.ILike(x.Nombre, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.CodigoEstablecimiento, Busqueda.Contiene(request.Filter)) ||
+                    EF.Functions.ILike(x.NumeroSenasa, Busqueda.Contiene(request.Filter)));
 
             queryable = queryable.OrderBy(x => x.CodigoEstablecimiento);
 

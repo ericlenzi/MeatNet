@@ -30,8 +30,8 @@ namespace Meat.Application.RendimientosSubproductos.GetRendimientosSubproductos
                 where (request.EspecieId == null || r.EspecieId == request.EspecieId)
                     && (request.Estado == null || r.Activo == request.Estado)
                     && (string.IsNullOrEmpty(request.Filter)
-                        || m.Nombre.Contains(request.Filter)
-                        || m.CodigoMaterial.Contains(request.Filter))
+                        || EF.Functions.ILike(m.Nombre, Busqueda.Contiene(request.Filter))
+                        || EF.Functions.ILike(m.CodigoMaterial, Busqueda.Contiene(request.Filter)))
                 orderby r.EspecieId, m.Nombre
                 select new RendimientoSubproductoItem
                 {

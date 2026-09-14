@@ -175,7 +175,7 @@ stock se descuenta del corral. El ingreso pasa a **Anulado**.
 
 Convenciones del proyecto (ver `docs/BasisCRUD.md`): PK `Guid` autogenerada por factory,
 soft-delete vía shadow property `FechaBaja`, query filter global `WHERE FechaBaja IS NULL`,
-índices únicos **filtrados** con `HasFilter("[FechaBaja] IS NULL")`.
+índices únicos **filtrados** con `HasFilter("\"FechaBaja\" IS NULL")`.
 
 ### 5.1 `IngresoHacienda` (cabecera)
 
@@ -341,13 +341,13 @@ namespace Meat.Domain.IngresosHaciendas
 modelBuilder.Entity<IngresoHacienda>()
     .HasIndex(x => new { x.EstablecimientoId, x.NumeroIngreso })
     .IsUnique()
-    .HasFilter("[FechaBaja] IS NULL");
+    .HasFilter("\"FechaBaja\" IS NULL");
 
 // Número de tropa único por Cliente-Establecimiento + Especie
 modelBuilder.Entity<Tropa>()
     .HasIndex(x => new { x.ClienteEstablecimientoId, x.EspecieCodigo, x.NumeroTropa })
     .IsUnique()
-    .HasFilter("[FechaBaja] IS NULL");
+    .HasFilter("\"FechaBaja\" IS NULL");
 ```
 
 ---
