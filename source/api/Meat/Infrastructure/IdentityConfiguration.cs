@@ -60,15 +60,6 @@ namespace Meat.Infrastructure
                 };
             });
 
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy", builder =>
-                builder.AllowAnyOrigin()
-             .AllowAnyMethod()
-             .AllowAnyHeader()
-             );
-            });
-
             return services;
         }
 

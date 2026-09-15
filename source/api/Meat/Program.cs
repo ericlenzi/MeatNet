@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Meat.Application.Shared;
 using Meat.Domain.Shared;
@@ -21,13 +22,37 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
 
 builder.Services.AddDbContext<MeatContext>(options =>
+{
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Default"),
         // El historial de migraciones tambien va en el schema meat: public lo expone Supabase.
         npgsql => npgsql
             .MigrationsAssembly("Meat.Repositories")
-            .MigrationsHistoryTable("__EFMigrationsHistory", "meat"))
-    .EnableSensitiveDataLogging());
+            .MigrationsHistoryTable("__EFMigrationsHistory", "meat"));
+
+    // Vuelca a los logs los valores de las consultas: solo para desarrollo.
+    if (builder.Environment.IsDevelopment())
+        options.EnableSensitiveDataLogging();
+});
+
+// En produccion la API corre detras de nginx, que atiende HTTPS: sin esto no sabe que la request
+// original llego por HTTPS. Por defecto solo se aceptan los encabezados que manda localhost.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+
+// CORS: en desarrollo cualquier origen (Vite en localhost); en produccion solo los de Cors:Origins
+// (variable de entorno Cors__Origins__0 con el dominio de Vercel). Sin origenes configurados,
+// ningun navegador puede llamar a la API, pero la API arranca igual.
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? Array.Empty<string>();
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+{
+    if (builder.Environment.IsDevelopment())
+        policy.AllowAnyOrigin();
+    else
+        policy.WithOrigins(corsOrigins);
+
+    policy.AllowAnyMethod().AllowAnyHeader();
+}));
 
 builder.Services.AddSwagger();
 
@@ -55,15 +80,21 @@ else
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-app.UseCors(option => option.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "POS API V1"));
+
+// La documentacion de la API no se publica en produccion.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MeatNet API V1"));
+}
 
 using (var scope = app.Services.CreateScope())
 {

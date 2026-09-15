@@ -77,9 +77,18 @@ servicio en el VPS.
 | Variable | Qué es |
 |---|---|
 | `ConnectionStrings__Default` | Connection string de Supabase |
-| `JwtOptions__SigninKey` | Clave de firma JWT (la API no arranca con una de las claves versionadas en el repo) |
-| `Directories__Images` | Carpeta de imágenes (ruta Linux) |
+| `JwtOptions__SigninKey` | Clave de firma JWT, generada en el servidor. Sin ella la API no arranca, y tampoco con una de las claves versionadas en el repo |
+| `Cors__Origins__0` | Origen del frontend, por ejemplo `https://meatnet.vercel.app`. Se agregan más con `__1`, `__2`. Sin orígenes, ningún navegador puede llamar a la API |
 | `TZ` | `America/Argentina/Buenos_Aires` |
+
+Diferencias de comportamiento entre entornos (`Program.cs`):
+
+| | Development | Production |
+|---|---|---|
+| CORS | Cualquier origen | Solo `Cors:Origins` |
+| Swagger (`/swagger`) | Publicado | No se publica |
+| `EnableSensitiveDataLogging` | Activo | Apagado |
+| Encabezados `X-Forwarded-*` | Se aceptan de localhost (nginx en el mismo servidor) | Ídem |
 
 ## 4. Preparar PostgreSQL local
 
@@ -238,11 +247,14 @@ Remove-Variable secure, password, conn
   entra con la password de desarrollo. Cambiarla **antes** de abrir la API a otros usuarios.
 - **Región:** un VPS cercano a São Paulo. El Monitor de Faena refresca seguido y cada consulta suma la
   latencia de red.
-- **Migraciones:** decidir si se aplican a mano (§6.1) o con el `context.Database.Migrate()` de
-  `Program.cs`, que hoy las aplica al arrancar.
+- **Migraciones:** las aplica `context.Database.Migrate()` al arrancar la API (un solo VPS: deployar es
+  copiar y reiniciar). Aplicarlas a mano (§6.1) sigue siendo válido.
 - **Zona horaria:** un servidor Linux corre en UTC y `DateTime.Now` devolvería 3 horas de más.
   Configurar `TZ=America/Argentina/Buenos_Aires` en el servicio.
-- **Secretos y rutas:** variables de entorno de §3. `Directories:Images` hoy apunta a una ruta de Windows.
+- **Secretos:** variables de entorno de §3.
+- **Frontend en Vercel:** raíz del proyecto `source/web`, variable `VITE_API_BASE_URL` con la URL HTTPS de
+  la API. `source/web/vercel.json` reescribe todas las rutas a `index.html` (el frontend usa
+  `BrowserRouter`; sin la regla, recargar una ruta interna da 404).
 
 ## 7. Script de migración de datos desde SQL Server
 
