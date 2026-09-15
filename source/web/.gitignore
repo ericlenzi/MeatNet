@@ -1,2 +1,5 @@
 # Cache incremental de TypeScript
 *.tsbuildinfo
+
+# Salida del build: la genera Vercel al publicar
+dist/
