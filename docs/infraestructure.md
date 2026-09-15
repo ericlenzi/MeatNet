@@ -306,8 +306,11 @@ continuación se consumen como password. Validar antes con `sudo -v`.
   así que en una base nueva entra con la password de desarrollo. En producción se cambió el 2026-09-15
   desde "Cambiar contraseña". En cualquier base creada desde cero, cambiarla **antes** de abrir la
   aplicación a otros usuarios.
-- **Pendientes del servidor:** reinicio por actualización de kernel ("System restart required"), en un
-  horario que no afecte a la otra API; y deshabilitar el login SSH directo de `root`.
+- **Reinicios del servidor:** afectan también a la otra API. Antes de reiniciar, verificar que
+  `meatnet-api`, `galecore-datafeed` y `nginx` estén `enabled` (SSH arranca por `ssh.socket`) y que
+  `sudo nginx -t` pase; si SSH no vuelve, entrar por la consola del panel de DonWeb. El 2026-09-15 se
+  reinició por el kernel 6.8.0-139 y todo volvió solo.
+- **Pendiente del servidor:** deshabilitar el login SSH directo de `root`.
 
 ### 6.3 Frontend en Vercel *(desplegado el 2026-09-15)*
 
