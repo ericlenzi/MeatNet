@@ -47,7 +47,10 @@ source/web/src/
 ## Llamadas a la API
 - Centralizadas en `services/` — un archivo por entidad
 - Instancia Axios en `services/axios-instance.ts` con interceptores para JWT y manejo de 401
-- Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:5822`)
+- Variable de entorno: `VITE_API_BASE_URL`. En desarrollo sale de `.env.development`
+  (`http://localhost:5822`), que Vite solo carga con `npm run dev`; en producción la define Vercel
+  (ver `docs/infraestructure.md` §6.3). No crear un `.env` genérico: se carga en todos los modos y un
+  build de producción sin la variable quedaría apuntando a localhost sin avisar
 - Los endpoints de lista usan params `Filter`, `PageIndex`, `PageSize` y devuelven `{Data, TotalRows}`
 - **Un dato que el rol no puede leer no puede tumbar la pantalla.** Si un formulario carga datos de
   referencia que la API restringe a otro rol (el caso tipico es `/Empresas`, que es del SUPERADMIN),

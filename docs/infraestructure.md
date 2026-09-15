@@ -10,6 +10,9 @@ Consultarlo antes de tocar la conexión, los appsettings, las migraciones o cual
 | **Development** | Local (`dotnet run --project Meat`, puerto 5822) | PostgreSQL local, `localhost:5432`, base `meatnet` | `appsettings.Development.json` |
 | **Production** | VPS de DonWeb detrás de nginx: `https://vps-6285555-x.dattaweb.com/meatnet/` | Supabase, proyecto propio de MeatNet (São Paulo), base `postgres`, schema `meat` | `appsettings.Production.json` + variables de entorno |
 
+Frontend: en development `npm run dev` en `source/web` (Vite, `localhost:5173`, Node 20); en production
+Vercel, `https://meatnet.vercel.app` (ver §6.3).
+
 Solo existen esos dos entornos y esos dos archivos de configuración en `source/api/Meat/`.
 `launchSettings.json` levanta la API en `Development`, y `dotnet ef` también usa ese entorno
 (no hay `IDesignTimeDbContextFactory`).
@@ -303,9 +306,34 @@ continuación se consumen como password. Validar antes con `sudo -v`.
   entra con la password de desarrollo. Cambiarla **antes** de abrir la aplicación a otros usuarios.
 - **Pendientes del servidor:** reinicio por actualización de kernel ("System restart required"), en un
   horario que no afecte a la otra API; y deshabilitar el login SSH directo de `root`.
-- **Frontend en Vercel:** raíz del proyecto `source/web`, variable `VITE_API_BASE_URL` con la URL HTTPS de
-  la API. `source/web/vercel.json` reescribe todas las rutas a `index.html` (el frontend usa
-  `BrowserRouter`; sin la regla, recargar una ruta interna da 404).
+
+### 6.3 Frontend en Vercel *(desplegado el 2026-09-15)*
+
+| Aspecto | Valor |
+|---|---|
+| URL | `https://meatnet.vercel.app` |
+| Proyecto | `meatnet`, importado de `ericlenzi/MeatNet` |
+| Rama de producción | `master` (la rama por defecto). Se publica mergeando `development` en `master` |
+| Root Directory | `source/web` (preset Vite: `npm run build`, salida `dist`) |
+| Variable | `VITE_API_BASE_URL` = `https://vps-6285555-x.dattaweb.com/meatnet`, sin barra final, entorno Production |
+| Plan | Hobby: uso personal y no comercial. Para uso comercial corresponde Pro |
+
+- **Visibilidad de la variable: *Config*, no *Secret*/*Sensitive*.** Las variables `VITE_` se copian al
+  JavaScript que descarga el navegador, así que Vercel no deja marcarlas como secretas y rechaza guardarla.
+  No es un secreto: es la dirección pública de la API.
+- **Vite fija la variable al compilar.** Cambiarla en Vercel no alcanza: hay que hacer **Redeploy** sin
+  la caché del build. Si la variable falta, el build **no falla**: queda sin URL de la API y las llamadas
+  van contra el propio dominio de Vercel, así que el login falla. Verificar en el JavaScript publicado
+  que aparezca la URL de la API.
+- **`source/web/.env.development`** tiene `VITE_API_BASE_URL=http://localhost:5822` para `npm run dev`.
+  Vite solo lo carga en modo desarrollo, así que nunca entra en un build de producción. Antes se llamaba
+  `.env` y se cargaba en todos los modos: con la variable mal cargada en Vercel, el primer deploy salió
+  apuntando a `localhost:5822` sin ningún error.
+- **`source/web/vercel.json`** reescribe todas las rutas a `index.html`: el frontend usa `BrowserRouter`
+  y sin la regla recargar una ruta interna da 404.
+- **CORS:** la API acepta solo `https://meatnet.vercel.app` (`Cors__Origins__0` en `/etc/meatnet/api.env`,
+  y `sudo systemctl restart meatnet-api`). Las URLs de *preview* de Vercel no están habilitadas. Otro
+  dominio se agrega como `Cors__Origins__1`.
 
 ## 7. Script de migración de datos desde SQL Server
 
