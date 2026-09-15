@@ -302,8 +302,10 @@ Antes de recargar siempre `sudo nginx -t`.
 En la sesión SSH, **pegar de a un comando**: si `sudo` pide la password, las líneas pegadas a
 continuación se consumen como password. Validar antes con `sudo -v`.
 
-- **Password del `superadmin`:** el seed copió el hash de la base de desarrollo, así que en producción
-  entra con la password de desarrollo. Cambiarla **antes** de abrir la aplicación a otros usuarios.
+- **Password del `superadmin`:** el seed (`02_SeedCatalogos`) copia el hash de la base de desarrollo,
+  así que en una base nueva entra con la password de desarrollo. En producción se cambió el 2026-09-15
+  desde "Cambiar contraseña". En cualquier base creada desde cero, cambiarla **antes** de abrir la
+  aplicación a otros usuarios.
 - **Pendientes del servidor:** reinicio por actualización de kernel ("System restart required"), en un
   horario que no afecte a la otra API; y deshabilitar el login SSH directo de `root`.
 
