@@ -8,7 +8,7 @@ Consultarlo antes de tocar la conexión, los appsettings, las migraciones o cual
 | Entorno | API | Base de datos | Configuración |
 |---|---|---|---|
 | **Development** | Local (`dotnet run --project Meat`, puerto 5822) | PostgreSQL local, `localhost:5432`, base `meatnet` | `appsettings.Development.json` |
-| **Production** | VPS *(pendiente de deploy)* | Supabase, proyecto propio de MeatNet (São Paulo), base `postgres`, schema `meat` | `appsettings.Production.json` + variables de entorno |
+| **Production** | VPS de DonWeb detrás de nginx: `https://vps-6285555-x.dattaweb.com/meatnet/` | Supabase, proyecto propio de MeatNet (São Paulo), base `postgres`, schema `meat` | `appsettings.Production.json` + variables de entorno |
 
 Solo existen esos dos entornos y esos dos archivos de configuración en `source/api/Meat/`.
 `launchSettings.json` levanta la API en `Development`, y `dotnet ef` también usa ese entorno
@@ -79,7 +79,7 @@ servicio en el VPS.
 | `ConnectionStrings__Default` | Connection string de Supabase |
 | `JwtOptions__SigninKey` | Clave de firma JWT, generada en el servidor. Sin ella la API no arranca, y tampoco con una de las claves versionadas en el repo |
 | `Cors__Origins__0` | Origen del frontend, por ejemplo `https://meatnet.vercel.app`. Se agregan más con `__1`, `__2`. Sin orígenes, ningún navegador puede llamar a la API |
-| `TZ` | `America/Argentina/Buenos_Aires` |
+| `ASPNETCORE_ENVIRONMENT` / `ASPNETCORE_URLS` | `Production` / `http://127.0.0.1:5002` (solo local: el acceso público es por nginx) |
 
 Diferencias de comportamiento entre entornos (`Program.cs`):
 
@@ -181,8 +181,14 @@ inactividad, los recursos y la password de `postgres` afecten a los dos proyecto
 | Project ref | En la URL del dashboard: `supabase.com/dashboard/project/<project-ref>` |
 
 **Preparación de la base** (una sola vez, en *SQL Editor*, como `postgres`). La password de `meatnet`
-es propia de producción, se guarda en un gestor de contraseñas y no debe contener `;`. No guardar la
-query como snippet.
+es propia de producción, se guarda en un gestor de contraseñas y tiene **solo letras y números**
+(32 caracteres o más): `;` rompe la connection string, y comillas o barras invertidas las interpreta
+el `EnvironmentFile` de systemd, con lo que la API manda otra password. No guardar la query como snippet.
+
+> **Supabase bloquea la IP tras 2 passwords incorrectas seguidas** (30 minutos, las conexiones reciben
+> `Connection refused`). Se ve y se levanta en *Database → Settings → Network Bans*. Un servicio que se
+> reinicia solo con una password mal cargada dispara el bloqueo en segundos: ante un `28P01` detener el
+> servicio antes de corregir.
 
 ```sql
 -- citext en el schema extensions, como recomienda Supabase
@@ -241,17 +247,62 @@ Remove-Variable secure, password, conn
 | Columnas `citext` / con collation `es-AR-x-icu` | 12 / 203 |
 | `set search_path = meat, public, extensions;` y buscar `UserName = 'SUPERADMIN'` | `superadmin` |
 
-### 6.2 API en el VPS *(pendiente)*
+### 6.2 API en el VPS *(desplegada el 2026-09-15)*
+
+**Servidor.** VPS de DonWeb, Ubuntu 24.04, 2 núcleos, 1,9 GB de RAM. **Lo comparte con otra API**
+(`galecore-datafeed`, .NET en `127.0.0.1:5001`): cualquier cambio en nginx o en el sistema tiene que
+cuidarla. SSH en el puerto 5061; administrar con el usuario `elenzi` y `sudo`. El servidor ya está en
+hora de Argentina (`timedatectl`), así que no hace falta `TZ` y `DateTime.Now` da la hora correcta.
+.NET: ASP.NET Core Runtime 8.0.31 de los paquetes de Ubuntu.
+
+| Pieza | MeatNet |
+|---|---|
+| Usuario de sistema (sin login) | `meatnet` |
+| Aplicación | `/srv/meatnet/app` (archivos de `root`, el servicio solo los lee) |
+| Secretos | `/etc/meatnet/api.env` (`root`, permisos 600) |
+| Servicio systemd | `meatnet-api` → `/etc/systemd/system/meatnet-api.service` |
+| Puerto interno | `127.0.0.1:5002` |
+| nginx | `/etc/nginx/snippets/meatnet-api.conf`, incluido en el sitio `galecore-datafeed` antes de su `location /` |
+| URL pública | `https://vps-6285555-x.dattaweb.com/meatnet/` (certificado Let's Encrypt del sitio existente) |
+| Base de datos | Conexión directa por IPv6 a `db.<project-ref>.supabase.co:5432`, usuario `meatnet` |
+
+**nginx.** El `location /meatnet/` hace `proxy_pass http://127.0.0.1:5002/`: la barra final saca el
+prefijo, así que la API recibe `/Clientes` y no necesita saber que vive bajo `/meatnet`. `location =
+/meatnet` redirige a `/meatnet/`. nginx elige el prefijo más largo, por eso galecore sigue recibiendo
+todo lo demás. Copia del sitio anterior al cambio: `/etc/nginx/sites-available/galecore-datafeed.bak-meatnet`.
+Antes de recargar siempre `sudo nginx -t`.
+
+**Deployar una versión nueva.**
+1. En la PC: `dotnet publish source\api\Meat\Meat.csproj -c Release -o <carpeta>` y empaquetar sin
+   `appsettings.Development.json`: `tar -czf meatnet-api.tar.gz --exclude=./appsettings.Development.json -C <carpeta> .`
+2. Copiar desde **PowerShell en la PC** (no desde la sesión SSH):
+   `scp -P 5061 meatnet-api.tar.gz elenzi@<ip-del-vps>:/tmp/meatnet-api.tar.gz`
+3. En el VPS, descomprimir en una carpeta nueva e intercambiarla con la actual, dejando la anterior
+   en `/srv/meatnet/app.old` para volver atrás:
+
+   ```bash
+   sudo -v && sudo systemctl stop meatnet-api && sudo rm -rf /srv/meatnet/app.new && sudo install -d -o root -g root -m 755 /srv/meatnet/app.new && sudo tar -xzf /tmp/meatnet-api.tar.gz -C /srv/meatnet/app.new && sudo chown -R root:root /srv/meatnet/app.new && sudo chmod -R u=rwX,go=rX /srv/meatnet/app.new && sudo rm -rf /srv/meatnet/app.old && sudo mv /srv/meatnet/app /srv/meatnet/app.old && sudo mv /srv/meatnet/app.new /srv/meatnet/app && rm /tmp/meatnet-api.tar.gz
+   ```
+
+   Volver atrás: `sudo systemctl stop meatnet-api`, `mv` de `app.old` a `app` y arrancar.
+4. Arranque controlado: si el servicio falla, se detiene antes del segundo intento (así una
+   password mal cargada no dispara el bloqueo de IP de Supabase). Las migraciones pendientes las
+   aplica `Migrate()` al arrancar.
+
+   ```bash
+   sudo systemctl start meatnet-api; sleep 6; if systemctl is-active --quiet meatnet-api; then echo ACTIVO; else sudo systemctl stop meatnet-api; echo "FALLO: detenido"; fi; sudo journalctl -u meatnet-api -n 20 --no-pager -o cat
+   ```
+5. Verificar sin token: `/Usuarios` y cualquier endpoint que no sea el login responden `401`
+   (`curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5002/Usuarios`), y el login con un
+   usuario inexistente responde `400`.
+
+En la sesión SSH, **pegar de a un comando**: si `sudo` pide la password, las líneas pegadas a
+continuación se consumen como password. Validar antes con `sudo -v`.
 
 - **Password del `superadmin`:** el seed copió el hash de la base de desarrollo, así que en producción
-  entra con la password de desarrollo. Cambiarla **antes** de abrir la API a otros usuarios.
-- **Región:** un VPS cercano a São Paulo. El Monitor de Faena refresca seguido y cada consulta suma la
-  latencia de red.
-- **Migraciones:** las aplica `context.Database.Migrate()` al arrancar la API (un solo VPS: deployar es
-  copiar y reiniciar). Aplicarlas a mano (§6.1) sigue siendo válido.
-- **Zona horaria:** un servidor Linux corre en UTC y `DateTime.Now` devolvería 3 horas de más.
-  Configurar `TZ=America/Argentina/Buenos_Aires` en el servicio.
-- **Secretos:** variables de entorno de §3.
+  entra con la password de desarrollo. Cambiarla **antes** de abrir la aplicación a otros usuarios.
+- **Pendientes del servidor:** reinicio por actualización de kernel ("System restart required"), en un
+  horario que no afecte a la otra API; y deshabilitar el login SSH directo de `root`.
 - **Frontend en Vercel:** raíz del proyecto `source/web`, variable `VITE_API_BASE_URL` con la URL HTTPS de
   la API. `source/web/vercel.json` reescribe todas las rutas a `index.html` (el frontend usa
   `BrowserRouter`; sin la regla, recargar una ruta interna da 404).
