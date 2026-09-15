@@ -109,6 +109,13 @@ TiposMovimientosCamaras, MovimientosCamaras
 
 ## Autenticación y Autorización
 - JWT con clave simétrica (HMAC SHA-256), configurada en `JwtOptions:SigninKey`
+- **Autenticado por defecto:** `Program.cs` define una `FallbackPolicy` que exige usuario autenticado en
+  todo endpoint. El único `[AllowAnonymous]` es el login (`POST /Autenticacion`); no agregar otros sin
+  una razón explícita. Aun así, cada controller declara su `[Authorize(Roles = ...)]`: la política por
+  defecto solo evita que un olvido deje un endpoint abierto a internet.
+- Nunca tomar de la request el Id del usuario sobre el que se opera cuando la operación es "sobre uno
+  mismo": sale del token (`CurrentUser.Id`), como en `/Autenticacion/CambiarContraseña`.
+- El rol `SUPERADMIN` no se asigna desde el ABM de usuarios (`UsuarioValidacion.ValidarRolAsignable`).
 - Roles en claims: controllers usan `[Authorize(Roles = "ABASTADMIN,ADMIN")]`. Los roles vigentes
   son `SUPERADMIN`, `ADMIN`, `ABASTADMIN`, `ABAST`, `FAENAADMIN` y `FAENA`.
 - `MeatBaseController.CurrentUser` extrae Id, UserName, RolId, CodigoEmpresa del token

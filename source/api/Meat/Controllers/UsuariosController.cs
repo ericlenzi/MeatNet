@@ -1,21 +1,23 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Meat.Application.Usuarios.CreateUsuario;
 using Meat.Application.Usuarios.DeleteUsuario;
 using Meat.Application.Usuarios.GetUsuario;
 using Meat.Application.Usuarios.GetUsuarios;
-using Meat.Application.Usuarios.IsAutorizador;
 using Meat.Application.Usuarios.UpdateUsuario;
-using Meat.Application.Usuarios.ImportUsuarios;
+using Meat.Application.Usuarios.RestaurarPasswordUsuario;
 using System;
 using System.Threading.Tasks;
-using Meat.Application.Usuarios.ResetearPasswordUsuario;
-using Meat.Application.Usuarios.RestaurarPasswordUsuario;
+
 namespace Meat.Controllers
 {
+    // El ABM de usuarios es del ADMIN de cada empresa (el menu solo se lo muestra a ese rol) y el
+    // query filter lo limita a los usuarios de su empresa. Cada usuario cambia su propia password
+    // por /Autenticacion/CambiarContraseña.
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "ADMIN")]
     public class UsuariosController : MeatBaseController
     {
         public UsuariosController(IMediator mediator)
@@ -56,21 +58,7 @@ namespace Meat.Controllers
             new DeleteUsuarioRequest { Id = id }
         );
 
-        [HttpPost("IsAutorizador")]
-        public async Task<IActionResult> IsAutorizador([FromBody] IsAutorizadorRequest request) => await this.Handle(request);
-
-        [HttpPost("Import")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ImportUsuariosAsync([FromBody] ImportUsuariosRequest request) => await this.Handle(request);
-
-        [HttpPut("ResetearPassword")]
-        public async Task<IActionResult> ChangePassAsync([FromBody] ResetearPasswordUsuarioRequest request)
-        {
-            return await this.Handle(request);
-        }
-
         [HttpPut("{id}/RestaurarPassword")]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> RestaurarPasswordAsync([FromRoute] Guid id) => await this.Handle(
             new RestaurarPasswordUsuarioRequest
             {

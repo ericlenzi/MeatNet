@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Meat.Application.Shared;
@@ -71,6 +72,11 @@ var isApiLocal = builder.Configuration.GetValue<bool>("IsApiLocal");
 builder.Services.AddScoped<IsApiLocal>(_ => new IsApiLocal(isApiLocal));
 
 builder.Services.AddIdentityServices(builder.Configuration, builder.Environment.IsDevelopment());
+
+// Todo endpoint exige usuario autenticado salvo que declare [AllowAnonymous] (hoy solo el login).
+// Asi un controller que olvide [Authorize] no queda abierto a internet.
+builder.Services.AddAuthorization(options =>
+    options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 builder.Services.AddApplicationInsightsTelemetry();
 
 if (!isApiLocal)

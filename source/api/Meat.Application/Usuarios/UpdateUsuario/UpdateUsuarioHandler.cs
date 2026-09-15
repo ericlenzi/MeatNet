@@ -4,6 +4,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Meat.Application.Shared;
+using Meat.Application.Usuarios.Shared;
 using Meat.Repositories;
 using System;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace Meat.Application.Usuarios.UpdateUsuario
 
         public async Task<UpdateUsuarioResponse> Handle(UpdateUsuarioRequest request, CancellationToken cancellationToken)
         {
+            UsuarioValidacion.ValidarRolAsignable(request.RolId);
+
             var usuario = await this.context.Usuarios
                 .FirstOrDefaultAsync(x => x.Id == request.Id);
 

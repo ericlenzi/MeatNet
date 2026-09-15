@@ -4,7 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meat.Application.Shared.GeneratePassword;
 using System.Linq;
-using System.ComponentModel.DataAnnotations;
+using Meat.Application.Shared;
+using Meat.Application.Usuarios.Shared;
 
 namespace Meat.Application.Usuarios.CreateUsuario
 {
@@ -21,6 +22,8 @@ namespace Meat.Application.Usuarios.CreateUsuario
 
         public async Task<CreateUsuarioResponse> Handle(CreateUsuarioRequest request, CancellationToken cancellationToken)
         {
+            UsuarioValidacion.ValidarRolAsignable(request.RolId);
+
             if (this.context.Usuarios.FirstOrDefault(x => x.UserName == request.UserName) != null)
             {
                 throw new ValidationException("Ya existe un usuario con el nombre de usuario ingresado.");
