@@ -1,0 +1,9 @@
+{
+  "_comentario": "Copiar como tools/deploy.config.json (no se versiona) y completar los valores.",
+  "SshHost": "meatnet",
+  "ApiPublicUrl": "https://vps-6285555-x.dattaweb.com/meatnet",
+  "SupabaseHost": "aws-0-sa-east-1.pooler.supabase.com",
+  "SupabaseUser": "meatnet.<project-ref>",
+  "BackupDir": "C:\\Users\\Usuario\\Backups\\meatnet",
+  "PgDump": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_dump.exe"
+}

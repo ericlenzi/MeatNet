@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+#
+# meatnet-deploy — instala en el VPS la version de la API que dejo tools/deploy.ps1 en /tmp.
+#
+# Se instala en /usr/local/sbin/meatnet-deploy (root:root, 750) y se corre con sudo.
+# La version anterior queda en /srv/meatnet/app.old: si la nueva no levanta, vuelve sola a ella.
+#
+#   sudo /usr/local/sbin/meatnet-deploy              instala /tmp/meatnet-api.tar.gz
+#   sudo /usr/local/sbin/meatnet-deploy --rollback   vuelve a la version anterior
+#
+set -euo pipefail
+
+SERVICIO=meatnet-api
+APP=/srv/meatnet/app
+TARBALL=/tmp/meatnet-api.tar.gz
+ENDPOINT=http://127.0.0.1:5002/Usuarios
+ESPERA=60
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "meatnet-deploy: hay que correrlo con sudo." >&2
+    exit 1
+fi
+
+# La API responde 401 sin token en cualquier endpoint que no sea el login: eso alcanza para saber
+# que arranco, conecto a la base y aplico las migraciones pendientes.
+esperar_arranque() {
+    local i codigo
+    for ((i = 0; i < ESPERA; i++)); do
+        if ! systemctl is-active --quiet "$SERVICIO"; then
+            return 1
+        fi
+        codigo=$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$ENDPOINT" || true)
+        if [ "$codigo" = "401" ]; then
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
+intercambiar() {
+    local origen=$1 destino=$2
+    rm -rf "$destino.tmp"
+    mv "$origen" "$destino.tmp"
+    mv "$destino" "$origen"
+    mv "$destino.tmp" "$destino"
+}
+
+deploy() {
+    if [ ! -f "$TARBALL" ]; then
+        echo "meatnet-deploy: no esta $TARBALL. Copiarlo primero con scp." >&2
+        exit 1
+    fi
+
+    echo "==> Descomprimiendo la version nueva"
+    rm -rf "$APP.new"
+    install -d -o root -g root -m 755 "$APP.new"
+    tar -xzf "$TARBALL" -C "$APP.new"
+    chown -R root:root "$APP.new"
+    chmod -R u=rwX,go=rX "$APP.new"
+
+    if [ ! -f "$APP.new/Meat.dll" ]; then
+        echo "meatnet-deploy: el paquete no tiene Meat.dll. No se toca la version actual." >&2
+        rm -rf "$APP.new"
+        exit 1
+    fi
+
+    echo "==> Deteniendo $SERVICIO"
+    systemctl stop "$SERVICIO"
+
+    rm -rf "$APP.old"
+    mv "$APP" "$APP.old"
+    mv "$APP.new" "$APP"
+    rm -f "$TARBALL"
+
+    echo "==> Arrancando $SERVICIO (aplica las migraciones pendientes)"
+    systemctl start "$SERVICIO"
+
+    if esperar_arranque; then
+        echo "==> OK: la version nueva esta respondiendo."
+        journalctl -u "$SERVICIO" -n 10 --no-pager -o cat
+        exit 0
+    fi
+
+    # El log se guarda antes de volver atras: despues del rollback muestra el arranque bueno.
+    local log
+    log=$(journalctl -u "$SERVICIO" -n 40 --no-pager -o cat || true)
+
+    echo "==> FALLO el arranque. Volviendo a la version anterior." >&2
+    systemctl stop "$SERVICIO" || true
+    intercambiar "$APP" "$APP.old"
+    systemctl start "$SERVICIO" || true
+
+    if esperar_arranque; then
+        echo "==> La version anterior quedo andando." >&2
+    else
+        echo "==> ATENCION: la version anterior TAMPOCO levanta. Produccion esta caida." >&2
+        systemctl stop "$SERVICIO" || true
+    fi
+
+    echo >&2
+    echo "--- log de la version que fallo ---" >&2
+    echo "$log" >&2
+    echo "-----------------------------------" >&2
+    echo "Si alcanzo a aplicar migraciones, la base quedo adelantada respecto del codigo." >&2
+    exit 1
+}
+
+rollback() {
+    if [ ! -d "$APP.old" ]; then
+        echo "meatnet-deploy: no hay $APP.old para volver." >&2
+        exit 1
+    fi
+
+    echo "==> Volviendo a la version de $APP.old"
+    systemctl stop "$SERVICIO"
+    intercambiar "$APP" "$APP.old"
+    systemctl start "$SERVICIO"
+
+    if esperar_arranque; then
+        echo "==> OK: la version anterior esta respondiendo."
+        exit 0
+    fi
+
+    echo "==> FALLO: la version anterior no levanta." >&2
+    journalctl -u "$SERVICIO" -n 40 --no-pager -o cat >&2
+    exit 1
+}
+
+case "${1:-deploy}" in
+    deploy) deploy ;;
+    --rollback) rollback ;;
+    *)
+        echo "uso: meatnet-deploy [--rollback]" >&2
+        exit 2
+        ;;
+esac

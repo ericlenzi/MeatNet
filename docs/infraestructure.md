@@ -340,6 +340,113 @@ continuación se consumen como password. Validar antes con `sudo -v`.
   y `sudo systemctl restart meatnet-api`). Las URLs de *preview* de Vercel no están habilitadas. Otro
   dominio se agrega como `Cors__Origins__1`.
 
+### 6.4 Pasar una versión a producción
+
+Punto de partida: todo commiteado y pusheado en `development`. Desde la raíz del repo, en PowerShell:
+
+```powershell
+.\tools\deploy.ps1
+```
+
+El script hace todo el procedimiento y corta ante el primer problema. Antes de tocar nada muestra los
+commits que salen y pide confirmación. Opciones: `-SkipBuild` (reintentar sin recompilar),
+`-SkipBackup` (solo si la versión no trae migraciones) y `-Force` (sin confirmación).
+
+El orden que respeta es **base → API → frontend**, por dos motivos:
+
+- **Backup antes que nada**, porque el plan Free de Supabase no tiene backups y la API aplica las
+  migraciones sola al arrancar.
+- **API antes que frontend**, porque Vercel publica apenas se pushea `master`: un frontend nuevo
+  contra la API vieja llama endpoints que no existen. Por eso el merge a `master` se hace local y el
+  push queda para el final, después de verificar que la API responda.
+
+#### Qué hace, paso a paso
+
+| # | Paso | Detalle |
+|---|---|---|
+| 1 | Estado de git | Exige estar en `development`, sin cambios sin commitear y en sincronía con `origin`. Lista los commits que salen y avisa si hay migraciones o cambios de configuración |
+| 2 | Compilación | `dotnet build -c Release` y, en `source/web`, `npm ci` + `npm run build`. Vercel corre `tsc -b`, así que un error de tipos que `npm run dev` tolera haría fallar el deploy allá |
+| 3 | Backup | `pg_dump -n meat -Fc` del schema entero al `BackupDir` de la configuración. Pide la password de Supabase (o la toma de `MEATNET_DB_PASSWORD`) |
+| 4 | Merge | `git checkout master`, `pull --ff-only`, `merge --ff-only development`. **No** pushea |
+| 5 | Publicación de la API | `dotnet publish` en una carpeta limpia, `tar` sin `appsettings.Development.json`, `scp` al VPS y `sudo meatnet-deploy` (ver abajo) |
+| 6 | Verificación | `GET /Usuarios` contra la URL pública tiene que dar `401`. Si no, no se pushea nada |
+| 7 | Frontend | `git push origin master` — eso dispara el build de Vercel — y vuelve a `development` |
+
+Queda una sola cosa a mano: **esperar el estado *Ready* en Vercel** y probar `https://meatnet.vercel.app`
+con Ctrl+F5 (login y las pantallas que cambiaron, mirando que las llamadas vayan al VPS y no den CORS).
+
+Dos avisos del paso 1 que **no** se resuelven solos, porque van fuera del repo:
+
+| Si cambió… | Hay que… |
+|---|---|
+| Configuración de la API que necesita un valor nuevo | Agregarlo en `/etc/meatnet/api.env` en el VPS antes de deployar |
+| Una variable `VITE_` nueva | Cargarla en Vercel (entorno Production, visibilidad *Config*) antes de deployar |
+
+#### `meatnet-deploy`, del lado del VPS
+
+`tools/vps/meatnet-deploy` se instala en `/usr/local/sbin/`. Detiene el servicio, deja la versión
+anterior en `/srv/meatnet/app.old`, descomprime la nueva y la arranca; espera hasta 60 segundos a que
+`127.0.0.1:5002/Usuarios` devuelva `401` (eso prueba que arrancó, conectó a la base y aplicó las
+migraciones). **Si no levanta, vuelve solo a la versión anterior**, la arranca y muestra el log de la
+que falló. Como devuelve un código de error, `deploy.ps1` corta ahí y nunca pushea `master`.
+
+#### Preparación por única vez
+
+1. **Configuración local.** Copiar `tools/deploy.config.example.json` a `tools/deploy.config.json`
+   (no se versiona) y completar el project-ref de Supabase, la carpeta de backups y la ruta de
+   `pg_dump.exe`.
+2. **Alias SSH** en `~/.ssh/config`, para que `scp` y `ssh` no necesiten argumentos:
+
+   ```
+   Host meatnet
+       HostName <ip-del-vps>
+       User elenzi
+       Port 5061
+       IdentityFile ~/.ssh/id_ed25519
+   ```
+
+   La clave pública tiene que estar en `~/.ssh/authorized_keys` del VPS
+   (`ssh-copy-id` o pegarla a mano) y la privada **sin passphrase**, o el script se queda esperando.
+3. **Script en el VPS.** Copiarlo y darle permisos:
+
+   ```powershell
+   scp tools\vps\meatnet-deploy meatnet:/tmp/meatnet-deploy
+   ```
+
+   ```bash
+   sudo install -o root -g root -m 750 /tmp/meatnet-deploy /usr/local/sbin/meatnet-deploy && rm /tmp/meatnet-deploy
+   ```
+
+4. **`sudo` sin password, solo para ese script.** Si no, la sesión SSH no interactiva se cuelga
+   pidiéndola:
+
+   ```bash
+   echo 'elenzi ALL=(root) NOPASSWD: /usr/local/sbin/meatnet-deploy' | sudo tee /etc/sudoers.d/meatnet-deploy
+   sudo chmod 440 /etc/sudoers.d/meatnet-deploy
+   sudo visudo -c
+   ```
+
+   El archivo lo escribe `root` y solo `root` puede modificarlo, así que el permiso alcanza para
+   deployar y para nada más. Verificar con `ssh meatnet 'sudo -n true && echo ok'`.
+
+Cuando se cambia el script del VPS hay que repetir el punto 3: `deploy.ps1` no lo actualiza.
+
+#### Volver atrás
+
+| Qué | Cómo |
+|---|---|
+| Frontend | Vercel → *Deployments* → deploy anterior → **Instant Rollback**. No toca git |
+| API | `ssh meatnet 'sudo /usr/local/sbin/meatnet-deploy --rollback'` — intercambia `app` con `app.old` y verifica que arranque. Un segundo `--rollback` vuelve a la otra |
+| API con migraciones nuevas | La versión vieja no necesariamente arranca contra el esquema nuevo. Con el servicio detenido, desde la PC: `dotnet ef database update <UltimaMigracionAnterior> --connection $conn` (ejecuta los `Down`), y después el `--rollback`. Si el `Down` falla o pierde datos, restaurar el backup |
+| Restaurar el backup | Con el servicio detenido: `pg_restore.exe -h <host> -U meatnet.<project-ref> -d postgres --clean --if-exists -n meat <archivo>.dump`, con `PGPASSWORD` y `PGSSLMODE=require` en el entorno |
+| git | No reescribir `master`: corregir en `development` (o `git revert`) y volver a correr el script |
+
+#### A mano, sin el script
+
+El procedimiento manual completo está en el paso a paso de §6.2 (publicación en el VPS) y en los
+comandos de §6.1 (migraciones contra Supabase). El script no hace nada que no esté ahí: la única
+diferencia es que encadena los pasos y verifica cada uno.
+
 ## 7. Script de migración de datos desde SQL Server
 
 `tools/migrar-sqlserver-a-postgres.py` copió los datos de desarrollo de SQL Server a PostgreSQL al
