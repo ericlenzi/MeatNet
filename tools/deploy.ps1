@@ -153,6 +153,18 @@ function Test-EstadoGit {
     return $hayMigraciones
 }
 
+# El build de la web necesita Node 20 (Tailwind 4 lo exige, y con una version menor npm ni siquiera
+# instala su binario nativo: vite build falla recien al final, sin decir que el problema es Node).
+function Test-Node {
+    $version = & node --version
+    if ($LASTEXITCODE -ne 0 -or -not $version) { throw 'No se encontro node en el PATH.' }
+    $mayor = [int]($version.TrimStart('v').Split('.')[0])
+    if ($mayor -lt 20) {
+        throw "El build de la web necesita Node 20 o mayor y esta activo $version. Cambiar con 'nvm use 20' y volver a correr el script."
+    }
+    Write-Host "    Node $version"
+}
+
 # npm ci empieza por borrar node_modules y en Windows falla con EPERM (-4048) si el dev server de
 # Vite tiene tomados los archivos, dejandolo ademas a medio borrar. Se chequea antes de tocar nada.
 function Test-DevServer {
@@ -282,7 +294,11 @@ function Publish-Frontend {
 Push-Location $Repo
 try {
     $config = Read-Config
-    if (-not $SkipBuild) { Test-DevServer }
+    if (-not $SkipBuild) {
+        Write-Paso 'Entorno local'
+        Test-Node
+        Test-DevServer
+    }
     $hayMigraciones = Test-EstadoGit
 
     if ($SkipBackup -and $hayMigraciones) {
