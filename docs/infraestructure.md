@@ -390,7 +390,7 @@ anterior en `/srv/meatnet/app.old`, descomprime la nueva y la arranca; espera ha
 migraciones). **Si no levanta, vuelve solo a la versión anterior**, la arranca y muestra el log de la
 que falló. Como devuelve un código de error, `deploy.ps1` corta ahí y nunca pushea `master`.
 
-#### Preparación por única vez
+#### Preparación por única vez *(hecha el 2026-09-28)*
 
 1. **Configuración local.** Copiar `tools/deploy.config.example.json` a `tools/deploy.config.json`
    (no se versiona) y completar el project-ref de Supabase, la carpeta de backups y la ruta de
@@ -417,17 +417,15 @@ que falló. Como devuelve un código de error, `deploy.ps1` corta ahí y nunca p
    sudo install -o root -g root -m 750 /tmp/meatnet-deploy /usr/local/sbin/meatnet-deploy && rm /tmp/meatnet-deploy
    ```
 
-4. **`sudo` sin password, solo para ese script.** Si no, la sesión SSH no interactiva se cuelga
-   pidiéndola:
+4. **`sudo` sin password.** Si la pide, la sesión SSH no interactiva se cuelga esperándola.
+   Verificar con `ssh meatnet 'sudo -n true && echo ok'`. Si no responde `ok`, habilitar solo el
+   script:
 
    ```bash
    echo 'elenzi ALL=(root) NOPASSWD: /usr/local/sbin/meatnet-deploy' | sudo tee /etc/sudoers.d/meatnet-deploy
    sudo chmod 440 /etc/sudoers.d/meatnet-deploy
    sudo visudo -c
    ```
-
-   El archivo lo escribe `root` y solo `root` puede modificarlo, así que el permiso alcanza para
-   deployar y para nada más. Verificar con `ssh meatnet 'sudo -n true && echo ok'`.
 
 Cuando se cambia el script del VPS hay que repetir el punto 3: `deploy.ps1` no lo actualiza.
 
