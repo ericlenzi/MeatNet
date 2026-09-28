@@ -375,6 +375,26 @@ El orden que respeta es **base → API → frontend**, por dos motivos:
 Queda una sola cosa a mano: **esperar el estado *Ready* en Vercel** y probar `https://meatnet.vercel.app`
 con Ctrl+F5 (login y las pantallas que cambiaron, mirando que las llamadas vayan al VPS y no den CORS).
 
+#### La password del backup, mejor sin tipearla
+
+El paso 3 la pide por consola, y dos errores seguidos bloquean la IP 30 minutos (§6.1). La copia que
+usa la API en producción está en `/etc/meatnet/api.env`; el script toma `MEATNET_DB_PASSWORD` si está
+cargada, así que conviene pasársela desde ahí:
+
+```powershell
+$env:MEATNET_DB_PASSWORD = (ssh meatnet "sudo sed -n 's/.*Password=\([^;]*\).*/\1/p' /etc/meatnet/api.env").Trim()
+.\tools\deploy.ps1
+Remove-Item Env:MEATNET_DB_PASSWORD
+```
+
+El valor no pasa por el teclado ni aparece en pantalla. Si `api.env` y la base no coincidieran, esto
+falla en el backup, que es antes del merge y no toca producción.
+
+**Cambiar la password del rol siempre con el servicio parado:** `stop` → `alter role meatnet with
+password '<nueva>'` en el *SQL Editor* → `api.env` → `start`. Si se cambia con la API corriendo, el
+siguiente reinicio la encuentra desactualizada, no levanta, el rollback reintenta, y esos dos intentos
+fallidos bloquean la IP **del VPS**, que es la de producción.
+
 Dos avisos del paso 1 que **no** se resuelven solos, porque van fuera del repo:
 
 | Si cambió… | Hay que… |
