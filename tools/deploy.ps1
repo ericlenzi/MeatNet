@@ -218,13 +218,21 @@ function Invoke-Backup {
             '-h', $Config.SupabaseHost, '-p', '5432', '-U', $Config.SupabaseUser,
             '-d', 'postgres', '-n', 'meat', '-Fc', '-f', $archivo
         ) -Detalle 'pg_dump contra Supabase'
+    } catch {
+        # pg_dump crea el archivo antes de conectarse: si fallo, queda uno vacio que parece un backup.
+        if ((Test-Path $archivo) -and (Get-Item $archivo).Length -eq 0) { Remove-Item -Force $archivo }
+        throw
     } finally {
         Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue
         Remove-Item Env:PGSSLMODE -ErrorAction SilentlyContinue
     }
 
-    $mb = [math]::Round((Get-Item $archivo).Length / 1MB, 1)
-    Write-Host "    $archivo ($mb MB)"
+    $bytes = (Get-Item $archivo).Length
+    if ($bytes -eq 0) {
+        Remove-Item -Force $archivo
+        throw 'El backup salio vacio. No se sigue sin un backup valido.'
+    }
+    Write-Host ("    $archivo ({0} MB)" -f [math]::Round($bytes / 1MB, 1))
 }
 
 function Invoke-MergeAMaster {
