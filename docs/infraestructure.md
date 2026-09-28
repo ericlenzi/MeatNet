@@ -366,7 +366,7 @@ El orden que respeta es **base → API → frontend**, por dos motivos:
 |---|---|---|
 | 1 | Estado de git | Exige estar en `development`, sin cambios sin commitear y en sincronía con `origin`. Lista los commits que salen y avisa si hay migraciones o cambios de configuración |
 | 2 | Compilación | `dotnet build -c Release` y, en `source/web`, `npm ci` + `npm run build`. Vercel corre `tsc -b`, así que un error de tipos que `npm run dev` tolera haría fallar el deploy allá |
-| 3 | Backup | `pg_dump -n meat -Fc` del schema entero al `BackupDir` de la configuración. Pide la password de Supabase (o la toma de `MEATNET_DB_PASSWORD`) |
+| 3 | Backup | `pg_dump -n meat -Fc` del schema entero al `BackupDir` de la configuración. Pide la password de Supabase (o la toma de `MEATNET_DB_PASSWORD`). Conserva los últimos `BackupsAConservar` (5 por defecto) y borra los anteriores, siempre después de que el nuevo salga bien |
 | 4 | Merge | `git checkout master`, `pull --ff-only`, `merge --ff-only development`. **No** pushea |
 | 5 | Publicación de la API | `dotnet publish` en una carpeta limpia, `tar` sin `appsettings.Development.json`, `scp` al VPS y `sudo meatnet-deploy` (ver abajo) |
 | 6 | Verificación | `GET /Usuarios` contra la URL pública tiene que dar `401`. Si no, no se pushea nada |

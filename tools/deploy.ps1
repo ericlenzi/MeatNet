@@ -233,6 +233,16 @@ function Invoke-Backup {
         throw 'El backup salio vacio. No se sigue sin un backup valido.'
     }
     Write-Host ("    $archivo ({0} MB)" -f [math]::Round($bytes / 1MB, 1))
+
+    # Recien despues de tener el backup nuevo se borran los viejos, y solo los que genero el script.
+    $conservar = 5
+    if ($Config.BackupsAConservar) { $conservar = [int]$Config.BackupsAConservar }
+    $viejos = @(Get-ChildItem -Path $Config.BackupDir -Filter 'meatnet-prod-*.dump' -File |
+        Sort-Object LastWriteTime -Descending | Select-Object -Skip $conservar)
+    if ($viejos.Count -gt 0) {
+        $viejos | Remove-Item -Force
+        Write-Host "    Borrados $($viejos.Count) backups viejos (se conservan los ultimos $conservar)"
+    }
 }
 
 function Invoke-MergeAMaster {

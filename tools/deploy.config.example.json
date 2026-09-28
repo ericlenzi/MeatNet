@@ -5,5 +5,6 @@
   "SupabaseHost": "aws-0-sa-east-1.pooler.supabase.com",
   "SupabaseUser": "meatnet.<project-ref>",
   "BackupDir": "C:\\Users\\Usuario\\Backups\\meatnet",
+  "BackupsAConservar": 5,
   "PgDump": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_dump.exe"
 }
