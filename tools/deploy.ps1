@@ -153,15 +153,35 @@ function Test-EstadoGit {
     return $hayMigraciones
 }
 
+# npm ci empieza por borrar node_modules y en Windows falla con EPERM (-4048) si el dev server de
+# Vite tiene tomados los archivos, dejandolo ademas a medio borrar. Se chequea antes de tocar nada.
+function Test-DevServer {
+    try {
+        $enUso = Get-NetTCPConnection -State Listen -LocalPort 5173 -ErrorAction SilentlyContinue
+    } catch {
+        return
+    }
+    if ($enUso) {
+        throw 'Hay un dev server escuchando en el puerto 5173. Cerralo (Ctrl+C en la consola del npm run dev) y volve a correr el script.'
+    }
+}
+
 function Invoke-Compilacion {
     Write-Paso 'Compilando API y web'
-    Invoke-Externo 'dotnet' @('build', (Join-Path $Repo 'source\api\Meat.sln'), '-c', 'Release', '--nologo', '-v', 'q')
+    Invoke-Externo 'dotnet' @('build', (Join-Path $Repo 'source\api\Meat.sln'), '-c', 'Release', '--nologo', '-tl:off', '-v', 'q')
 
     Push-Location (Join-Path $Repo 'source\web')
     try {
         # Vercel corre "tsc -b": un error de tipos que npm run dev tolera hace fallar el deploy alla.
+        Write-Host '    npm ci (reinstala node_modules; tarda unos minutos y no imprime nada)'
         Invoke-Externo 'npm' @('ci', '--silent') -Detalle 'npm ci'
         Invoke-Externo 'npm' @('run', 'build') -Detalle 'npm run build'
+    } catch {
+        if ("$_" -match '-4048') {
+            throw ('npm ci no pudo borrar node_modules (EPERM). Cerra el dev server o cualquier ' +
+                   'programa que este usando source\web\node_modules, y volve a correr el script.')
+        }
+        throw
     } finally {
         Pop-Location
     }
@@ -215,7 +235,7 @@ function Publish-Api {
     # La carpeta tiene que quedar vacia: dotnet publish no borra archivos de una version anterior.
     if (Test-Path $PublishDir) { Remove-Item -Recurse -Force $PublishDir }
     Invoke-Externo 'dotnet' @('publish', (Join-Path $Repo 'source\api\Meat\Meat.csproj'),
-        '-c', 'Release', '-o', $PublishDir, '--nologo', '-v', 'q')
+        '-c', 'Release', '-o', $PublishDir, '--nologo', '-tl:off', '-v', 'q')
 
     if (Test-Path $TarballLocal) { Remove-Item -Force $TarballLocal }
     Invoke-Externo 'tar' @('-czf', $TarballLocal, '--exclude=./appsettings.Development.json', '-C', $PublishDir, '.')
@@ -262,6 +282,7 @@ function Publish-Frontend {
 Push-Location $Repo
 try {
     $config = Read-Config
+    if (-not $SkipBuild) { Test-DevServer }
     $hayMigraciones = Test-EstadoGit
 
     if ($SkipBackup -and $hayMigraciones) {
